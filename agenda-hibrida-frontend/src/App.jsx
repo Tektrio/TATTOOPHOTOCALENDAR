@@ -27,6 +27,7 @@ import CalendarioVisual from './components/CalendarioVisual.jsx'
 import SeletorHorarioMelhorado from './components/SeletorHorarioMelhorado.jsx'
 import GoogleDriveExplorer from './components/GoogleDriveExplorer.jsx'
 import CustomerManagement from './components/CustomerManagement.jsx'
+import ImportWizard from './pages/ImportWizard.jsx'
 import { 
   Calendar, 
   Users, 
@@ -650,7 +651,7 @@ function App() {
       {/* Navigation Tabs */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 bg-white/10 backdrop-blur-md">
+          <TabsList className="grid w-full grid-cols-8 bg-white/10 backdrop-blur-md">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-white/20">
               <Monitor className="w-4 h-4 mr-2" />
               Dashboard
@@ -666,6 +667,10 @@ function App() {
             <TabsTrigger value="clients" className="data-[state=active]:bg-white/20">
               <Users className="w-4 h-4 mr-2" />
               Clientes
+            </TabsTrigger>
+            <TabsTrigger value="import" className="data-[state=active]:bg-white/20">
+              <Upload className="w-4 h-4 mr-2" />
+              Importar Dados
             </TabsTrigger>
             <TabsTrigger value="gallery" className="data-[state=active]:bg-white/20">
               <Image className="w-4 h-4 mr-2" />
@@ -1047,6 +1052,11 @@ function App() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          {/* Import Tab */}
+          <TabsContent value="import" className="mt-6">
+            <ImportWizard />
           </TabsContent>
 
           {/* Clients Tab */}
