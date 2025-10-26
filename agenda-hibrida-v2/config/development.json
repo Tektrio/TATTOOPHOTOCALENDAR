@@ -1,0 +1,54 @@
+{
+  "server": {
+    "port": 3001,
+    "host": "localhost",
+    "cors": {
+      "origin": "http://localhost:5173",
+      "credentials": true
+    }
+  },
+  "database": {
+    "path": "./agenda_hibrida.db",
+    "backup": {
+      "enabled": true,
+      "interval": "0 2 * * *",
+      "retention": 30
+    }
+  },
+  "storage": {
+    "mode": "hybrid",
+    "local": {
+      "path": "./uploads",
+      "maxSize": "100MB"
+    },
+    "qnap": {
+      "enabled": false,
+      "host": "192.168.1.100",
+      "path": "/share/Tatuagens"
+    },
+    "googleDrive": {
+      "enabled": true,
+      "folder": "Agenda Tatuagem"
+    }
+  },
+  "notifications": {
+    "email": {
+      "enabled": true,
+      "reminders": {
+        "24h": true,
+        "2h": true
+      },
+      "aftercare": true
+    },
+    "whatsapp": {
+      "enabled": false,
+      "apiUrl": ""
+    }
+  },
+  "sync": {
+    "interval": 15,
+    "googleCalendar": true,
+    "googleDrive": true,
+    "qnap": false
+  }
+}
