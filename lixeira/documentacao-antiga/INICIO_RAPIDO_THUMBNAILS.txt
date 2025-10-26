@@ -1,0 +1,204 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║         🚀 INÍCIO RÁPIDO - THUMBNAILS E SUPORTE PSD                  ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  PASSO 1: INICIAR BACKEND                                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Terminal 1:
+───────────
+cd /Users/luizlopes/Desktop/agenda-hibrida-v2/agenda-hibrida-v2
+node server.js
+
+Aguarde ver:
+  ✓ Servidor rodando na porta 3001
+  ✓ Banco de dados conectado
+  ✓ Google Drive configurado (se aplicável)
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  PASSO 2: INICIAR FRONTEND                                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Terminal 2:
+───────────
+cd /Users/luizlopes/Desktop/agenda-hibrida-v2/agenda-hibrida-frontend
+npm run dev
+
+Aguarde ver:
+  ✓ Local: http://localhost:5173
+  ✓ ready in XXXms
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  PASSO 3: ACESSAR E TESTAR                                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Navegador:
+──────────
+1. Abra: http://localhost:5173
+
+2. Abra DevTools (F12) e vá para aba "Console"
+
+3. Faça upload de uma imagem:
+   ┌──────────────────────────────────┐
+   │  📤 Upload Arquivos              │
+   │  ┌──────────────┐                │
+   │  │ Selecionar   │                │
+   │  │ Arquivo      │                │
+   │  └──────────────┘                │
+   └──────────────────────────────────┘
+
+4. Observe os logs:
+
+   Terminal Backend (esperado):
+   ────────────────────────────
+   🖼️ [THUMBNAIL] Requisição para arquivo 1, tamanho: 300px
+   📁 [THUMBNAIL] Arquivo: foto.jpg, tipo: image/jpeg
+   ✅ [THUMBNAIL] Gerado e salvo em: thumb_1_300.jpg
+
+   Console Browser (esperado):
+   ───────────────────────────
+   ✅ [FRONTEND] Thumbnail carregada: foto.jpg
+
+5. Verifique na interface:
+   
+   ANTES (sem thumbnail):
+   ┌────────────────────────────────────────┐
+   │  [📄] foto.jpg         2.5 MB          │
+   └────────────────────────────────────────┘
+
+   DEPOIS (com thumbnail):
+   ┌────────────────────────────────────────┐
+   │  [🖼️ FOTO] foto.jpg    2.5 MB          │
+   │   ↑                                    │
+   │   └─ miniatura 48x48                   │
+   └────────────────────────────────────────┘
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  TESTE ESPECIAL: ARQUIVOS PSD                                      ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+1. Prepare um arquivo .psd (qualquer um do Photoshop)
+
+2. Faça upload
+
+3. Observe logs especiais:
+
+   Terminal Backend:
+   ────────────────
+   🎨 [PSD] Processando arquivo PSD...
+   🎨 Extraindo thumbnail de PSD: /caminho/design.psd
+   ✅ Usando imagem composta do PSD
+   ✅ [PSD] Thumbnail gerado com sucesso!
+
+4. Na interface, o PSD aparecerá com:
+   • Ícone ROXO (diferente de imagens normais)
+   • Thumbnail extraído do PSD
+   • Tag especial "PSD"
+
+   Exemplo visual:
+   ┌────────────────────────────────────────┐
+   │  [🎨 PSD] design.psd   15 MB           │
+   │   ↑                                    │
+   │   └─ ícone roxo + thumbnail extraído   │
+   └────────────────────────────────────────┘
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  VERIFICAR CACHE                                                   ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Após gerar alguns thumbnails, verifique:
+
+ls -lh agenda-hibrida-v2/thumbnails_cache/
+  ↓
+thumb_1_300.jpg   (imagens normais)
+thumb_2_300.png
+thumb_3_300.webp
+
+ls -lh agenda-hibrida-v2/psd_thumbnails_cache/
+  ↓
+psd_thumb_4_300.png   (arquivos PSD)
+psd_thumb_5_300.png
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  PROBLEMAS COMUNS E SOLUÇÕES                                       ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┌─ Problema: Thumbnail não aparece
+└─ Solução:
+   1. Verifique logs do backend (procure por ❌)
+   2. F12 no navegador → Console → procure erros
+   3. Teste URL direta:
+      http://localhost:3001/api/files/1/thumbnail?size=300
+
+┌─ Problema: Erro "ag-psd not found"
+└─ Solução:
+   cd agenda-hibrida-v2
+   npm install ag-psd
+   node server.js
+
+┌─ Problema: PSD sem thumbnail
+└─ Solução:
+   • Isso é NORMAL para alguns PSDs
+   • Alguns PSDs não têm preview embutido
+   • O sistema usa ícone padrão automaticamente
+   • Procure log: "⚠️ PSD sem imagem composta"
+
+┌─ Problema: Cache muito grande
+└─ Solução:
+   # Limpar tudo:
+   rm -rf agenda-hibrida-v2/thumbnails_cache/*
+   rm -rf agenda-hibrida-v2/psd_thumbnails_cache/*
+   
+   # Thumbnails serão regenerados conforme necessário
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  CHECKLIST DE SUCESSO                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Marque ✓ conforme testa:
+
+[ ] Backend iniciado sem erros
+[ ] Frontend acessível em localhost:5173
+[ ] Upload de imagem JPG/PNG funciona
+[ ] Thumbnail aparece na lista de arquivos
+[ ] Clique em "Detalhes" mostra thumbnail maior
+[ ] Upload de arquivo PSD funciona
+[ ] PSD mostra ícone roxo
+[ ] PSD mostra thumbnail (se tiver preview)
+[ ] Logs aparecem corretamente no backend
+[ ] Logs aparecem no console do navegador
+[ ] Google Drive mostra thumbnails (se conectado)
+[ ] Cache é criado nas pastas corretas
+
+Se TODOS estão ✓, o sistema está funcionando perfeitamente! 🎉
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  PRÓXIMO NÍVEL                                                     ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Funcionalidades extras que você pode explorar:
+
+• Alterar tamanho de thumbnail (server.js linha 1098)
+• Ajustar qualidade de compressão (server.js linha 1187)
+• Adicionar mais formatos de arquivo
+• Implementar cleanup automático de cache antigo
+• Adicionar preview com zoom para PSDs
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  DOCUMENTAÇÃO ADICIONAL                                            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+📖 CORRECAO_THUMBNAILS_E_PSD.md
+   └─ Documentação completa e detalhada
+
+🧪 ./TESTAR_THUMBNAILS_E_PSD.sh
+   └─ Script automático de teste
+
+📋 RESUMO_CORRECAO_THUMBNAILS_PSD.txt
+   └─ Resumo visual das mudanças
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  ✨ Pronto! Agora você tem thumbnails e suporte PSD funcionando!    ║
+╚══════════════════════════════════════════════════════════════════════╝
+

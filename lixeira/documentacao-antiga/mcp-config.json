@@ -1,0 +1,295 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "mcp-server-chrome-devtools",
+      "args": [],
+      "description": "Automação de navegador, testes, screenshots e debugging"
+    },
+    "filesystem": {
+      "command": "mcp-server-filesystem",
+      "args": [
+        "/Users/luizlopes/Downloads/untitled folder"
+      ],
+      "description": "Acesso seguro ao sistema de arquivos"
+    },
+    "git": {
+      "command": "mcp-server-git",
+      "args": [
+        "/Users/luizlopes/Downloads/untitled folder"
+      ],
+      "description": "Operações Git locais (commits, branches, histórico)"
+    },
+    "sqlite": {
+      "command": "mcp-server-sqlite",
+      "args": [
+        "/Users/luizlopes/Downloads/untitled folder/agenda-hibrida-v2/agenda_hibrida.db"
+      ],
+      "description": "Interação com banco de dados SQLite do projeto"
+    },
+    "fetch": {
+      "command": "mcp-server-fetch",
+      "args": [],
+      "description": "HTTP requests e APIs RESTful"
+    },
+    "memory": {
+      "command": "mcp-server-memory",
+      "args": [],
+      "description": "Sistema de memória persistente entre sessões"
+    },
+    "puppeteer": {
+      "command": "/Users/luizlopes/.nvm/versions/node/v22.15.0/bin/mcp-server-puppeteer",
+      "args": [],
+      "description": "Automação avançada de navegador com Puppeteer (testes E2E, screenshots, PDFs)"
+    },
+    "sequential-thinking": {
+      "command": "/Users/luizlopes/.nvm/versions/node/v22.15.0/bin/mcp-server-sequential-thinking",
+      "args": [],
+      "description": "Pensamento sequencial e resolução de problemas complexos"
+    },
+    "anthropic": {
+      "command": "mcp-server-anthropic",
+      "env": {
+        "ANTHROPIC_API_KEY": "sk-ant-..."
+      },
+      "description": "Claude 4.5 Sonnet - LLM principal para modo auto (fallback: Claude 4.1 Sonnet)"
+    }
+  },
+  "_optional_mcps_comment": "Descomente os servidores abaixo conforme necessário",
+  "_optional_mcps": {
+    "github": {
+      "command": "mcp-server-github",
+      "env": {
+        "GITHUB_TOKEN": "seu_github_personal_access_token_aqui"
+      },
+      "description": "Integração completa com GitHub (issues, PRs, commits)"
+    },
+    "postgres": {
+      "command": "mcp-server-postgres",
+      "args": [
+        "postgresql://usuario:senha@localhost:5432/nome_do_banco"
+      ],
+      "description": "Integração com PostgreSQL"
+    },
+    "puppeteer": {
+      "command": "mcp-server-puppeteer",
+      "args": [],
+      "description": "Automação avançada de navegador para testes E2E"
+    },
+    "slack": {
+      "command": "mcp-server-slack",
+      "env": {
+        "SLACK_TOKEN": "seu_slack_bot_token_aqui"
+      },
+      "description": "Integração com Slack para notificações"
+    },
+    "google-drive": {
+      "command": "mcp-server-google-drive",
+      "env": {
+        "GOOGLE_DRIVE_CREDENTIALS": "caminho_para_credentials.json"
+      },
+      "description": "Integração com Google Drive"
+    },
+    "google-calendar": {
+      "command": "mcp-server-google-calendar",
+      "env": {
+        "GOOGLE_CALENDAR_CREDENTIALS": "caminho_para_credentials.json"
+      },
+      "description": "Integração com Google Calendar"
+    },
+    "stripe": {
+      "command": "mcp-server-stripe",
+      "env": {
+        "STRIPE_SECRET_KEY": "sk_test_..."
+      },
+      "description": "Processamento de pagamentos com Stripe"
+    },
+    "aws": {
+      "command": "mcp-server-aws",
+      "env": {
+        "AWS_ACCESS_KEY_ID": "sua_access_key",
+        "AWS_SECRET_ACCESS_KEY": "sua_secret_key",
+        "AWS_REGION": "us-east-1"
+      },
+      "description": "Integração com AWS Services"
+    },
+    "vercel": {
+      "command": "mcp-server-vercel",
+      "env": {
+        "VERCEL_TOKEN": "seu_vercel_token"
+      },
+      "description": "Deploy e gerenciamento de apps no Vercel"
+    },
+    "netlify": {
+      "command": "mcp-server-netlify",
+      "env": {
+        "NETLIFY_TOKEN": "seu_netlify_token"
+      },
+      "description": "Deploy e gerenciamento de apps no Netlify"
+    },
+    "supabase": {
+      "command": "mcp-server-supabase",
+      "env": {
+        "SUPABASE_URL": "https://seu-projeto.supabase.co",
+        "SUPABASE_KEY": "sua_anon_key"
+      },
+      "description": "Backend-as-a-Service com Supabase"
+    },
+    "firebase": {
+      "command": "mcp-server-firebase",
+      "env": {
+        "FIREBASE_PROJECT_ID": "seu-projeto-id",
+        "FIREBASE_CREDENTIALS": "caminho_para_service_account.json"
+      },
+      "description": "Integração com Firebase (Auth, Firestore, Storage)"
+    },
+    "sentry": {
+      "command": "mcp-server-sentry",
+      "env": {
+        "SENTRY_DSN": "https://...@sentry.io/...",
+        "SENTRY_AUTH_TOKEN": "seu_auth_token"
+      },
+      "description": "Error tracking e monitoring com Sentry"
+    },
+    "docker": {
+      "command": "mcp-server-docker",
+      "args": [],
+      "description": "Gerenciar containers Docker"
+    },
+    "kubernetes": {
+      "command": "mcp-server-kubernetes",
+      "env": {
+        "KUBECONFIG": "~/.kube/config"
+      },
+      "description": "Gerenciar clusters Kubernetes"
+    },
+    "mongodb": {
+      "command": "mcp-server-mongodb",
+      "args": [
+        "mongodb://localhost:27017/nome_do_banco"
+      ],
+      "description": "Integração com MongoDB"
+    },
+    "redis": {
+      "command": "mcp-server-redis",
+      "args": [
+        "redis://localhost:6379"
+      ],
+      "description": "Cache e filas com Redis"
+    },
+    "elasticsearch": {
+      "command": "mcp-server-elasticsearch",
+      "args": [
+        "http://localhost:9200"
+      ],
+      "description": "Busca e análise de dados com Elasticsearch"
+    },
+    "jira": {
+      "command": "mcp-server-jira",
+      "env": {
+        "JIRA_HOST": "https://sua-empresa.atlassian.net",
+        "JIRA_EMAIL": "seu@email.com",
+        "JIRA_API_TOKEN": "seu_api_token"
+      },
+      "description": "Gerenciamento de projetos com Jira"
+    },
+    "linear": {
+      "command": "mcp-server-linear",
+      "env": {
+        "LINEAR_API_KEY": "seu_linear_api_key"
+      },
+      "description": "Issue tracking com Linear"
+    },
+    "notion": {
+      "command": "mcp-server-notion",
+      "env": {
+        "NOTION_TOKEN": "seu_notion_integration_token"
+      },
+      "description": "Gerenciamento de conhecimento com Notion"
+    },
+    "airtable": {
+      "command": "mcp-server-airtable",
+      "env": {
+        "AIRTABLE_API_KEY": "seu_airtable_api_key"
+      },
+      "description": "Banco de dados low-code com Airtable"
+    },
+    "discord": {
+      "command": "mcp-server-discord",
+      "env": {
+        "DISCORD_TOKEN": "seu_discord_bot_token"
+      },
+      "description": "Integração com Discord para bots e notificações"
+    },
+    "telegram": {
+      "command": "mcp-server-telegram",
+      "env": {
+        "TELEGRAM_BOT_TOKEN": "seu_telegram_bot_token"
+      },
+      "description": "Bots e notificações via Telegram"
+    },
+    "twilio": {
+      "command": "mcp-server-twilio",
+      "env": {
+        "TWILIO_ACCOUNT_SID": "seu_account_sid",
+        "TWILIO_AUTH_TOKEN": "seu_auth_token"
+      },
+      "description": "SMS e chamadas com Twilio"
+    },
+    "sendgrid": {
+      "command": "mcp-server-sendgrid",
+      "env": {
+        "SENDGRID_API_KEY": "seu_sendgrid_api_key"
+      },
+      "description": "Envio de emails com SendGrid"
+    },
+    "cloudinary": {
+      "command": "mcp-server-cloudinary",
+      "env": {
+        "CLOUDINARY_URL": "cloudinary://api_key:api_secret@cloud_name"
+      },
+      "description": "Gerenciamento de mídia com Cloudinary"
+    },
+    "algolia": {
+      "command": "mcp-server-algolia",
+      "env": {
+        "ALGOLIA_APP_ID": "seu_app_id",
+        "ALGOLIA_API_KEY": "sua_api_key"
+      },
+      "description": "Busca poderosa com Algolia"
+    },
+    "openai": {
+      "command": "mcp-server-openai",
+      "env": {
+        "OPENAI_API_KEY": "sk-..."
+      },
+      "description": "Integração com API da OpenAI"
+    },
+    "anthropic": {
+      "command": "mcp-server-anthropic",
+      "env": {
+        "ANTHROPIC_API_KEY": "sk-ant-..."
+      },
+      "description": "Integração com API da Anthropic (Claude)"
+    },
+    "huggingface": {
+      "command": "mcp-server-huggingface",
+      "env": {
+        "HUGGINGFACE_TOKEN": "hf_..."
+      },
+      "description": "Modelos de ML do HuggingFace"
+    }
+  },
+  "_notes": {
+    "installation": "Execute: bash instalar-mcps.sh",
+    "documentation": "Leia: MELHORES_MCPS_DESENVOLVIMENTO.md",
+    "configuration_location": "Cursor > Settings > MCP Configuration",
+    "reload_after_config": "Cmd+Shift+P > 'Developer: Reload Window'",
+    "test_mcp": "Pergunte no chat: 'Liste todos os arquivos .jsx'",
+    "github_token_guide": "https://github.com/settings/tokens",
+    "workspace_path": "/Users/luizlopes/Downloads/untitled folder",
+    "database_path": "/Users/luizlopes/Downloads/untitled folder/agenda-hibrida-v2/agenda_hibrida.db",
+    "created_date": "2025-10-22",
+    "version": "1.0"
+  }
+}
+
