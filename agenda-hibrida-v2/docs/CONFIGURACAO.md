@@ -114,6 +114,135 @@ SYNC_INTERVAL=15
 LOCAL_STORAGE_PATH=./uploads
 ```
 
+## 📥 Importação de Dados
+
+### 1. Importação do Vagaro (Excel)
+
+#### 1.1 Exportar Dados do Vagaro
+1. Acesse sua conta Vagaro
+2. Vá para **Reports** > **Clients** ou **Appointments**
+3. Selecione o período desejado
+4. Clique em **Export** e escolha formato **Excel (.xlsx)**
+5. Salve o arquivo
+
+#### 1.2 Formatos Esperados
+
+**Clientes (Clients)**:
+- Colunas requeridas: Name (ou Customer Name)
+- Colunas opcionais: Email, Phone, Birthday, Address, City, State, Zip
+- O sistema detecta automaticamente o mapeamento de colunas
+
+**Agendamentos (Appointments)**:
+- Colunas requeridas: Client Name, Date, Time
+- Colunas opcionais: Service, Status, Notes, Price, Duration
+- Formatos de data aceitos: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD
+- Formatos de hora aceitos: HH:MM, HH:MM AM/PM
+
+#### 1.3 Importar via Interface
+1. Acesse **Importar Dados** no menu
+2. Escolha **Excel Vagaro**
+3. Selecione o tipo: Clientes ou Agendamentos
+4. Faça upload do arquivo
+5. Revise o preview e mapeamento de colunas
+6. Confirme a importação
+7. Aguarde o relatório de importação
+
+### 2. Importação Manual (ICS/iCalendar)
+
+#### 2.1 Exportar Calendário como ICS
+**Do Google Calendar**:
+1. Abra Google Calendar
+2. Clique no calendário desejado (Settings)
+3. Role até "Integrate calendar"
+4. Copie o link "Secret address in iCal format"
+5. Abra o link no navegador e salve como .ics
+
+**Do Outlook**:
+1. Abra o calendário
+2. File > Save Calendar
+3. Escolha formato iCalendar (.ics)
+4. Salve o arquivo
+
+**Do Apple Calendar**:
+1. Selecione o calendário
+2. File > Export > Export...
+3. Escolha formato .ics
+4. Salve o arquivo
+
+#### 2.2 Importar Arquivo ICS
+1. Acesse **Importar Dados** > **ICS/iCalendar**
+2. Faça upload do arquivo .ics
+3. Revise o preview dos eventos
+4. Marque "Vincular automaticamente a clientes" (recomendado)
+5. Confirme a importação
+
+### 3. Sincronização Automática com Google Calendar
+
+#### 3.1 Configurar OAuth
+1. Configure as credenciais no .env (veja seção anterior)
+2. Acesse **Importar Dados** > **Google Calendar**
+3. Clique em **Conectar Google Calendar**
+4. Autorize o acesso na janela do Google
+5. Aguarde confirmação de conexão
+
+#### 3.2 Sincronizar Eventos
+**Manual**:
+1. Vá para **Importar Dados** > **Google Calendar**
+2. Clique em **Sincronizar Agora**
+3. Configure opções:
+   - Calendário (padrão: Primary)
+   - Dias para trás: 30
+   - Dias para frente: 90
+4. Aguarde relatório de sincronização
+
+**Automática** (futuro):
+- Configure intervalo de sincronização no .env
+- O sistema sincronizará automaticamente em background
+
+#### 3.3 Deduplicação Inteligente
+O sistema evita duplicatas usando:
+- **Clientes**: Telefone normalizado, email, external_id
+- **Agendamentos**: google_event_id, ical_uid, external_id, hash (data+hora+cliente)
+
+### 4. Boas Práticas de Importação
+
+#### 4.1 Antes de Importar
+- ✅ Faça backup do banco de dados atual
+- ✅ Verifique formato dos arquivos
+- ✅ Teste com arquivo pequeno primeiro (< 100 linhas)
+- ✅ Limpe dados duplicados na origem
+
+#### 4.2 Durante a Importação
+- ✅ Revise o preview e mapeamento
+- ✅ Marque "Pular duplicatas" na primeira vez
+- ✅ Aguarde o relatório completo
+- ✅ Anote os erros reportados
+
+#### 4.3 Após Importação
+- ✅ Verifique o relatório de importação
+- ✅ Revise registros criados/atualizados
+- ✅ Corrija erros manualmente se necessário
+- ✅ Documente o processo para próximas vezes
+
+### 5. Troubleshooting de Importações
+
+#### Erro: "Arquivo muito grande"
+- Divida o arquivo em partes menores (< 1000 linhas)
+- Aumente MAX_UPLOAD_SIZE_MB no .env
+
+#### Erro: "Formato de data inválido"
+- Converta datas para formato YYYY-MM-DD no Excel
+- Use função =TEXT(A2,"YYYY-MM-DD")
+
+#### Erro: "Cliente não encontrado"
+- Importe clientes antes de agendamentos
+- Use "Vincular automaticamente" na importação
+
+#### Muitas duplicatas
+- Use opção "Pular duplicatas"
+- Verifique se external_id está presente
+- Reimporte com skipDuplicates=true
+
 ## 🧪 Verificação da Configuração
 
 ### 1. Executar Testes
