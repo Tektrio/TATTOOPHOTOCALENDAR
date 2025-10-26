@@ -10,6 +10,7 @@ const customerFormsRouter = require('./customer-forms');
 const productsRouter = require('./products');
 const invoicesRouter = require('./invoices');
 const packagesRouter = require('./packages');
+const importsRouter = require('./imports');
 
 /**
  * Registrar todas as rotas no app Express
@@ -38,7 +39,13 @@ function registerRoutes(app) {
   // Rotas de Form Templates
   app.use('/api', customerFormsRouter);
   
+  // Rotas de Importação e Sincronização
+  app.use('/api/imports', importsRouter);
+  app.use('/api/auth', importsRouter);
+  app.use('/api/sync', importsRouter);
+  
   console.log('✅ Rotas de gestão de clientes registradas');
+  console.log('✅ Rotas de importação e sincronização registradas');
 }
 
 module.exports = { registerRoutes };
