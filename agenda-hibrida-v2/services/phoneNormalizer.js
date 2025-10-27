@@ -111,7 +111,11 @@ function comparePhones(phone1, phone2, defaultCountry = 'BR') {
   const normalized1 = normalizePhone(phone1, defaultCountry);
   const normalized2 = normalizePhone(phone2, defaultCountry);
   
-  return normalized1 && normalized2 && normalized1 === normalized2;
+  if (!normalized1 || !normalized2) {
+    return false;
+  }
+  
+  return normalized1 === normalized2;
 }
 
 module.exports = {
