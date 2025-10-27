@@ -28,6 +28,16 @@ import SeletorHorarioMelhorado from './components/SeletorHorarioMelhorado.jsx'
 import GoogleDriveExplorer from './components/GoogleDriveExplorer.jsx'
 import CustomerManagement from './components/CustomerManagement.jsx'
 import ImportWizard from './pages/ImportWizard.jsx'
+import { ValidatedInput, ValidatedTextarea, ValidatedSelect } from './components/ValidatedInput.jsx'
+import { 
+  validateEmail, 
+  validatePhone, 
+  validateName,
+  validateRequired,
+  validateClientForm as validateClientFormUtil,
+  validateAppointmentForm as validateAppointmentFormUtil,
+  formatPhone 
+} from './utils/validation.js'
 import { 
   Calendar, 
   Users, 
@@ -58,7 +68,8 @@ import {
   Camera,
   Smartphone,
   Monitor,
-  Server
+  Server,
+  ArrowRight
 } from 'lucide-react'
 import './App.css'
 
@@ -282,77 +293,17 @@ function App() {
     }
   }
 
-  // Funções de validação
-  const validateEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return regex.test(email)
-  }
-
-  const validatePhone = (phone) => {
-    const cleanPhone = phone.replace(/\D/g, '')
-    return cleanPhone.length === 10 || cleanPhone.length === 11
-  }
-
+  // Funções de validação (usando utilitários)
   const validateAppointmentForm = () => {
-    const newErrors = {}
-    
-    if (!newAppointment.title || newAppointment.title.trim() === '') {
-      newErrors.title = 'O título do agendamento é obrigatório'
-    }
-    
-    if (!newAppointment.client_id) {
-      newErrors.client = 'Você precisa selecionar um cliente para este agendamento'
-    }
-    
-    if (!newAppointment.start_datetime) {
-      newErrors.start = 'A data e hora de início são obrigatórias'
-    } else {
-      // Validar se a data não é no passado
-      const startDate = new Date(newAppointment.start_datetime)
-      const now = new Date()
-      if (startDate < now) {
-        newErrors.start = 'A data de início não pode ser no passado'
-      }
-    }
-    
-    if (!newAppointment.end_datetime) {
-      newErrors.end = 'A data e hora de término são obrigatórias'
-    }
-    
-    if (newAppointment.start_datetime && newAppointment.end_datetime) {
-      if (new Date(newAppointment.end_datetime) <= new Date(newAppointment.start_datetime)) {
-        newErrors.end = 'O horário de término deve ser posterior ao horário de início'
-      }
-    }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    const validation = validateAppointmentFormUtil(newAppointment)
+    setErrors(validation.errors)
+    return validation.valid
   }
 
   const validateClientForm = () => {
-    const newErrors = {}
-    
-    if (!newClient.name || newClient.name.trim() === '') {
-      newErrors.name = 'O nome do cliente é obrigatório'
-    } else if (newClient.name.trim().length < 2) {
-      newErrors.name = 'O nome deve ter pelo menos 2 caracteres'
-    }
-    
-    if (newClient.email && !validateEmail(newClient.email)) {
-      newErrors.email = 'Por favor, insira um email válido (ex: nome@email.com)'
-    }
-    
-    if (newClient.phone && !validatePhone(newClient.phone)) {
-      newErrors.phone = 'Telefone inválido. Use o formato: (11) 98765-4321'
-    }
-    
-    // Verificar se já existe cliente com mesmo telefone
-    if (newClient.phone && clients.some(c => c.phone === newClient.phone && c.id !== newClient.id)) {
-      newErrors.phone = 'Já existe um cliente cadastrado com este telefone'
-    }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    const validation = validateClientFormUtil(newClient, clients)
+    setErrors(validation.errors)
+    return validation.valid
   }
 
   const createAppointment = async () => {
@@ -690,7 +641,10 @@ function App() {
           <TabsContent value="dashboard" className="space-y-6 mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Cards de estatísticas - Melhorados com mais destaque */}
-              <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105">
+              <Card 
+                className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer"
+                onClick={() => setActiveTab('clients')}
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-medium text-white">Total de Clientes</CardTitle>
                   <Users className="h-5 w-5 text-purple-400" />
@@ -698,10 +652,17 @@ function App() {
                 <CardContent className="pt-0">
                   <div className="text-4xl font-bold text-white mb-2">{stats.totalClients || 0}</div>
                   <p className="text-sm text-purple-200 font-medium">Clientes cadastrados</p>
+                  <p className="text-xs text-purple-300 mt-2 flex items-center">
+                    <ArrowRight className="w-3 h-3 mr-1" />
+                    Clique para ver detalhes
+                  </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105">
+              <Card 
+                className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer"
+                onClick={() => setActiveTab('appointments')}
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-medium text-white">Próximos Agendamentos</CardTitle>
                   <Calendar className="h-5 w-5 text-blue-400" />
@@ -709,10 +670,17 @@ function App() {
                 <CardContent className="pt-0">
                   <div className="text-4xl font-bold text-white mb-2">{stats.upcomingAppointments || 0}</div>
                   <p className="text-sm text-blue-200 font-medium">Nas próximas semanas</p>
+                  <p className="text-xs text-blue-300 mt-2 flex items-center">
+                    <ArrowRight className="w-3 h-3 mr-1" />
+                    Clique para ver agenda
+                  </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105">
+              <Card 
+                className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer"
+                onClick={() => setActiveTab('gallery')}
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-medium text-white">Arquivos Totais</CardTitle>
                   <FileImage className="h-5 w-5 text-green-400" />
@@ -720,10 +688,17 @@ function App() {
                 <CardContent className="pt-0">
                   <div className="text-4xl font-bold text-white mb-2">{stats.totalFiles || 0}</div>
                   <p className="text-sm text-green-200 font-medium">Imagens e documentos</p>
+                  <p className="text-xs text-green-300 mt-2 flex items-center">
+                    <ArrowRight className="w-3 h-3 mr-1" />
+                    Clique para ver galeria
+                  </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105">
+              <Card 
+                className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer"
+                onClick={() => setActiveTab('drive')}
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-medium text-white">Armazenamento</CardTitle>
                   <HardDrive className="h-5 w-5 text-yellow-400" />
@@ -733,6 +708,10 @@ function App() {
                     {stats.totalStorage ? `${(stats.totalStorage / 1024 / 1024).toFixed(1)}` : '0'}
                   </div>
                   <p className="text-sm text-yellow-200 font-medium">MB utilizados</p>
+                  <p className="text-xs text-yellow-300 mt-2 flex items-center">
+                    <ArrowRight className="w-3 h-3 mr-1" />
+                    Clique para ver drive
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -1082,66 +1061,52 @@ function App() {
                   </DialogHeader>
                   
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="clientName" className="text-white font-medium flex items-center mb-2">
-                        <User className="w-4 h-4 mr-2" />
-                        Nome Completo *
-                      </Label>
-                      <Input
-                        id="clientName"
-                        value={newClient.name}
-                        onChange={(e) => setNewClient({...newClient, name: e.target.value})}
-                        placeholder="Nome completo do cliente"
-                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                      />
-                      {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
-                    </div>
+                    <ValidatedInput
+                      id="clientName"
+                      label={<span className="flex items-center"><User className="w-4 h-4 mr-2" />Nome Completo</span>}
+                      type="text"
+                      value={newClient.name}
+                      onChange={(e) => setNewClient({...newClient, name: e.target.value})}
+                      validationFn={validateName}
+                      required={true}
+                      placeholder="Nome completo do cliente"
+                      error={errors.name}
+                      className="mt-2"
+                    />
 
-                    <div>
-                      <Label htmlFor="clientEmail" className="text-white font-medium flex items-center mb-2">
-                        <Mail className="w-4 h-4 mr-2" />
-                        Email
-                      </Label>
-                      <Input
-                        id="clientEmail"
-                        type="email"
-                        value={newClient.email}
-                        onChange={(e) => setNewClient({...newClient, email: e.target.value})}
-                        placeholder="email@exemplo.com"
-                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                      />
-                      {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
-                    </div>
+                    <ValidatedInput
+                      id="clientEmail"
+                      label={<span className="flex items-center"><Mail className="w-4 h-4 mr-2" />Email</span>}
+                      type="email"
+                      value={newClient.email}
+                      onChange={(e) => setNewClient({...newClient, email: e.target.value})}
+                      validationFn={validateEmail}
+                      placeholder="email@exemplo.com"
+                      error={errors.email}
+                      className="mt-2"
+                    />
 
-                    <div>
-                      <Label htmlFor="clientPhone" className="text-white font-medium flex items-center mb-2">
-                        <Phone className="w-4 h-4 mr-2" />
-                        Telefone
-                      </Label>
-                      <Input
-                        id="clientPhone"
-                        value={newClient.phone}
-                        onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
-                        placeholder="(11) 99999-9999"
-                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                      />
-                      {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
-                    </div>
+                    <ValidatedInput
+                      id="clientPhone"
+                      label={<span className="flex items-center"><Phone className="w-4 h-4 mr-2" />Telefone</span>}
+                      type="tel"
+                      value={newClient.phone}
+                      onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
+                      validationFn={validatePhone}
+                      placeholder="(11) 99999-9999"
+                      error={errors.phone}
+                      className="mt-2"
+                    />
 
-                    <div>
-                      <Label htmlFor="clientNotes" className="text-white font-medium flex items-center mb-2">
-                        <FileText className="w-4 h-4 mr-2" />
-                        Observações
-                      </Label>
-                      <Textarea
-                        id="clientNotes"
-                        value={newClient.notes}
-                        onChange={(e) => setNewClient({...newClient, notes: e.target.value})}
-                        placeholder="Informações adicionais sobre o cliente"
-                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                        rows={3}
-                      />
-                    </div>
+                    <ValidatedTextarea
+                      id="clientNotes"
+                      label={<span className="flex items-center"><FileText className="w-4 h-4 mr-2" />Observações</span>}
+                      value={newClient.notes}
+                      onChange={(e) => setNewClient({...newClient, notes: e.target.value})}
+                      placeholder="Informações adicionais sobre o cliente"
+                      rows={3}
+                      className="mt-2"
+                    />
 
                     <div className="flex space-x-3 pt-2">
                       <Button onClick={createClient} className="flex-1 bg-purple-500 hover:bg-purple-600">
@@ -1277,6 +1242,138 @@ function App() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal de Novo Agendamento - CORRIGIDO */}
+      <Dialog open={showNewAppointment} onOpenChange={setShowNewAppointment}>
+        <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white border-white/20">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center">
+              <Calendar className="w-6 h-6 mr-2 text-purple-400" />
+              Novo Agendamento
+            </DialogTitle>
+            <DialogDescription className="text-purple-200">
+              Crie um novo agendamento para seus clientes
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-white">Título *</Label>
+              <Input
+                id="title"
+                placeholder="Ex: Tatuagem no braço"
+                value={newAppointment.title}
+                onChange={(e) => setNewAppointment({...newAppointment, title: e.target.value})}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="client_id" className="text-white">Cliente *</Label>
+              <Select 
+                value={newAppointment.client_id} 
+                onValueChange={(value) => setNewAppointment({...newAppointment, client_id: value})}
+              >
+                <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                  <SelectValue placeholder="Selecione um cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map(client => (
+                    <SelectItem key={client.id} value={client.id.toString()}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tattoo_type_id" className="text-white">Tipo de Tatuagem</Label>
+              <Select 
+                value={newAppointment.tattoo_type_id} 
+                onValueChange={(value) => setNewAppointment({...newAppointment, tattoo_type_id: value})}
+              >
+                <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tattooTypes.map(type => (
+                    <SelectItem key={type.id} value={type.id.toString()}>
+                      {type.name} - R$ {type.base_price}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start_datetime" className="text-white">Data/Hora Início *</Label>
+                <Input
+                  id="start_datetime"
+                  type="datetime-local"
+                  value={newAppointment.start_datetime}
+                  onChange={(e) => setNewAppointment({...newAppointment, start_datetime: e.target.value})}
+                  className="bg-white/10 border-white/20 text-white"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="end_datetime" className="text-white">Data/Hora Fim *</Label>
+                <Input
+                  id="end_datetime"
+                  type="datetime-local"
+                  value={newAppointment.end_datetime}
+                  onChange={(e) => setNewAppointment({...newAppointment, end_datetime: e.target.value})}
+                  className="bg-white/10 border-white/20 text-white"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-white">Descrição</Label>
+              <Textarea
+                id="description"
+                placeholder="Detalhes do agendamento..."
+                value={newAppointment.description}
+                onChange={(e) => setNewAppointment({...newAppointment, description: e.target.value})}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="estimated_price" className="text-white">Preço Estimado</Label>
+              <Input
+                id="estimated_price"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={newAppointment.estimated_price}
+                onChange={(e) => setNewAppointment({...newAppointment, estimated_price: e.target.value})}
+                className="bg-white/10 border-white/20 text-white"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowNewAppointment(false)}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                Cancelar
+              </Button>
+              <Button onClick={createAppointment} className="bg-purple-500 hover:bg-purple-600">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Criar Agendamento
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
