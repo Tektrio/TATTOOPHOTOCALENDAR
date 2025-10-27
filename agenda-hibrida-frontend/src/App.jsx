@@ -807,18 +807,124 @@ function App() {
                     <Calendar className="w-6 h-6 mr-3" />
                     Próximos Agendamentos
                   </span>
-                  <Button 
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setShowNewAppointment(true)
-                    }} 
-                    size="sm" 
-                    className="bg-purple-500 hover:bg-purple-600"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Novo
-                  </Button>
+                  <Dialog open={showNewAppointment} onOpenChange={setShowNewAppointment}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        type="button"
+                        size="sm" 
+                        className="bg-purple-500 hover:bg-purple-600"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Novo
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="text-white text-2xl flex items-center">
+                          <Calendar className="w-6 h-6 mr-2 text-purple-400" />
+                          Novo Agendamento
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-400 text-base">
+                          Preencha os dados abaixo para criar um novo agendamento
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-5">
+                        <div>
+                          <Label htmlFor="title-dash" className="text-white font-medium flex items-center mb-2">
+                            <FileText className="w-4 h-4 mr-2" />
+                            Título do Agendamento *
+                          </Label>
+                          <Input
+                            id="title-dash"
+                            value={newAppointment.title}
+                            onChange={(e) => setNewAppointment({...newAppointment, title: e.target.value})}
+                            placeholder="Ex: Sessão de tatuagem - Braço direito"
+                            className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                          />
+                          {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
+                        </div>
+
+                        <div>
+                          <Label htmlFor="client-dash" className="text-white font-medium flex items-center mb-2">
+                            <Users className="w-4 h-4 mr-2" />
+                            Cliente *
+                          </Label>
+                          <Select value={newAppointment.client_id} onValueChange={(value) => setNewAppointment({...newAppointment, client_id: value})}>
+                            <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                              <SelectValue placeholder="Selecione um cliente" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {clients.map((client) => (
+                                <SelectItem key={client.id} value={client.id.toString()}>
+                                  {client.name} - {client.phone}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors.client && <p className="text-red-400 text-sm mt-1">{errors.client}</p>}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="start_datetime-dash" className="text-white font-medium flex items-center mb-2">
+                              <Calendar className="w-4 h-4 mr-2" />
+                              Data e Hora de Início *
+                            </Label>
+                            <Input
+                              id="start_datetime-dash"
+                              type="datetime-local"
+                              value={newAppointment.start_datetime}
+                              onChange={(e) => setNewAppointment({...newAppointment, start_datetime: e.target.value})}
+                              className="bg-gray-800 border-gray-600 text-white"
+                            />
+                            {errors.start && <p className="text-red-400 text-sm mt-1">{errors.start}</p>}
+                          </div>
+
+                          <div>
+                            <Label htmlFor="end_datetime-dash" className="text-white font-medium flex items-center mb-2">
+                              <Clock className="w-4 h-4 mr-2" />
+                              Data e Hora de Término *
+                            </Label>
+                            <Input
+                              id="end_datetime-dash"
+                              type="datetime-local"
+                              value={newAppointment.end_datetime}
+                              onChange={(e) => setNewAppointment({...newAppointment, end_datetime: e.target.value})}
+                              className="bg-gray-800 border-gray-600 text-white"
+                            />
+                            {errors.end && <p className="text-red-400 text-sm mt-1">{errors.end}</p>}
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="description-dash" className="text-white font-medium flex items-center mb-2">
+                            <FileText className="w-4 h-4 mr-2" />
+                            Descrição
+                          </Label>
+                          <Textarea
+                            id="description-dash"
+                            value={newAppointment.description}
+                            onChange={(e) => setNewAppointment({...newAppointment, description: e.target.value})}
+                            placeholder="Detalhes sobre o agendamento, observações, etc."
+                            className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="flex space-x-3 pt-2">
+                          <Button onClick={createAppointment} className="flex-1 bg-purple-500 hover:bg-purple-600">
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Criar Agendamento
+                          </Button>
+                          <Button variant="outline" onClick={() => {setShowNewAppointment(false); setErrors({})}} className="border-gray-600 text-gray-300 hover:bg-gray-800">
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </CardTitle>
                 <CardDescription className="text-purple-200 mt-2">
                   {appointments.length > 0 
@@ -1268,139 +1374,6 @@ function App() {
         </Tabs>
       </div>
 
-      {/* Modal de Novo Agendamento - CORRIGIDO v2 */}
-      {showNewAppointment && (
-        <Dialog open={true} onOpenChange={(open) => !open && setShowNewAppointment(false)}>
-          <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white border-white/20">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center">
-              <Calendar className="w-6 h-6 mr-2 text-purple-400" />
-              Novo Agendamento
-            </DialogTitle>
-            <DialogDescription className="text-purple-200">
-              Crie um novo agendamento para seus clientes
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-white">Título *</Label>
-              <Input
-                id="title"
-                placeholder="Ex: Tatuagem no braço"
-                value={newAppointment.title}
-                onChange={(e) => setNewAppointment({...newAppointment, title: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="client_id" className="text-white">Cliente *</Label>
-              <Select 
-                value={newAppointment.client_id} 
-                onValueChange={(value) => setNewAppointment({...newAppointment, client_id: value})}
-              >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                  <SelectValue placeholder="Selecione um cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map(client => (
-                    <SelectItem key={client.id} value={client.id.toString()}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tattoo_type_id" className="text-white">Tipo de Tatuagem</Label>
-              <Select 
-                value={newAppointment.tattoo_type_id} 
-                onValueChange={(value) => setNewAppointment({...newAppointment, tattoo_type_id: value})}
-              >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tattooTypes.map(type => (
-                    <SelectItem key={type.id} value={type.id.toString()}>
-                      {type.name} - R$ {type.base_price}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="start_datetime" className="text-white">Data/Hora Início *</Label>
-                <Input
-                  id="start_datetime"
-                  type="datetime-local"
-                  value={newAppointment.start_datetime}
-                  onChange={(e) => setNewAppointment({...newAppointment, start_datetime: e.target.value})}
-                  className="bg-white/10 border-white/20 text-white"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="end_datetime" className="text-white">Data/Hora Fim *</Label>
-                <Input
-                  id="end_datetime"
-                  type="datetime-local"
-                  value={newAppointment.end_datetime}
-                  onChange={(e) => setNewAppointment({...newAppointment, end_datetime: e.target.value})}
-                  className="bg-white/10 border-white/20 text-white"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-white">Descrição</Label>
-              <Textarea
-                id="description"
-                placeholder="Detalhes do agendamento..."
-                value={newAppointment.description}
-                onChange={(e) => setNewAppointment({...newAppointment, description: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="estimated_price" className="text-white">Preço Estimado</Label>
-              <Input
-                id="estimated_price"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={newAppointment.estimated_price}
-                onChange={(e) => setNewAppointment({...newAppointment, estimated_price: e.target.value})}
-                className="bg-white/10 border-white/20 text-white"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowNewAppointment(false)}
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                Cancelar
-              </Button>
-              <Button onClick={createAppointment} className="bg-purple-500 hover:bg-purple-600">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Criar Agendamento
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-      )}
     </div>
   );
 }
