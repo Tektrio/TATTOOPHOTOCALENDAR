@@ -10,7 +10,10 @@ const path = require('path');
 // Configurações OAuth
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar.readonly',
-  'https://www.googleapis.com/auth/calendar.events.readonly'
+  'https://www.googleapis.com/auth/calendar.events.readonly',
+  'https://www.googleapis.com/auth/drive.file',
+  'https://www.googleapis.com/auth/drive.appdata',
+  'https://www.googleapis.com/auth/drive.metadata.readonly'
 ];
 
 const TOKEN_PATH = path.join(__dirname, '..', 'config', 'google-tokens.json');
