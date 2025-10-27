@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Phone, User, FileText, Folder } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Phone, User, FileText, Folder, Grid, List, Clock } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { toast } from 'sonner';
 import ConflictResolver from './ConflictResolver';
 import SyncStatusIndicator from './SyncStatusIndicator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 const API_URL = 'http://localhost:3001';
 
+// Cores por tipo de agendamento
+const APPOINTMENT_COLORS = {
+  'Grande': 'from-purple-600 to-purple-800 border-purple-500',
+  'Média': 'from-blue-600 to-blue-800 border-blue-500',
+  'Pequena': 'from-green-600 to-green-800 border-green-500',
+  'Retoque': 'from-yellow-600 to-yellow-800 border-yellow-500',
+  'Sessão Completa': 'from-red-600 to-red-800 border-red-500',
+  'default': 'from-gray-600 to-gray-800 border-gray-500'
+};
+
 const CalendarioVisual = () => {
+  const [viewMode, setViewMode] = useState('month'); // 'month', 'week', 'day', 'list'
   const [currentDate, setCurrentDate] = useState(new Date());
   const [appointments, setAppointments] = useState([]);
   const [clientImages, setClientImages] = useState({});
@@ -239,8 +256,84 @@ const CalendarioVisual = () => {
     });
   };
 
+  // Obter cor do agendamento
+  const getAppointmentColor = (appointment) => {
+    return APPOINTMENT_COLORS[appointment.type] || APPOINTMENT_COLORS['default'];
+  };
+
+  // Funções de navegação por vista
+  const goToPrevious = () => {
+    if (viewMode === 'month') {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    } else if (viewMode === 'week') {
+      const newDate = new Date(currentDate);
+      newDate.setDate(currentDate.getDate() - 7);
+      setCurrentDate(newDate);
+    } else if (viewMode === 'day') {
+      const newDate = new Date(currentDate);
+      newDate.setDate(currentDate.getDate() - 1);
+      setCurrentDate(newDate);
+    }
+  };
+
+  const goToNext = () => {
+    if (viewMode === 'month') {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    } else if (viewMode === 'week') {
+      const newDate = new Date(currentDate);
+      newDate.setDate(currentDate.getDate() + 7);
+      setCurrentDate(newDate);
+    } else if (viewMode === 'day') {
+      const newDate = new Date(currentDate);
+      newDate.setDate(currentDate.getDate() + 1);
+      setCurrentDate(newDate);
+    }
+  };
+
+  // Obter dias da semana atual
+  const getDaysInWeek = (date) => {
+    const dayOfWeek = date.getDay();
+    const sunday = new Date(date);
+    sunday.setDate(date.getDate() - dayOfWeek);
+    
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(sunday);
+      day.setDate(sunday.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  // Obter horários do dia (8h-22h)
+  const getDayHours = () => {
+    const hours = [];
+    for (let hour = 8; hour <= 22; hour++) {
+      hours.push(hour);
+    }
+    return hours;
+  };
+
+  // Obter agendamentos dentro de um horário específico
+  const getAppointmentsForHour = (date, hour) => {
+    return appointments.filter(apt => {
+      const aptDate = new Date(apt.start_datetime);
+      return aptDate.getDate() === date.getDate() &&
+             aptDate.getMonth() === date.getMonth() &&
+             aptDate.getFullYear() === date.getFullYear() &&
+             aptDate.getHours() === hour;
+    });
+  };
+
+  // Ordenar agendamentos por data
+  const sortedAppointments = [...appointments].sort((a, b) => 
+    new Date(a.start_datetime) - new Date(b.start_datetime)
+  );
+
   const days = getDaysInMonth(currentDate);
   const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const weekDays = getDaysInWeek(currentDate);
+  const dayHours = getDayHours();
 
   // Se houver um dia expandido, mostrar visualização detalhada
   if (expandedDay) {
@@ -457,56 +550,128 @@ const CalendarioVisual = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header do Calendário */}
-      <Card className="bg-white/10 backdrop-blur-md border-white/20">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white capitalize flex items-center gap-2">
-              <CalendarIcon className="w-6 h-6" />
-              {monthName}
-            </h2>
-            <div className="flex items-center gap-2">
-              <SyncStatusIndicator />
-              <Button
-                onClick={goToPreviousMonth}
-                variant="outline"
-                size="sm"
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button
-                onClick={goToToday}
-                variant="outline"
-                size="sm"
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                Hoje
-              </Button>
-              <Button
-                onClick={goToNextMonth}
-                variant="outline"
-                size="sm"
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Header do Calendário */}
+        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white capitalize flex items-center gap-2">
+                <CalendarIcon className="w-6 h-6" />
+                {viewMode === 'month' && monthName}
+                {viewMode === 'week' && `Semana de ${weekDays[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} - ${weekDays[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}`}
+                {viewMode === 'day' && currentDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+                {viewMode === 'list' && 'Todos os Agendamentos'}
+              </h2>
+              
+              <div className="flex items-center gap-2">
+                {/* Botões de Vista */}
+                <div className="flex items-center gap-1 mr-2 bg-white/5 rounded-md p-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setViewMode('month')}
+                        variant={viewMode === 'month' ? 'default' : 'ghost'}
+                        size="sm"
+                        className={viewMode === 'month' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                      >
+                        <Grid className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Vista de Mês</TooltipContent>
+                  </Tooltip>
 
-          {/* Dias da semana */}
-          <div className="grid grid-cols-7 gap-2 mb-2">
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-              <div key={day} className="text-center text-sm font-semibold text-purple-300 p-2">
-                {day}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setViewMode('week')}
+                        variant={viewMode === 'week' ? 'default' : 'ghost'}
+                        size="sm"
+                        className={viewMode === 'week' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                      >
+                        <CalendarIcon className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Vista de Semana</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setViewMode('day')}
+                        variant={viewMode === 'day' ? 'default' : 'ghost'}
+                        size="sm"
+                        className={viewMode === 'day' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                      >
+                        <Clock className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Vista de Dia</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setViewMode('list')}
+                        variant={viewMode === 'list' ? 'default' : 'ghost'}
+                        size="sm"
+                        className={viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                      >
+                        <List className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Vista de Lista</TooltipContent>
+                  </Tooltip>
+                </div>
+
+                <SyncStatusIndicator />
+                
+                {viewMode !== 'list' && (
+                  <>
+                    <Button
+                      onClick={goToPrevious}
+                      variant="outline"
+                      size="sm"
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={goToToday}
+                      variant="outline"
+                      size="sm"
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      Hoje
+                    </Button>
+                    <Button
+                      onClick={goToNext}
+                      variant="outline"
+                      size="sm"
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </>
+                )}
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Grid de dias */}
-          <div className="grid grid-cols-7 gap-2">
-            {days.map((date, index) => {
+            {/* VISTA DE MÊS */}
+            {viewMode === 'month' && (
+              <>
+                {/* Dias da semana */}
+                <div className="grid grid-cols-7 gap-2 mb-2">
+                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+                    <div key={day} className="text-center text-sm font-semibold text-purple-300 p-2">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Grid de dias */}
+                <div className="grid grid-cols-7 gap-2">
+                  {days.map((date, index) => {
               const dayAppointments = getAppointmentsForDay(date);
               const hasAppointments = dayAppointments.length > 0;
 
@@ -659,9 +824,247 @@ const CalendarioVisual = () => {
                 </Card>
               );
             })}
-          </div>
-        </CardContent>
-      </Card>
+                </div>
+              </>
+            )}
+
+            {/* VISTA DE SEMANA */}
+            {viewMode === 'week' && (
+              <>
+                {/* Cabeçalho da semana */}
+                <div className="grid grid-cols-8 gap-2 mb-2">
+                  <div className="text-center text-sm font-semibold text-purple-300 p-2">Hora</div>
+                  {weekDays.map((day, idx) => (
+                    <div key={idx} className="text-center text-sm font-semibold text-purple-300 p-2">
+                      <div>{['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][idx]}</div>
+                      <div className={`text-lg ${isToday(day) ? 'text-purple-400 font-bold' : ''}`}>
+                        {day.getDate()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Grid de horários */}
+                <div className="overflow-auto max-h-[600px]">
+                  {dayHours.map((hour) => (
+                    <div key={hour} className="grid grid-cols-8 gap-2 mb-1">
+                      {/* Coluna de horário */}
+                      <div className="text-center text-sm text-purple-300 p-2 border border-white/10 rounded">
+                        {hour}:00
+                      </div>
+
+                      {/* Células de cada dia */}
+                      {weekDays.map((day, dayIdx) => {
+                        const hourAppointments = getAppointmentsForHour(day, hour);
+                        return (
+                          <Tooltip key={dayIdx}>
+                            <TooltipTrigger asChild>
+                              <div className={`min-h-[60px] p-2 border rounded transition-all cursor-pointer
+                                ${hourAppointments.length > 0 ? 'border-green-500/50 bg-white/10' : 'border-white/10 bg-white/5'}
+                                hover:bg-white/10
+                              `}>
+                                {hourAppointments.map((apt, aptIdx) => (
+                                  <div key={aptIdx} className={`text-xs p-1 mb-1 rounded bg-gradient-to-r ${getAppointmentColor(apt)} text-white truncate`}>
+                                    {apt.client_name || 'Sem nome'}
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipTrigger>
+                            {hourAppointments.length > 0 && (
+                              <TooltipContent>
+                                {hourAppointments.map((apt, idx) => (
+                                  <div key={idx} className="mb-2">
+                                    <strong>{apt.client_name}</strong>
+                                    <div className="text-xs">{formatTime(apt.start_datetime)} - {apt.end_datetime && formatTime(apt.end_datetime)}</div>
+                                    {apt.description && <div className="text-xs">{apt.description}</div>}
+                                  </div>
+                                ))}
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* VISTA DE DIA */}
+            {viewMode === 'day' && (
+              <div className="overflow-auto max-h-[700px]">
+                {dayHours.map((hour) => {
+                  const hourAppointments = getAppointmentsForHour(currentDate, hour);
+                  return (
+                    <div key={hour} className="grid grid-cols-12 gap-2 mb-2">
+                      {/* Coluna de horário */}
+                      <div className="col-span-2 text-center text-lg text-purple-300 p-4 border border-white/10 rounded bg-white/5">
+                        <div className="font-bold">{hour}:00</div>
+                        <div className="text-xs text-white/60">-</div>
+                        <div className="text-sm">{hour+1}:00</div>
+                      </div>
+
+                      {/* Coluna de agendamentos */}
+                      <div className="col-span-10 min-h-[100px] p-4 border border-white/10 rounded bg-white/5">
+                        {hourAppointments.length > 0 ? (
+                          <div className="space-y-2">
+                            {hourAppointments.map((apt) => {
+                              const images = getImagesForAppointment(apt);
+                              return (
+                                <Card key={apt.id} className={`bg-gradient-to-r ${getAppointmentColor(apt)} border-2 hover:scale-102 transition-transform`}>
+                                  <CardContent className="p-4">
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex-1">
+                                        <h4 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                                          <User className="w-5 h-5" />
+                                          {apt.client_name || 'Cliente não informado'}
+                                        </h4>
+                                        {apt.client_phone && (
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Phone className="w-4 h-4" />
+                                            <span className="text-sm text-white/90">{apt.client_phone}</span>
+                                          </div>
+                                        )}
+                                        {apt.description && (
+                                          <div className="flex items-start gap-2">
+                                            <FileText className="w-4 h-4 mt-1" />
+                                            <p className="text-sm text-white/90">{apt.description}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="text-right">
+                                        <div className="text-2xl font-bold text-white">{formatTime(apt.start_datetime)}</div>
+                                        {apt.end_datetime && (
+                                          <div className="text-sm text-white/80">até {formatTime(apt.end_datetime)}</div>
+                                        )}
+                                        {apt.type && (
+                                          <Badge className="mt-2 bg-white/20 text-white">{apt.type}</Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    {images.length > 0 && (
+                                      <div className="mt-3 flex gap-2 overflow-x-auto">
+                                        {images.slice(0, 5).map((img, idx) => (
+                                          <img
+                                            key={idx}
+                                            src={img.thumbnail_url || img.file_url}
+                                            alt={img.original_name}
+                                            className="w-16 h-16 object-cover rounded border border-white/20"
+                                            loading="lazy"
+                                          />
+                                        ))}
+                                        {images.length > 5 && (
+                                          <div className="w-16 h-16 flex items-center justify-center bg-white/20 rounded border border-white/20">
+                                            <span className="text-xs text-white">+{images.length - 5}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-white/40 text-sm">
+                            Nenhum agendamento
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* VISTA DE LISTA */}
+            {viewMode === 'list' && (
+              <div className="space-y-4 max-h-[700px] overflow-auto">
+                {sortedAppointments.length > 0 ? (
+                  <>
+                    {sortedAppointments.map((apt) => {
+                      const images = getImagesForAppointment(apt);
+                      const aptDate = new Date(apt.start_datetime);
+                      return (
+                        <Card key={apt.id} className={`bg-gradient-to-r ${getAppointmentColor(apt)} border-2 hover:scale-102 transition-all`}>
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-3">
+                                  <CalendarIcon className="w-5 h-5 text-white" />
+                                  <span className="text-xl font-bold text-white">
+                                    {aptDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+                                  </span>
+                                  {isToday(aptDate) && (
+                                    <Badge className="bg-purple-500/30 text-white">Hoje</Badge>
+                                  )}
+                                </div>
+                                <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                                  <User className="w-6 h-6" />
+                                  {apt.client_name || 'Cliente não informado'}
+                                </h3>
+                                {apt.client_phone && (
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Phone className="w-4 h-4" />
+                                    <span className="text-white/90">{apt.client_phone}</span>
+                                  </div>
+                                )}
+                                {apt.description && (
+                                  <div className="flex items-start gap-2 mt-3 p-3 bg-white/10 rounded">
+                                    <FileText className="w-4 h-4 mt-1" />
+                                    <p className="text-white/90">{apt.description}</p>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <div className="text-3xl font-bold text-white">{formatTime(apt.start_datetime)}</div>
+                                {apt.end_datetime && (
+                                  <div className="text-lg text-white/80">até {formatTime(apt.end_datetime)}</div>
+                                )}
+                                {apt.type && (
+                                  <Badge className="mt-2 bg-white/20 text-white text-lg px-3 py-1">{apt.type}</Badge>
+                                )}
+                              </div>
+                            </div>
+                            {images.length > 0 && (
+                              <div className="mt-4">
+                                <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                                  <ImageIcon className="w-4 h-4" />
+                                  {images.length} {images.length === 1 ? 'imagem' : 'imagens'}
+                                </h4>
+                                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                                  {images.map((img, idx) => (
+                                    <div key={idx} className="relative group">
+                                      <img
+                                        src={img.thumbnail_url || img.file_url}
+                                        alt={img.original_name}
+                                        className="w-full aspect-square object-cover rounded border border-white/20 hover:border-white/60 transition-all"
+                                        loading="lazy"
+                                      />
+                                      <Badge className="absolute top-1 left-1 bg-black/70 text-white text-[8px] px-1">
+                                        {img.category}
+                                      </Badge>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <div className="text-center py-16">
+                    <CalendarIcon className="w-20 h-20 text-white/20 mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold text-white/60 mb-2">Nenhum agendamento encontrado</h3>
+                    <p className="text-white/40">Crie um novo agendamento para começar</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
       {/* Legenda e Instruções */}
       <Card className="bg-white/10 backdrop-blur-md border-white/20">
@@ -710,14 +1113,15 @@ const CalendarioVisual = () => {
         </CardContent>
       </Card>
 
-      {/* Modal de Resolução de Conflitos */}
-      <ConflictResolver
-        conflicts={syncConflicts}
-        isOpen={showConflictModal}
-        onClose={() => setShowConflictModal(false)}
-        onResolved={handleConflictsResolved}
-      />
-    </div>
+        {/* Modal de Resolução de Conflitos */}
+        <ConflictResolver
+          conflicts={syncConflicts}
+          isOpen={showConflictModal}
+          onClose={() => setShowConflictModal(false)}
+          onResolved={handleConflictsResolved}
+        />
+      </div>
+    </TooltipProvider>
   );
 };
 

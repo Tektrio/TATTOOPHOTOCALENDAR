@@ -1,6 +1,7 @@
 const express = require('express');
 const { google } = require('googleapis');
 const cors = require('cors');
+const compression = require('compression');
 const fs = require('fs-extra');
 const path = require('path');
 const multer = require('multer');
@@ -39,14 +40,86 @@ io.on('connection', (socket) => {
 
 const port = process.env.PORT || 3001;
 
-// Middleware
+// ============================================
+// MIDDLEWARES DE PERFORMANCE
+// ============================================
+
+// Compressão Gzip para todas as respostas
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6 // Nível de compressão (0-9, 6 é um bom equilíbrio)
+}));
+
+// Cache simples em memória para queries frequentes
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+// Middleware de cache
+function cacheMiddleware(duration) {
+  return (req, res, next) => {
+    const key = `__express__${req.originalUrl || req.url}`;
+    const cachedResponse = cache.get(key);
+
+    if (cachedResponse && (Date.now() - cachedResponse.timestamp) < duration) {
+      console.log(`💾 Cache HIT: ${key}`);
+      return res.send(cachedResponse.data);
+    }
+
+    res.sendResponse = res.send;
+    res.send = (body) => {
+      cache.set(key, {
+        data: body,
+        timestamp: Date.now()
+      });
+      res.sendResponse(body);
+    };
+    next();
+  };
+}
+
+// Limpar cache expirado a cada 10 minutos
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of cache.entries()) {
+    if (now - value.timestamp > CACHE_TTL) {
+      cache.delete(key);
+    }
+  }
+}, 10 * 60 * 1000);
+
+// Middleware CORS
 app.use(cors());
+
+// Middleware JSON com limite aumentado
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static('public'));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Servir arquivos estáticos com cache
+app.use(express.static('public', {
+  maxAge: '1d', // Cache de 1 dia para arquivos estáticos
+  etag: true
+}));
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '7d', // Cache de 7 dias para uploads
+  etag: true
+}));
 
 // Configuração do banco de dados SQLite
 const db = new sqlite3.Database('./agenda_hibrida.db');
+
+// Tornar db disponível para as rotas
+app.locals.db = db;
+
+// Rotas de importação e sincronização - CORRIGIDO BUG #003
+const importsRouter = require('./routes/imports');
+app.use('/api/imports', importsRouter);
+app.use('/api/auth', importsRouter);
+app.use('/api/sync', importsRouter);
 
 // Inicializar tabelas do banco
 db.serialize(() => {
@@ -149,6 +222,47 @@ db.serialize(() => {
     FOREIGN KEY (client_id) REFERENCES clients (id),
     FOREIGN KEY (appointment_id) REFERENCES appointments (id),
     FOREIGN KEY (tattoo_type_id) REFERENCES tattoo_types (id)
+  )`);
+
+  // Tabela de logs de importação - CORRIGIDO BUG #003
+  db.run(`CREATE TABLE IF NOT EXISTS import_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    import_type TEXT NOT NULL,
+    import_source TEXT,
+    status TEXT NOT NULL,
+    records_processed INTEGER DEFAULT 0,
+    records_created INTEGER DEFAULT 0,
+    records_updated INTEGER DEFAULT 0,
+    records_skipped INTEGER DEFAULT 0,
+    records_failed INTEGER DEFAULT 0,
+    error_details TEXT,
+    file_name TEXT,
+    batch_id TEXT,
+    started_at DATETIME,
+    completed_at DATETIME,
+    duration_seconds INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Tabela de tokens OAuth do Google - CORRIGIDO BUG #003
+  db.run(`CREATE TABLE IF NOT EXISTS google_oauth_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    access_token TEXT,
+    refresh_token TEXT,
+    scope TEXT,
+    token_type TEXT,
+    expiry_date INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Tabela de configurações de sincronização - CORRIGIDO BUG #003
+  db.run(`CREATE TABLE IF NOT EXISTS sync_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    setting_key TEXT UNIQUE NOT NULL,
+    setting_value TEXT,
+    description TEXT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
   // Inserir tipos padrão de tatuagem
