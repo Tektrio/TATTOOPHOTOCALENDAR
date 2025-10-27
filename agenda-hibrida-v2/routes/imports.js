@@ -404,8 +404,9 @@ router.get('/google/status', async (req, res) => {
   const db = req.app.locals.db;
   
   try {
-    const isAuth = await googleAuthService.isAuthenticated(db);
-    const tokenInfo = await googleAuthService.getTokenInfo(db);
+    const userId = 'system'; // Usar ID padrão do sistema
+    const isAuth = await googleAuthService.isAuthenticated(db, userId);
+    const tokenInfo = await googleAuthService.getTokenInfo(db, userId);
 
     res.json({
       authenticated: isAuth,

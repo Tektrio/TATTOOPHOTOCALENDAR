@@ -112,6 +112,29 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 // Configuração do banco de dados SQLite
 const db = new sqlite3.Database('./agenda_hibrida.db');
 
+// ============================================
+// OTIMIZAÇÕES SQLITE PARA PRODUÇÃO
+// ============================================
+db.run("PRAGMA journal_mode = WAL", (err) => {
+  if (err) console.error('⚠️ Erro ao definir journal_mode:', err);
+  else console.log('✅ SQLite: journal_mode = WAL');
+});
+
+db.run("PRAGMA synchronous = NORMAL", (err) => {
+  if (err) console.error('⚠️ Erro ao definir synchronous:', err);
+  else console.log('✅ SQLite: synchronous = NORMAL');
+});
+
+db.run("PRAGMA cache_size = -64000", (err) => {
+  if (err) console.error('⚠️ Erro ao definir cache_size:', err);
+  else console.log('✅ SQLite: cache_size = 64MB');
+});
+
+db.run("PRAGMA temp_store = MEMORY", (err) => {
+  if (err) console.error('⚠️ Erro ao definir temp_store:', err);
+  else console.log('✅ SQLite: temp_store = MEMORY');
+});
+
 // Tornar db disponível para as rotas
 app.locals.db = db;
 
@@ -247,6 +270,7 @@ db.serialize(() => {
   // Tabela de tokens OAuth do Google - CORRIGIDO BUG #003
   db.run(`CREATE TABLE IF NOT EXISTS google_oauth_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT DEFAULT 'system' NOT NULL,
     access_token TEXT,
     refresh_token TEXT,
     scope TEXT,

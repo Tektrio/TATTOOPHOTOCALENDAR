@@ -352,13 +352,29 @@ location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
 }
 ```
 
-#### **SQLite em Produção**
+#### **SQLite em Produção** ✅
 ```javascript
+// ✅ Aplicado em server.js
 // Modo WAL para melhor performance de escrita
-db.run("PRAGMA journal_mode = WAL");
-db.run("PRAGMA synchronous = NORMAL");
-db.run("PRAGMA cache_size = -64000"); // 64MB cache
-db.run("PRAGMA temp_store = MEMORY");
+db.run("PRAGMA journal_mode = WAL", (err) => {
+  if (err) console.error('⚠️ Erro ao definir journal_mode:', err);
+  else console.log('✅ SQLite: journal_mode = WAL');
+});
+
+db.run("PRAGMA synchronous = NORMAL", (err) => {
+  if (err) console.error('⚠️ Erro ao definir synchronous:', err);
+  else console.log('✅ SQLite: synchronous = NORMAL');
+});
+
+db.run("PRAGMA cache_size = -64000", (err) => {
+  if (err) console.error('⚠️ Erro ao definir cache_size:', err);
+  else console.log('✅ SQLite: cache_size = 64MB');
+});
+
+db.run("PRAGMA temp_store = MEMORY", (err) => {
+  if (err) console.error('⚠️ Erro ao definir temp_store:', err);
+  else console.log('✅ SQLite: temp_store = MEMORY');
+});
 ```
 
 ---
