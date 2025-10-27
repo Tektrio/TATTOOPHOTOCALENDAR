@@ -134,3 +134,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Arquivos grandes e temporários
+temp_downloads/
+psd_thumbnails_cache/
+*.psd
+*.db-shm
+*.db-wal
+
+# Screenshots e imagens de teste
+screenshots/
