@@ -798,7 +798,15 @@ function App() {
                     <Calendar className="w-6 h-6 mr-3" />
                     Próximos Agendamentos
                   </span>
-                  <Button onClick={() => setShowNewAppointment(true)} size="sm" className="bg-purple-500 hover:bg-purple-600">
+                  <Button 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowNewAppointment(true)
+                    }} 
+                    size="sm" 
+                    className="bg-purple-500 hover:bg-purple-600"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Novo
                   </Button>

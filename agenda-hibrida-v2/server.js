@@ -146,7 +146,7 @@ db.serialize(() => {
   // Tabela de tipos de tatuagem
   db.run(`CREATE TABLE IF NOT EXISTS tattoo_types (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     duration_hours INTEGER,
     base_price REAL,
     color TEXT,

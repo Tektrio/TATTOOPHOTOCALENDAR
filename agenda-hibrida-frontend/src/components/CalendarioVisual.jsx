@@ -35,6 +35,8 @@ const CalendarioVisual = () => {
   const [expandedDay, setExpandedDay] = useState(null); // Estado para controlar dia expandido
   const [syncConflicts, setSyncConflicts] = useState([]); // Conflitos de sincronização
   const [showConflictModal, setShowConflictModal] = useState(false); // Modal de conflitos
+  const [draggedAppointment, setDraggedAppointment] = useState(null); // Appointment sendo arrastado
+  const [dropTarget, setDropTarget] = useState(null); // Alvo do drop
 
   useEffect(() => {
     loadData();
@@ -259,6 +261,104 @@ const CalendarioVisual = () => {
   // Obter cor do agendamento
   const getAppointmentColor = (appointment) => {
     return APPOINTMENT_COLORS[appointment.type] || APPOINTMENT_COLORS['default'];
+  };
+
+  // ===== DRAG AND DROP HANDLERS =====
+  const handleDragStart = (e, appointment) => {
+    e.stopPropagation(); // Prevenir propagação para o card do dia
+    setDraggedAppointment(appointment);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget);
+    // Adicionar classe visual
+    setTimeout(() => {
+      e.currentTarget.style.opacity = '0.5';
+    }, 0);
+  };
+
+  const handleDragEnd = (e) => {
+    e.currentTarget.style.opacity = '1';
+    setDraggedAppointment(null);
+    setDropTarget(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDragEnter = (e, target) => {
+    e.preventDefault();
+    setDropTarget(target);
+  };
+
+  const handleDragLeave = (e) => {
+    // Só remove o highlight se realmente saiu do elemento
+    if (e.currentTarget === e.target) {
+      setDropTarget(null);
+    }
+  };
+
+  const handleDrop = async (e, newDate, newHour = null) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!draggedAppointment) return;
+
+    try {
+      // Criar nova data/hora para o agendamento
+      const originalDate = new Date(draggedAppointment.start_datetime);
+      const newDateTime = new Date(newDate);
+      
+      // Manter o horário original se não especificou novo horário
+      if (newHour !== null) {
+        newDateTime.setHours(newHour);
+        newDateTime.setMinutes(originalDate.getMinutes());
+      } else {
+        newDateTime.setHours(originalDate.getHours());
+        newDateTime.setMinutes(originalDate.getMinutes());
+      }
+      newDateTime.setSeconds(0);
+      newDateTime.setMilliseconds(0);
+
+      // Calcular duração
+      const originalEnd = draggedAppointment.end_datetime 
+        ? new Date(draggedAppointment.end_datetime)
+        : null;
+      const duration = originalEnd 
+        ? originalEnd.getTime() - originalDate.getTime()
+        : 60 * 60 * 1000; // 1 hora default
+
+      const newEndDateTime = new Date(newDateTime.getTime() + duration);
+
+      toast.info('🔄 Reagendando...');
+
+      // Atualizar no backend
+      const response = await fetch(`${API_URL}/api/appointments/${draggedAppointment.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...draggedAppointment,
+          start_datetime: newDateTime.toISOString(),
+          end_datetime: newEndDateTime.toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('✅ Agendamento reagendado com sucesso!');
+        await loadData(); // Recarregar dados
+      } else {
+        const error = await response.json();
+        toast.error(`Erro ao reagendar: ${error.error || 'Erro desconhecido'}`);
+      }
+    } catch (error) {
+      console.error('Erro ao reagendar:', error);
+      toast.error('Erro ao reagendar agendamento');
+    } finally {
+      setDraggedAppointment(null);
+      setDropTarget(null);
+    }
   };
 
   // Funções de navegação por vista
@@ -679,11 +779,16 @@ const CalendarioVisual = () => {
                 <Card
                   key={index}
                   onClick={() => handleDayClick(date)}
+                  onDragOver={handleDragOver}
+                  onDragEnter={(e) => handleDragEnter(e, { id: date?.toDateString(), type: 'day' })}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => date && handleDrop(e, date)}
                   className={`
                     min-h-[120px] p-2 border transition-all
                     ${date ? 'bg-white/5 hover:bg-white/10 cursor-pointer' : 'bg-transparent border-transparent'}
                     ${isToday(date) ? 'border-purple-500 border-2 bg-purple-500/20' : 'border-white/10'}
                     ${hasAppointments ? 'border-green-500/50' : ''}
+                    ${dropTarget && dropTarget.id === date?.toDateString() ? 'border-purple-400 border-2 bg-purple-400/20 scale-105' : ''}
                   `}
                 >
                   <div className="h-full flex flex-col">
@@ -709,10 +814,17 @@ const CalendarioVisual = () => {
                                                images[0];
 
                             return (
-                              <div
-                                key={appointment.id}
-                                className="relative rounded overflow-hidden bg-white/5 hover:bg-white/10 transition-all border border-white/10 hover:border-purple-500/50"
-                              >
+                              <Tooltip key={appointment.id}>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    draggable={true}
+                                    onDragStart={(e) => handleDragStart(e, appointment)}
+                                    onDragEnd={handleDragEnd}
+                                    className={`relative rounded overflow-hidden bg-white/5 hover:bg-white/10 transition-all border cursor-move
+                                      ${dropTarget && dropTarget.id === date?.toDateString() ? 'border-purple-500' : 'border-white/10'}
+                                      hover:border-purple-500/50
+                                    `}
+                                  >
                                 {/* Cabeçalho com informações do cliente - SEMPRE VISÍVEL */}
                                 <div className="p-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-b border-white/10">
                                   <div className="flex items-center gap-1 mb-1">
@@ -815,6 +927,16 @@ const CalendarioVisual = () => {
                                   </div>
                                 )}
                               </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="text-xs space-y-1">
+                                <div><strong>{appointment.client_name}</strong></div>
+                                <div>{formatTime(appointment.start_datetime)}</div>
+                                {appointment.description && <div>{appointment.description}</div>}
+                                <div className="text-yellow-300 mt-1">🖐️ Arraste para reagendar</div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
                             );
                           })}
                         </div>
@@ -856,15 +978,28 @@ const CalendarioVisual = () => {
                       {/* Células de cada dia */}
                       {weekDays.map((day, dayIdx) => {
                         const hourAppointments = getAppointmentsForHour(day, hour);
+                        const cellId = `${day.toDateString()}-${hour}`;
                         return (
                           <Tooltip key={dayIdx}>
                             <TooltipTrigger asChild>
-                              <div className={`min-h-[60px] p-2 border rounded transition-all cursor-pointer
-                                ${hourAppointments.length > 0 ? 'border-green-500/50 bg-white/10' : 'border-white/10 bg-white/5'}
-                                hover:bg-white/10
-                              `}>
+                              <div 
+                                onDragOver={handleDragOver}
+                                onDragEnter={(e) => handleDragEnter(e, { id: cellId, type: 'hour', day, hour })}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, day, hour)}
+                                className={`min-h-[60px] p-2 border rounded transition-all cursor-pointer
+                                  ${hourAppointments.length > 0 ? 'border-green-500/50 bg-white/10' : 'border-white/10 bg-white/5'}
+                                  ${dropTarget && dropTarget.id === cellId ? 'border-purple-400 border-2 bg-purple-400/20' : ''}
+                                  hover:bg-white/10
+                                `}>
                                 {hourAppointments.map((apt, aptIdx) => (
-                                  <div key={aptIdx} className={`text-xs p-1 mb-1 rounded bg-gradient-to-r ${getAppointmentColor(apt)} text-white truncate`}>
+                                  <div 
+                                    key={aptIdx} 
+                                    draggable={true}
+                                    onDragStart={(e) => handleDragStart(e, apt)}
+                                    onDragEnd={handleDragEnd}
+                                    className={`text-xs p-1 mb-1 rounded bg-gradient-to-r ${getAppointmentColor(apt)} text-white truncate cursor-move`}
+                                  >
                                     {apt.client_name || 'Sem nome'}
                                   </div>
                                 ))}
@@ -905,13 +1040,31 @@ const CalendarioVisual = () => {
                       </div>
 
                       {/* Coluna de agendamentos */}
-                      <div className="col-span-10 min-h-[100px] p-4 border border-white/10 rounded bg-white/5">
+                      <div 
+                        className={`col-span-10 min-h-[100px] p-4 border rounded transition-all
+                          ${dropTarget && dropTarget.id === `day-${hour}` 
+                            ? 'border-purple-400 border-2 bg-purple-400/20' 
+                            : 'border-white/10 bg-white/5'
+                          }
+                        `}
+                        onDragOver={handleDragOver}
+                        onDragEnter={(e) => handleDragEnter(e, { id: `day-${hour}`, type: 'hour', day: currentDate, hour })}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, currentDate, hour)}
+                      >
                         {hourAppointments.length > 0 ? (
                           <div className="space-y-2">
                             {hourAppointments.map((apt) => {
                               const images = getImagesForAppointment(apt);
                               return (
-                                <Card key={apt.id} className={`bg-gradient-to-r ${getAppointmentColor(apt)} border-2 hover:scale-102 transition-transform`}>
+                                <Tooltip key={apt.id}>
+                                  <TooltipTrigger asChild>
+                                    <Card 
+                                      draggable={true}
+                                      onDragStart={(e) => handleDragStart(e, apt)}
+                                      onDragEnd={handleDragEnd}
+                                      className={`bg-gradient-to-r ${getAppointmentColor(apt)} border-2 hover:scale-102 transition-transform cursor-move`}
+                                    >
                                   <CardContent className="p-4">
                                     <div className="flex items-start justify-between">
                                       <div className="flex-1">
@@ -962,6 +1115,16 @@ const CalendarioVisual = () => {
                                     )}
                                   </CardContent>
                                 </Card>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <div className="text-xs space-y-1">
+                                      <div><strong>{apt.client_name}</strong></div>
+                                      <div>{formatTime(apt.start_datetime)} - {formatTime(apt.end_datetime)}</div>
+                                      {apt.description && <div>{apt.description}</div>}
+                                      <div className="text-yellow-300 mt-1">🖐️ Arraste para reagendar</div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
                               );
                             })}
                           </div>
