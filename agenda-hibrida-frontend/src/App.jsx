@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -22,13 +22,20 @@ import { Progress } from '@/components/ui/progress.jsx'
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
 import { toast } from 'sonner'
 import InputMask from 'react-input-mask'
-import GaleriaCorrigida from './components/GaleriaCorrigida.jsx'
-import CalendarioVisual from './components/CalendarioVisual.jsx'
+
+// ============================================
+// LAZY LOADING DE COMPONENTES PESADOS
+// ============================================
+const GaleriaCorrigida = lazy(() => import('./components/GaleriaCorrigida.jsx'))
+const CalendarioVisual = lazy(() => import('./components/CalendarioVisual.jsx'))
+const GoogleDriveExplorer = lazy(() => import('./components/GoogleDriveExplorer.jsx'))
+const CustomerManagement = lazy(() => import('./components/CustomerManagement.jsx'))
+const ImportWizard = lazy(() => import('./pages/ImportWizard.jsx'))
+
+// Componentes menores mantêm import normal
 import SeletorHorarioMelhorado from './components/SeletorHorarioMelhorado.jsx'
-import GoogleDriveExplorer from './components/GoogleDriveExplorer.jsx'
-import CustomerManagement from './components/CustomerManagement.jsx'
-import ImportWizard from './pages/ImportWizard.jsx'
 import { ValidatedInput, ValidatedTextarea, ValidatedSelect } from './components/ValidatedInput.jsx'
+import LoadingSpinner from './components/LoadingSpinner.jsx'
 import { 
   validateEmail, 
   validatePhone, 
@@ -515,10 +522,12 @@ function App() {
   if (viewingCustomerId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
-        <CustomerManagement 
-          customerId={viewingCustomerId} 
-          onClose={() => setViewingCustomerId(null)}
-        />
+        <Suspense fallback={<div className="text-white text-center py-8">Carregando gerenciamento de cliente...</div>}>
+          <CustomerManagement 
+            customerId={viewingCustomerId} 
+            onClose={() => setViewingCustomerId(null)}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -858,7 +867,9 @@ function App() {
 
           {/* Calendar Visual Tab */}
           <TabsContent value="calendar" className="space-y-6 mt-6">
-            <CalendarioVisual />
+            <Suspense fallback={<div className="text-white text-center py-8">Carregando calendário visual...</div>}>
+              <CalendarioVisual />
+            </Suspense>
           </TabsContent>
 
           {/* Appointments Tab */}
@@ -1043,7 +1054,9 @@ function App() {
 
           {/* Import Tab */}
           <TabsContent value="import" className="mt-6">
-            <ImportWizard />
+            <Suspense fallback={<div className="text-white text-center py-8">Carregando assistente de importação...</div>}>
+              <ImportWizard />
+            </Suspense>
           </TabsContent>
 
           {/* Clients Tab */}
@@ -1186,12 +1199,16 @@ function App() {
 
           {/* Gallery Tab */}
           <TabsContent value="gallery" className="space-y-6 mt-6">
-            <GaleriaCorrigida />
+            <Suspense fallback={<div className="text-white text-center py-8">Carregando galeria...</div>}>
+              <GaleriaCorrigida />
+            </Suspense>
           </TabsContent>
 
           {/* Google Drive Tab */}
           <TabsContent value="drive" className="space-y-6 mt-6">
-            <GoogleDriveExplorer />
+            <Suspense fallback={<div className="text-white text-center py-8">Carregando Google Drive...</div>}>
+              <GoogleDriveExplorer />
+            </Suspense>
           </TabsContent>
 
           {/* Settings Tab */}
@@ -1251,9 +1268,10 @@ function App() {
         </Tabs>
       </div>
 
-      {/* Modal de Novo Agendamento - CORRIGIDO */}
-      <Dialog open={showNewAppointment} onOpenChange={setShowNewAppointment}>
-        <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white border-white/20">
+      {/* Modal de Novo Agendamento - CORRIGIDO v2 */}
+      {showNewAppointment && (
+        <Dialog open={true} onOpenChange={(open) => !open && setShowNewAppointment(false)}>
+          <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white border-white/20">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold flex items-center">
               <Calendar className="w-6 h-6 mr-2 text-purple-400" />
@@ -1382,6 +1400,7 @@ function App() {
           </div>
         </DialogContent>
       </Dialog>
+      )}
     </div>
   );
 }
