@@ -390,10 +390,249 @@ async function getLastSync(db) {
   });
 }
 
+/**
+ * Mapeia agendamento local para evento do Google Calendar
+ * @param {object} appointment - Agendamento local
+ * @param {object} db - Instância do banco de dados
+ * @returns {Promise<object>} - Objeto de evento do Google Calendar
+ */
+async function mapAppointmentToGoogleEvent(appointment, db) {
+  try {
+    // Montar data/hora de início e fim
+    const startDateTime = `${appointment.date}T${appointment.time}:00`;
+    const endDateTime = appointment.end_time 
+      ? `${appointment.date}T${appointment.end_time}:00`
+      : `${appointment.date}T${appointment.time.split(':')[0]}:${parseInt(appointment.time.split(':')[1]) + (appointment.duration || 60)}:00`;
+
+    // Buscar informações do cliente se existir
+    let clientEmail = null;
+    let clientName = appointment.client_name || 'Cliente';
+
+    if (appointment.client_id) {
+      const client = await new Promise((resolve, reject) => {
+        db.get(
+          'SELECT name, email FROM clients WHERE id = ?',
+          [appointment.client_id],
+          (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+          }
+        );
+      });
+
+      if (client) {
+        clientName = client.name;
+        clientEmail = client.email;
+      }
+    }
+
+    // Montar objeto de evento
+    const event = {
+      summary: appointment.title || appointment.service || 'Agendamento',
+      description: appointment.notes || `Cliente: ${clientName}`,
+      start: {
+        dateTime: startDateTime,
+        timeZone: 'America/Sao_Paulo'
+      },
+      end: {
+        dateTime: endDateTime,
+        timeZone: 'America/Sao_Paulo'
+      },
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'popup', minutes: 60 },
+          { method: 'email', minutes: 1440 } // 24 horas antes
+        ]
+      }
+    };
+
+    // Adicionar attendees se tiver email do cliente
+    if (clientEmail) {
+      event.attendees = [
+        { email: clientEmail, displayName: clientName }
+      ];
+    }
+
+    // Adicionar localização se existir nas notas
+    const locationMatch = appointment.notes?.match(/Local:\s*(.+)/i);
+    if (locationMatch) {
+      event.location = locationMatch[1].trim();
+    }
+
+    return event;
+  } catch (error) {
+    throw new Error(`Erro ao mapear agendamento para Google Event: ${error.message}`);
+  }
+}
+
+/**
+ * Cria evento no Google Calendar
+ * @param {object} db - Instância do banco de dados
+ * @param {object} appointment - Dados do agendamento
+ * @returns {Promise<object>} - Evento criado com ID
+ */
+async function createGoogleEvent(db, appointment) {
+  try {
+    const auth = await getAuthenticatedClient(db);
+    const calendar = google.calendar({ version: 'v3', auth });
+
+    // Mapear agendamento para formato Google
+    const event = await mapAppointmentToGoogleEvent(appointment, db);
+
+    // Criar evento no Google Calendar
+    const response = await calendar.events.insert({
+      calendarId: 'primary',
+      resource: event,
+      sendUpdates: 'all' // Enviar notificações para attendees
+    });
+
+    console.log(`✅ Evento criado no Google Calendar: ${response.data.id}`);
+
+    // Atualizar agendamento local com google_event_id
+    if (appointment.id) {
+      await new Promise((resolve, reject) => {
+        db.run(
+          `UPDATE appointments SET 
+           google_event_id = ?,
+           google_calendar_id = ?,
+           ical_uid = ?,
+           external_source = 'google_calendar',
+           external_id = ?,
+           last_sync_date = ?
+           WHERE id = ?`,
+          [
+            response.data.id,
+            'primary',
+            response.data.iCalUID,
+            response.data.id,
+            new Date().toISOString(),
+            appointment.id
+          ],
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+    }
+
+    return {
+      success: true,
+      googleEventId: response.data.id,
+      htmlLink: response.data.htmlLink
+    };
+  } catch (error) {
+    console.error('❌ Erro ao criar evento no Google Calendar:', error);
+    throw new Error(`Erro ao criar evento no Google Calendar: ${error.message}`);
+  }
+}
+
+/**
+ * Atualiza evento no Google Calendar
+ * @param {object} db - Instância do banco de dados
+ * @param {object} appointment - Dados do agendamento atualizado
+ * @returns {Promise<object>} - Resultado da atualização
+ */
+async function updateGoogleEvent(db, appointment) {
+  try {
+    if (!appointment.google_event_id) {
+      throw new Error('Agendamento não possui google_event_id. Use createGoogleEvent para criar novo.');
+    }
+
+    const auth = await getAuthenticatedClient(db);
+    const calendar = google.calendar({ version: 'v3', auth });
+
+    // Mapear agendamento para formato Google
+    const event = await mapAppointmentToGoogleEvent(appointment, db);
+
+    // Atualizar evento no Google Calendar
+    const response = await calendar.events.update({
+      calendarId: appointment.google_calendar_id || 'primary',
+      eventId: appointment.google_event_id,
+      resource: event,
+      sendUpdates: 'all' // Enviar notificações de atualização
+    });
+
+    console.log(`✅ Evento atualizado no Google Calendar: ${response.data.id}`);
+
+    // Atualizar last_sync_date local
+    if (appointment.id) {
+      await new Promise((resolve, reject) => {
+        db.run(
+          'UPDATE appointments SET last_sync_date = ? WHERE id = ?',
+          [new Date().toISOString(), appointment.id],
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+    }
+
+    return {
+      success: true,
+      googleEventId: response.data.id,
+      htmlLink: response.data.htmlLink
+    };
+  } catch (error) {
+    console.error('❌ Erro ao atualizar evento no Google Calendar:', error);
+    throw new Error(`Erro ao atualizar evento no Google Calendar: ${error.message}`);
+  }
+}
+
+/**
+ * Deleta evento do Google Calendar
+ * @param {object} db - Instância do banco de dados
+ * @param {object} appointment - Dados do agendamento a deletar
+ * @returns {Promise<object>} - Resultado da exclusão
+ */
+async function deleteGoogleEvent(db, appointment) {
+  try {
+    if (!appointment.google_event_id) {
+      // Se não tem ID do Google, apenas retornar sucesso
+      return { success: true, message: 'Agendamento não estava vinculado ao Google Calendar' };
+    }
+
+    const auth = await getAuthenticatedClient(db);
+    const calendar = google.calendar({ version: 'v3', auth });
+
+    // Deletar evento do Google Calendar
+    await calendar.events.delete({
+      calendarId: appointment.google_calendar_id || 'primary',
+      eventId: appointment.google_event_id,
+      sendUpdates: 'all' // Enviar notificações de cancelamento
+    });
+
+    console.log(`✅ Evento deletado do Google Calendar: ${appointment.google_event_id}`);
+
+    return {
+      success: true,
+      message: 'Evento removido do Google Calendar com sucesso'
+    };
+  } catch (error) {
+    // Se o erro for 404 (evento já não existe), considerar sucesso
+    if (error.code === 404 || error.message.includes('Not Found')) {
+      console.log(`⚠️ Evento já não existe no Google Calendar: ${appointment.google_event_id}`);
+      return {
+        success: true,
+        message: 'Evento já havia sido removido do Google Calendar'
+      };
+    }
+
+    console.error('❌ Erro ao deletar evento do Google Calendar:', error);
+    throw new Error(`Erro ao deletar evento do Google Calendar: ${error.message}`);
+  }
+}
+
 module.exports = {
   listCalendars,
   listEvents,
   mapGoogleEventToAppointment,
+  mapAppointmentToGoogleEvent,
   syncGoogleCalendar,
-  getLastSync
+  getLastSync,
+  createGoogleEvent,
+  updateGoogleEvent,
+  deleteGoogleEvent
 };

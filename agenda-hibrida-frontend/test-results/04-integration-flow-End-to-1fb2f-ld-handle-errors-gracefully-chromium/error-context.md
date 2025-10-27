@@ -1,0 +1,121 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - generic:
+      - banner:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - img
+              - generic:
+                - heading [level=1]: Agenda Híbrida
+                - paragraph: Sistema Visual para Tatuadores
+            - generic:
+              - generic:
+                - img
+                - generic: hybrid
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                      - generic: Google Conectado
+                    - generic:
+                      - generic:
+                        - img
+                        - generic: Calendar
+                      - generic:
+                        - img
+                        - generic: Drive
+                  - button: Desconectar Google
+      - generic:
+        - generic:
+          - tablist:
+            - tab:
+              - img
+              - text: Dashboard
+            - tab:
+              - img
+              - text: Calendário Visual
+            - tab [selected]:
+              - img
+              - text: Agendamentos
+            - tab:
+              - img
+              - text: Clientes
+            - tab:
+              - img
+              - text: Importar Dados
+            - tab:
+              - img
+              - text: Galeria
+            - tab:
+              - img
+              - text: Google Drive
+            - tab:
+              - img
+              - text: Configurações
+          - tabpanel:
+            - generic:
+              - heading [level=2]: Gerenciar Agenda
+              - button [expanded]:
+                - img
+                - text: Novo Agendamento
+            - generic:
+              - generic:
+                - generic:
+                  - img
+                - heading [level=3]: Nenhum agendamento cadastrado
+                - paragraph: Comece criando seu primeiro agendamento para organizar sua agenda
+    - region "Notifications alt+T"
+  - dialog "Novo Agendamento" [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Novo Agendamento" [level=2] [ref=e4]:
+        - img [ref=e5]
+        - text: Novo Agendamento
+      - paragraph [ref=e7]: Preencha os dados abaixo para criar um novo agendamento
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - img [ref=e11]
+          - text: Título do Agendamento *
+        - textbox "Título do Agendamento *" [active] [ref=e14]:
+          - /placeholder: "Ex: Sessão de tatuagem - Braço direito"
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - img [ref=e17]
+          - text: Cliente *
+        - combobox [ref=e22]:
+          - generic: Selecione um cliente
+          - img
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - img [ref=e26]
+            - text: Data e Hora de Início *
+          - textbox "Data e Hora de Início *" [ref=e28]
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - img [ref=e31]
+            - text: Data e Hora de Término *
+          - textbox "Data e Hora de Término *" [ref=e34]
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - img [ref=e37]
+          - text: Descrição
+        - textbox "Descrição" [ref=e40]:
+          - /placeholder: Detalhes sobre o agendamento, observações, etc.
+      - generic [ref=e41]:
+        - button "Criar Agendamento" [ref=e42]:
+          - img
+          - text: Criar Agendamento
+        - button "Cancelar" [ref=e43]:
+          - img
+          - text: Cancelar
+    - button "Close" [ref=e44]:
+      - img
+      - generic [ref=e45]: Close
+```

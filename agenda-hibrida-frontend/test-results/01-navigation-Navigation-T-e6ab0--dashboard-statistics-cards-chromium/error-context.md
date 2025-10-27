@@ -1,0 +1,144 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e15]:
+            - heading "Agenda Híbrida" [level=1] [ref=e16]
+            - paragraph [ref=e17]: Sistema Visual para Tatuadores
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - img [ref=e20]
+            - generic [ref=e24]: hybrid
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - img [ref=e29]
+                - generic [ref=e33]: Google Conectado
+              - generic [ref=e34]:
+                - generic [ref=e35]:
+                  - img [ref=e36]
+                  - generic [ref=e38]: Calendar
+                - generic [ref=e39]:
+                  - img [ref=e40]
+                  - generic [ref=e42]: Drive
+            - button "Desconectar Google" [ref=e43]
+    - generic [ref=e45]:
+      - tablist [ref=e46]:
+        - tab "Dashboard" [selected] [ref=e47]:
+          - img
+          - text: Dashboard
+        - tab "Calendário Visual" [ref=e48]:
+          - img
+          - text: Calendário Visual
+        - tab "Agendamentos" [ref=e49]:
+          - img
+          - text: Agendamentos
+        - tab "Clientes" [ref=e50]:
+          - img
+          - text: Clientes
+        - tab "Importar Dados" [ref=e51]:
+          - img
+          - text: Importar Dados
+        - tab "Galeria" [ref=e52]:
+          - img
+          - text: Galeria
+        - tab "Google Drive" [ref=e53]:
+          - img
+          - text: Google Drive
+        - tab "Configurações" [ref=e54]:
+          - img
+          - text: Configurações
+      - tabpanel "Dashboard" [ref=e55]:
+        - generic [ref=e56]:
+          - generic [ref=e57] [cursor=pointer]:
+            - generic [ref=e58]:
+              - generic [ref=e59]: Total de Clientes
+              - img [ref=e60]
+            - generic [ref=e65]:
+              - generic [ref=e66]: "5"
+              - paragraph [ref=e67]: Clientes cadastrados
+              - paragraph [ref=e68]:
+                - img [ref=e69]
+                - text: Clique para ver detalhes
+          - generic [ref=e71] [cursor=pointer]:
+            - generic [ref=e72]:
+              - generic [ref=e73]: Próximos Agendamentos
+              - img [ref=e74]
+            - generic [ref=e76]:
+              - generic [ref=e77]: "0"
+              - paragraph [ref=e78]: Nas próximas semanas
+              - paragraph [ref=e79]:
+                - img [ref=e80]
+                - text: Clique para ver agenda
+          - generic [ref=e82] [cursor=pointer]:
+            - generic [ref=e83]:
+              - generic [ref=e84]: Arquivos Totais
+              - img [ref=e85]
+            - generic [ref=e90]:
+              - generic [ref=e91]: "1"
+              - paragraph [ref=e92]: Imagens e documentos
+              - paragraph [ref=e93]:
+                - img [ref=e94]
+                - text: Clique para ver galeria
+          - generic [ref=e96] [cursor=pointer]:
+            - generic [ref=e97]:
+              - generic [ref=e98]: Armazenamento
+              - img [ref=e99]
+            - generic [ref=e101]:
+              - generic [ref=e102]: "0.0"
+              - paragraph [ref=e103]: MB utilizados
+              - paragraph [ref=e104]:
+                - img [ref=e105]
+                - text: Clique para ver drive
+        - generic [ref=e107]:
+          - generic [ref=e108]:
+            - generic [ref=e109]:
+              - img [ref=e110]
+              - text: Status do Sistema Híbrido
+            - generic [ref=e113]: Monitore as integrações de armazenamento em tempo real
+          - generic [ref=e114]:
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - generic [ref=e117]:
+                  - img [ref=e119]
+                  - generic [ref=e121]: Armazenamento Local
+                - generic [ref=e122]: ✓ Ativo
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - img [ref=e126]
+                  - generic [ref=e128]: Google Drive
+                - generic [ref=e129]: ✓ Conectado
+              - generic [ref=e130]:
+                - generic [ref=e131]:
+                  - img [ref=e133]
+                  - generic [ref=e136]: QNAP NAS
+                - generic [ref=e137]: ⚠ Pendente
+            - generic [ref=e139]:
+              - img [ref=e140]
+              - generic [ref=e142]:
+                - paragraph [ref=e143]: QNAP NAS não configurado
+                - paragraph [ref=e144]: Configure o QNAP NAS para sincronização automática de arquivos e backup em tempo real.
+                - button "Configurar agora" [ref=e145]:
+                  - img
+                  - text: Configurar agora
+        - generic [ref=e146]:
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - generic [ref=e149]:
+                - img [ref=e150]
+                - text: Próximos Agendamentos
+              - button "Novo" [ref=e152]:
+                - img
+                - text: Novo
+            - generic [ref=e153]: Adicione seu primeiro agendamento
+          - generic [ref=e156]:
+            - img [ref=e158]
+            - heading "Nenhum agendamento cadastrado" [level=3] [ref=e160]
+            - paragraph [ref=e161]: Comece criando seu primeiro agendamento para organizar sua agenda
+  - region "Notifications alt+T"
+```
