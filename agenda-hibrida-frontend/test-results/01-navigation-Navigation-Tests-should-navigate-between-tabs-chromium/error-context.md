@@ -1,0 +1,154 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e15]:
+            - heading "Agenda Híbrida" [level=1] [ref=e16]
+            - paragraph [ref=e17]: Sistema Visual para Tatuadores
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - img [ref=e20]
+            - generic [ref=e24]: hybrid
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - img [ref=e29]
+                - generic [ref=e33]: Google Conectado
+              - generic [ref=e34]:
+                - generic [ref=e35]:
+                  - img [ref=e36]
+                  - generic [ref=e38]: Calendar
+                - generic [ref=e39]:
+                  - img [ref=e40]
+                  - generic [ref=e42]: Drive
+            - button "Desconectar Google" [ref=e43]
+    - generic [ref=e45]:
+      - tablist [ref=e46]:
+        - tab "Dashboard" [ref=e47]:
+          - img
+          - text: Dashboard
+        - tab "Calendário Visual" [ref=e48]:
+          - img
+          - text: Calendário Visual
+        - tab "Agendamentos" [ref=e49]:
+          - img
+          - text: Agendamentos
+        - tab "Clientes" [active] [selected] [ref=e50]:
+          - img
+          - text: Clientes
+        - tab "Importar Dados" [ref=e51]:
+          - img
+          - text: Importar Dados
+        - tab "Galeria" [ref=e52]:
+          - img
+          - text: Galeria
+        - tab "Google Drive" [ref=e53]:
+          - img
+          - text: Google Drive
+        - tab "Configurações" [ref=e54]:
+          - img
+          - text: Configurações
+      - tabpanel "Clientes" [ref=e55]:
+        - generic [ref=e56]:
+          - heading "Gerenciar Clientes" [level=2] [ref=e57]
+          - button "Novo Cliente" [ref=e58]:
+            - img
+            - text: Novo Cliente
+        - generic [ref=e59]:
+          - generic [ref=e60] [cursor=pointer]:
+            - generic [ref=e61]:
+              - generic [ref=e62]: Cliente Exemplo
+              - generic [ref=e63]: exemplo@email.com
+            - generic [ref=e65]:
+              - paragraph [ref=e66]: 📱 (11) 99999-9999
+              - paragraph [ref=e67]: 2 agendamento(s)
+              - generic [ref=e68]:
+                - button "Ver" [ref=e69]:
+                  - img
+                  - text: Ver
+                - button "Agendar" [ref=e70]:
+                  - img
+                  - text: Agendar
+                - button [ref=e71]:
+                  - img
+                - button [ref=e72]:
+                  - img
+          - generic [ref=e73] [cursor=pointer]:
+            - generic [ref=e74]:
+              - generic [ref=e75]: Cliente_MCP_1761155612529
+              - generic [ref=e76]: mcp@test.com
+            - generic [ref=e78]:
+              - paragraph [ref=e79]: 📱 (11) 98765-4321
+              - paragraph [ref=e80]: 1 agendamento(s)
+              - generic [ref=e81]:
+                - button "Ver" [ref=e82]:
+                  - img
+                  - text: Ver
+                - button "Agendar" [ref=e83]:
+                  - img
+                  - text: Agendar
+                - button [ref=e84]:
+                  - img
+                - button [ref=e85]:
+                  - img
+          - generic [ref=e86] [cursor=pointer]:
+            - generic [ref=e87]:
+              - generic [ref=e88]: Cliente_MCP_Teste_1761155261119
+              - generic [ref=e89]: mcp@test.com
+            - generic [ref=e91]:
+              - paragraph [ref=e92]: 📱 (11) 98765-4321
+              - paragraph [ref=e93]: 1 agendamento(s)
+              - generic [ref=e94]:
+                - button "Ver" [ref=e95]:
+                  - img
+                  - text: Ver
+                - button "Agendar" [ref=e96]:
+                  - img
+                  - text: Agendar
+                - button [ref=e97]:
+                  - img
+                - button [ref=e98]:
+                  - img
+          - generic [ref=e99] [cursor=pointer]:
+            - generic [ref=e100]:
+              - generic [ref=e101]: João da Silva Teste
+              - generic [ref=e102]: joao.teste@email.com
+            - generic [ref=e104]:
+              - paragraph [ref=e105]: 📱 (11) 98888-7777
+              - paragraph [ref=e106]: 0 agendamento(s)
+              - generic [ref=e107]:
+                - button "Ver" [ref=e108]:
+                  - img
+                  - text: Ver
+                - button "Agendar" [ref=e109]:
+                  - img
+                  - text: Agendar
+                - button [ref=e110]:
+                  - img
+                - button [ref=e111]:
+                  - img
+          - generic [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - generic [ref=e114]: Luiz Lopes
+              - generic [ref=e115]: selden.ink@hotmail.com
+            - generic [ref=e117]:
+              - paragraph [ref=e118]: 📱 6315149686
+              - paragraph [ref=e119]: 0 agendamento(s)
+              - generic [ref=e120]:
+                - button "Ver" [ref=e121]:
+                  - img
+                  - text: Ver
+                - button "Agendar" [ref=e122]:
+                  - img
+                  - text: Agendar
+                - button [ref=e123]:
+                  - img
+                - button [ref=e124]:
+                  - img
+  - region "Notifications alt+T"
+```

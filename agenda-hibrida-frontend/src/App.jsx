@@ -36,6 +36,7 @@ const ImportWizard = lazy(() => import('./pages/ImportWizard.jsx'))
 import SeletorHorarioMelhorado from './components/SeletorHorarioMelhorado.jsx'
 import { ValidatedInput, ValidatedTextarea, ValidatedSelect } from './components/ValidatedInput.jsx'
 import LoadingSpinner from './components/LoadingSpinner.jsx'
+import SyncStatusBadge from './components/SyncStatusBadge.jsx'
 import { 
   validateEmail, 
   validatePhone, 
@@ -86,6 +87,7 @@ function App() {
   // Estados principais
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [googleStatus, setGoogleStatus] = useState({ authenticated: false })
   const [systemConfig, setSystemConfig] = useState(null)
   const [appointments, setAppointments] = useState([])
   const [clients, setClients] = useState([])
@@ -165,6 +167,7 @@ function App() {
       const authResponse = await fetch(`${API_URL}/auth/status`)
       const authData = await authResponse.json()
       setIsAuthenticated(authData.authenticated)
+      setGoogleStatus({ authenticated: authData.authenticated })
       
       // Carregar configuração do sistema
       const configResponse = await fetch(`${API_URL}/api/config`)
@@ -249,6 +252,7 @@ function App() {
           
           if (authData.authenticated) {
             setIsAuthenticated(true)
+            setGoogleStatus({ authenticated: true })
             clearInterval(checkAuth)
             setLoading(false)
             if (!authWindow.closed) {
@@ -290,6 +294,7 @@ function App() {
       setLoading(true)
       await fetch(`${API_URL}/auth/disconnect`, { method: 'POST' })
       setIsAuthenticated(false)
+      setGoogleStatus({ authenticated: false })
       toast.success('Desconectado do Google')
       await loadInitialData()
     } catch (error) {
@@ -583,6 +588,7 @@ function App() {
                         <span className="text-sm">{loadingMessage}</span>
                       </div>
                     )}
+                    <SyncStatusBadge googleStatus={googleStatus} />
                     <Button onClick={handleGoogleDisconnect} variant="destructive" size="sm" disabled={loading}>
                       {loading ? '...' : 'Desconectar Google'}
                     </Button>

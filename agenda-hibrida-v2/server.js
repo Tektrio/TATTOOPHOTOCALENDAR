@@ -18,6 +18,7 @@ const http = require('http');
 const QRCode = require('qrcode');
 const SyncManager = require('./sync-manager');
 const FileWatcher = require('./file-watcher');
+const { createGoogleEvent, updateGoogleEvent, deleteGoogleEvent, syncGoogleCalendar } = require('./services/googleCalendarService');
 require('dotenv').config();
 
 const app = express();
@@ -1054,49 +1055,40 @@ app.get('/api/appointments', async (req, res) => {
 
 app.post('/api/appointments', async (req, res) => {
   try {
-    const { title, description, start_datetime, end_datetime, client_id, tattoo_type_id, estimated_price } = req.body;
+    const { title, description, start_datetime, end_datetime, client_id, tattoo_type_id, estimated_price, date, time, end_time, service, notes } = req.body;
     
-    // Criar no Google Calendar se autenticado
-    let googleEventId = null;
-    if (fs.existsSync('./tokens.json')) {
-      try {
-        const tokens = fs.readJsonSync('./tokens.json');
-        oauth2Client.setCredentials(tokens);
-        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-
-        const event = {
-          summary: title,
-          description: description,
-          start: {
-            dateTime: start_datetime,
-            timeZone: 'America/Sao_Paulo'
-          },
-          end: {
-            dateTime: end_datetime,
-            timeZone: 'America/Sao_Paulo'
-          }
-        };
-
-        const response = await calendar.events.insert({
-          calendarId: 'primary',
-          resource: event
-        });
-
-        googleEventId = response.data.id;
-      } catch (error) {
-        console.error('Erro ao criar evento no Google Calendar:', error);
-      }
-    }
-
-    // Salvar no banco local
+    // Salvar no banco local primeiro
     db.run(
       `INSERT INTO appointments 
-       (google_event_id, client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [googleEventId, client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price],
-      function(err) {
+       (client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price, date, time, end_time, service, notes, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price, date, time, end_time, service, notes, 'scheduled'],
+      async function(err) {
         if (err) {
           return res.status(500).json({ error: err.message });
+        }
+
+        const appointmentId = this.lastID;
+        let googleSyncResult = null;
+
+        // Tentar criar no Google Calendar
+        try {
+          const appointmentData = {
+            id: appointmentId,
+            client_id,
+            title: title || service,
+            description: notes || description,
+            date: date || start_datetime?.split('T')[0],
+            time: time || start_datetime?.split('T')[1]?.substring(0, 5),
+            end_time: end_time || end_datetime?.split('T')[1]?.substring(0, 5),
+            notes
+          };
+
+          googleSyncResult = await createGoogleEvent(db, appointmentData);
+          console.log('✅ Agendamento sincronizado com Google Calendar:', googleSyncResult.googleEventId);
+        } catch (googleError) {
+          console.warn('⚠️ Não foi possível sincronizar com Google Calendar:', googleError.message);
+          // Não falhar a requisição se apenas o Google falhar
         }
 
         // Criar pasta do cliente se não existir
@@ -1113,7 +1105,12 @@ app.post('/api/appointments', async (req, res) => {
           });
         }
 
-        res.json({ id: this.lastID, googleEventId, success: true });
+        res.json({ 
+          id: appointmentId, 
+          googleEventId: googleSyncResult?.googleEventId || null,
+          googleCalendarLink: googleSyncResult?.htmlLink || null,
+          success: true 
+        });
       }
     );
   } catch (error) {
@@ -1595,28 +1592,119 @@ app.get('/api/drive/exists', async (req, res) => {
   }
 });
 
+// Atualizar agendamento
+app.put('/api/appointments/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { title, description, start_datetime, end_datetime, client_id, tattoo_type_id, estimated_price, date, time, end_time, service, notes, status } = req.body;
+
+    // Buscar agendamento atual
+    const currentAppointment = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM appointments WHERE id = ?", [id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (!currentAppointment) {
+      return res.status(404).json({ error: 'Agendamento não encontrado' });
+    }
+
+    // Atualizar no banco local
+    await new Promise((resolve, reject) => {
+      db.run(
+        `UPDATE appointments SET 
+         client_id = ?, tattoo_type_id = ?, title = ?, description = ?, 
+         start_datetime = ?, end_datetime = ?, estimated_price = ?,
+         date = ?, time = ?, end_time = ?, service = ?, notes = ?, status = ?,
+         updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`,
+        [client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price, date, time, end_time, service, notes, status || 'scheduled', id],
+        (err) => {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+
+    // Tentar atualizar no Google Calendar
+    let googleSyncResult = null;
+    try {
+      const appointmentData = {
+        id,
+        google_event_id: currentAppointment.google_event_id,
+        google_calendar_id: currentAppointment.google_calendar_id,
+        client_id,
+        title: title || service,
+        description: notes || description,
+        date: date || start_datetime?.split('T')[0],
+        time: time || start_datetime?.split('T')[1]?.substring(0, 5),
+        end_time: end_time || end_datetime?.split('T')[1]?.substring(0, 5),
+        notes
+      };
+
+      if (currentAppointment.google_event_id) {
+        googleSyncResult = await updateGoogleEvent(db, appointmentData);
+        console.log('✅ Agendamento atualizado no Google Calendar:', googleSyncResult.googleEventId);
+      } else {
+        // Se não tinha ID do Google, criar novo
+        googleSyncResult = await createGoogleEvent(db, appointmentData);
+        console.log('✅ Agendamento criado no Google Calendar:', googleSyncResult.googleEventId);
+      }
+    } catch (googleError) {
+      console.warn('⚠️ Não foi possível sincronizar com Google Calendar:', googleError.message);
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Agendamento atualizado com sucesso',
+      googleEventId: googleSyncResult?.googleEventId || currentAppointment.google_event_id,
+      googleCalendarLink: googleSyncResult?.htmlLink || null
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar agendamento:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Excluir agendamento
 app.delete('/api/appointments/:id', async (req, res) => {
   const { id } = req.params;
-  db.get("SELECT google_event_id FROM appointments WHERE id = ?", [id], async (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!row) return res.status(404).json({ error: 'Agendamento não encontrado' });
-    // Tentar remover do Google Calendar, se configurado
-    try {
-      if (row.google_event_id && fs.existsSync('./tokens.json')) {
-        const tokens = fs.readJsonSync('./tokens.json');
-        oauth2Client.setCredentials(tokens);
-        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-        await calendar.events.delete({ calendarId: 'primary', eventId: row.google_event_id });
-      }
-    } catch (e) {
-      console.warn('Falha ao remover evento do Google Calendar:', e.message);
-    }
-    db.run("DELETE FROM appointments WHERE id = ?", [id], function(deleteErr) {
-      if (deleteErr) return res.status(500).json({ error: deleteErr.message });
-      res.json({ success: true });
+  try {
+    // Buscar agendamento completo
+    const appointment = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM appointments WHERE id = ?", [id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
     });
-  });
+
+    if (!appointment) {
+      return res.status(404).json({ error: 'Agendamento não encontrado' });
+    }
+
+    // Tentar remover do Google Calendar primeiro
+    try {
+      const googleResult = await deleteGoogleEvent(db, appointment);
+      console.log('✅ Evento removido do Google Calendar:', googleResult.message);
+    } catch (googleError) {
+      console.warn('⚠️ Não foi possível remover do Google Calendar:', googleError.message);
+      // Continuar com a exclusão local mesmo se o Google falhar
+    }
+
+    // Remover do banco local
+    await new Promise((resolve, reject) => {
+      db.run("DELETE FROM appointments WHERE id = ?", [id], function(deleteErr) {
+        if (deleteErr) reject(deleteErr);
+        else resolve();
+      });
+    });
+
+    res.json({ success: true, message: 'Agendamento removido com sucesso' });
+  } catch (error) {
+    console.error('Erro ao excluir agendamento:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Excluir cliente (bloqueia se houver dependências)
@@ -3153,13 +3241,63 @@ function getFileType(filename) {
   return 'other';
 }
 
+// ============================================
+// CRON JOB: Sincronização automática Google Calendar
+// ============================================
+cron.schedule('*/5 * * * *', async () => {
+  console.log('🔄 [CRON] Iniciando sincronização automática com Google Calendar...');
+  try {
+    const report = await syncGoogleCalendar(db, {
+      daysBack: 7,
+      daysForward: 30,
+      skipDuplicates: false,
+      autoLinkClients: true
+    });
+    
+    console.log(`✅ [CRON] Sincronização concluída:`, {
+      total: report.total,
+      created: report.created,
+      updated: report.updated,
+      skipped: report.skipped,
+      errors: report.errors.length
+    });
+
+    // Emitir evento via WebSocket para atualizar frontend
+    io.emit('calendar_synced', {
+      timestamp: new Date().toISOString(),
+      report: {
+        total: report.total,
+        created: report.created,
+        updated: report.updated,
+        skipped: report.skipped
+      }
+    });
+  } catch (error) {
+    console.error('❌ [CRON] Erro na sincronização automática:', error.message);
+  }
+});
+
 // Inicializar servidor
 server.listen(port, async () => {
   console.log(`🚀 Servidor híbrido rodando em http://localhost:${port}`);
   console.log(`📊 Modo de armazenamento: ${hybridStorage.storageMode}`);
+  console.log(`⏰ Sincronização automática Google Calendar: A cada 5 minutos`);
   
   // Inicializar armazenamento
   await hybridStorage.initializeStorage();
+  
+  // Executar primeira sincronização ao iniciar
+  console.log('🔄 Executando sincronização inicial do Google Calendar...');
+  try {
+    const initialReport = await syncGoogleCalendar(db, {
+      daysBack: 7,
+      daysForward: 30,
+      skipDuplicates: false
+    });
+    console.log(`✅ Sincronização inicial concluída: ${initialReport.total} eventos processados`);
+  } catch (error) {
+    console.warn('⚠️ Não foi possível executar sincronização inicial:', error.message);
+  }
   
   console.log('✅ Sistema híbrido inicializado com sucesso!');
 });

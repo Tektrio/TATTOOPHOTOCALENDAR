@@ -1,0 +1,211 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - generic:
+      - banner:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - img
+              - generic:
+                - heading [level=1]: Agenda Híbrida
+                - paragraph: Sistema Visual para Tatuadores
+            - generic:
+              - generic:
+                - img
+                - generic: hybrid
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                      - generic: Google Conectado
+                    - generic:
+                      - generic:
+                        - img
+                        - generic: Calendar
+                      - generic:
+                        - img
+                        - generic: Drive
+                  - button: Desconectar Google
+      - generic:
+        - generic:
+          - tablist:
+            - tab:
+              - img
+              - text: Dashboard
+            - tab:
+              - img
+              - text: Calendário Visual
+            - tab:
+              - img
+              - text: Agendamentos
+            - tab [selected]:
+              - img
+              - text: Clientes
+            - tab:
+              - img
+              - text: Importar Dados
+            - tab:
+              - img
+              - text: Galeria
+            - tab:
+              - img
+              - text: Google Drive
+            - tab:
+              - img
+              - text: Configurações
+          - tabpanel:
+            - generic:
+              - heading [level=2]: Gerenciar Clientes
+              - button [expanded]:
+                - img
+                - text: Novo Cliente
+            - generic:
+              - generic:
+                - generic:
+                  - generic: Cliente Exemplo
+                  - generic: exemplo@email.com
+                - generic:
+                  - generic:
+                    - paragraph: 📱 (11) 99999-9999
+                    - paragraph: 2 agendamento(s)
+                    - generic:
+                      - button:
+                        - img
+                        - text: Ver
+                      - button:
+                        - img
+                        - text: Agendar
+                      - button:
+                        - img
+                      - button:
+                        - img
+              - generic:
+                - generic:
+                  - generic: Cliente_MCP_1761155612529
+                  - generic: mcp@test.com
+                - generic:
+                  - generic:
+                    - paragraph: 📱 (11) 98765-4321
+                    - paragraph: 1 agendamento(s)
+                    - generic:
+                      - button:
+                        - img
+                        - text: Ver
+                      - button:
+                        - img
+                        - text: Agendar
+                      - button:
+                        - img
+                      - button:
+                        - img
+              - generic:
+                - generic:
+                  - generic: Cliente_MCP_Teste_1761155261119
+                  - generic: mcp@test.com
+                - generic:
+                  - generic:
+                    - paragraph: 📱 (11) 98765-4321
+                    - paragraph: 1 agendamento(s)
+                    - generic:
+                      - button:
+                        - img
+                        - text: Ver
+                      - button:
+                        - img
+                        - text: Agendar
+                      - button:
+                        - img
+                      - button:
+                        - img
+              - generic:
+                - generic:
+                  - generic: João da Silva Teste
+                  - generic: joao.teste@email.com
+                - generic:
+                  - generic:
+                    - paragraph: 📱 (11) 98888-7777
+                    - paragraph: 0 agendamento(s)
+                    - generic:
+                      - button:
+                        - img
+                        - text: Ver
+                      - button:
+                        - img
+                        - text: Agendar
+                      - button:
+                        - img
+                      - button:
+                        - img
+              - generic:
+                - generic:
+                  - generic: Luiz Lopes
+                  - generic: selden.ink@hotmail.com
+                - generic:
+                  - generic:
+                    - paragraph: 📱 6315149686
+                    - paragraph: 0 agendamento(s)
+                    - generic:
+                      - button:
+                        - img
+                        - text: Ver
+                      - button:
+                        - img
+                        - text: Agendar
+                      - button:
+                        - img
+                      - button:
+                        - img
+    - region "Notifications alt+T"
+  - dialog "Novo Cliente" [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Novo Cliente" [level=2] [ref=e4]:
+        - img [ref=e5]
+        - text: Novo Cliente
+      - paragraph [ref=e10]: Cadastre um novo cliente no sistema
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]:
+            - img [ref=e15]
+            - text: Nome Completo
+          - generic [ref=e18]: "*"
+        - generic [ref=e19]:
+          - textbox "Nome Completo *" [ref=e20]:
+            - /placeholder: Nome completo do cliente
+            - text: Test Client
+          - img [ref=e21]
+      - generic [ref=e24]:
+        - generic [ref=e26]:
+          - img [ref=e27]
+          - text: Email
+        - textbox "Email" [active] [ref=e31]:
+          - /placeholder: email@exemplo.com
+          - text: invalid-email
+      - generic [ref=e32]:
+        - generic [ref=e34]:
+          - img [ref=e35]
+          - text: Telefone
+        - textbox "Telefone" [ref=e38]:
+          - /placeholder: (11) 99999-9999
+      - generic [ref=e39]:
+        - generic [ref=e41]:
+          - img [ref=e42]
+          - text: Observações
+        - textbox "Observações" [ref=e46]:
+          - /placeholder: Informações adicionais sobre o cliente
+      - generic [ref=e47]:
+        - button "Cadastrar Cliente" [ref=e48]:
+          - img
+          - text: Cadastrar Cliente
+        - button "Cancelar" [ref=e49]:
+          - img
+          - text: Cancelar
+    - button "Close" [ref=e50]:
+      - img
+      - generic [ref=e51]: Close
+```
