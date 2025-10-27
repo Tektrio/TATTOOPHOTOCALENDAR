@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -112,6 +112,8 @@ function App() {
   
   // Estados para confirmação de exclusão
   const [appointmentToDelete, setAppointmentToDelete] = useState(null)
+  const [appointmentToEdit, setAppointmentToEdit] = useState(null)
+  const [showEditAppointment, setShowEditAppointment] = useState(false)
   const [clientToDelete, setClientToDelete] = useState(null)
   const [tattooTypeToDelete, setTattooTypeToDelete] = useState(null)
   
@@ -318,6 +320,30 @@ function App() {
     return validation.valid
   }
 
+  // Função auxiliar de validação de email
+  const validateEmail = (email) => {
+    if (!email) return true // Email opcional
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
+
+  // Validação em tempo real para feedback visual
+  const isAppointmentFormValid = useMemo(() => {
+    return (
+      newAppointment.title.trim() !== '' &&
+      newAppointment.client_id !== '' &&
+      newAppointment.start_datetime !== '' &&
+      newAppointment.end_datetime !== ''
+    )
+  }, [newAppointment])
+
+  const isClientFormValid = useMemo(() => {
+    return (
+      newClient.name.trim() !== '' &&
+      newClient.phone.trim() !== '' &&
+      validateEmail(newClient.email)
+    )
+  }, [newClient])
+
   const createAppointment = async () => {
     if (!validateAppointmentForm()) {
       toast.error('Por favor, preencha todos os campos obrigatórios corretamente')
@@ -427,6 +453,50 @@ function App() {
   }
 
   // Funções de exclusão
+  const updateAppointment = async () => {
+    if (!validateAppointmentForm()) {
+      toast.error('Por favor, preencha todos os campos obrigatórios corretamente')
+      return
+    }
+
+    setIsLoading(true)
+    setLoadingMessage('Atualizando agendamento...')
+
+    try {
+      const response = await fetch(`${API_URL}/api/appointments/${appointmentToEdit.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAppointment)
+      })
+      
+      if (response.ok) {
+        toast.success('✅ Agendamento atualizado com sucesso!')
+        setShowEditAppointment(false)
+        setAppointmentToEdit(null)
+        setNewAppointment({
+          title: '',
+          description: '',
+          start_datetime: '',
+          end_datetime: '',
+          client_id: '',
+          tattoo_type_id: '',
+          estimated_price: 0
+        })
+        setErrors({})
+        loadInitialData()
+      } else {
+        const data = await response.json()
+        toast.error(`❌ ${data.error || 'Erro ao atualizar agendamento'}`)
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar agendamento:', error)
+      toast.error('❌ Erro de conexão ao atualizar agendamento')
+    } finally {
+      setIsLoading(false)
+      setLoadingMessage('')
+    }
+  }
+
   const deleteAppointment = async (id) => {
     try {
       const response = await fetch(`${API_URL}/api/appointments/${id}`, {
@@ -618,35 +688,35 @@ function App() {
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-8 bg-white/10 backdrop-blur-md">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-white/20">
+            <TabsTrigger value="dashboard" data-testid="tab-dashboard" className="data-[state=active]:bg-white/20">
               <Monitor className="w-4 h-4 mr-2" />
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="data-[state=active]:bg-white/20">
+            <TabsTrigger value="calendar" data-testid="tab-calendar" className="data-[state=active]:bg-white/20">
               <Calendar className="w-4 h-4 mr-2" />
               Calendário Visual
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="data-[state=active]:bg-white/20">
+            <TabsTrigger value="appointments" data-testid="tab-appointments" className="data-[state=active]:bg-white/20">
               <Clock className="w-4 h-4 mr-2" />
               Agendamentos
             </TabsTrigger>
-            <TabsTrigger value="clients" className="data-[state=active]:bg-white/20">
+            <TabsTrigger value="clients" data-testid="tab-clients" className="data-[state=active]:bg-white/20">
               <Users className="w-4 h-4 mr-2" />
               Clientes
             </TabsTrigger>
-            <TabsTrigger value="import" className="data-[state=active]:bg-white/20">
+            <TabsTrigger value="import" data-testid="tab-import" className="data-[state=active]:bg-white/20">
               <Upload className="w-4 h-4 mr-2" />
               Importar Dados
             </TabsTrigger>
-            <TabsTrigger value="gallery" className="data-[state=active]:bg-white/20">
+            <TabsTrigger value="gallery" data-testid="tab-gallery" className="data-[state=active]:bg-white/20">
               <Image className="w-4 h-4 mr-2" />
               Galeria
             </TabsTrigger>
-            <TabsTrigger value="drive" className="data-[state=active]:bg-white/20">
+            <TabsTrigger value="drive" data-testid="tab-drive" className="data-[state=active]:bg-white/20">
               <Cloud className="w-4 h-4 mr-2" />
               Google Drive
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-white/20">
+            <TabsTrigger value="settings" data-testid="tab-settings" className="data-[state=active]:bg-white/20">
               <Settings className="w-4 h-4 mr-2" />
               Configurações
             </TabsTrigger>
@@ -846,9 +916,16 @@ function App() {
                             value={newAppointment.title}
                             onChange={(e) => setNewAppointment({...newAppointment, title: e.target.value})}
                             placeholder="Ex: Sessão de tatuagem - Braço direito"
-                            className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                            className={`bg-gray-800 text-white placeholder-gray-400 transition-colors ${
+                              newAppointment.title.trim() === '' 
+                                ? 'border-gray-600' 
+                                : errors.title 
+                                  ? 'border-red-500 focus:ring-red-500' 
+                                  : 'border-green-500 focus:ring-green-500'
+                            }`}
                           />
-                          {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
+                          {errors.title && <p className="text-red-400 text-sm mt-1 flex items-center"><XCircle className="w-3 h-3 mr-1" />{errors.title}</p>}
+                          {newAppointment.title.trim() !== '' && !errors.title && <p className="text-green-400 text-sm mt-1 flex items-center"><CheckCircle className="w-3 h-3 mr-1" />Título válido</p>}
                         </div>
 
                         <div>
@@ -919,7 +996,12 @@ function App() {
                         </div>
 
                         <div className="flex space-x-3 pt-2">
-                          <Button onClick={createAppointment} className="flex-1 bg-purple-500 hover:bg-purple-600">
+                          <Button
+                            data-testid="btn-save-appointment"
+                            onClick={createAppointment} 
+                            disabled={!isAppointmentFormValid}
+                            className={`flex-1 ${isAppointmentFormValid ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-600 cursor-not-allowed'}`}
+                          >
                             <CheckCircle className="w-4 h-4 mr-2" />
                             Criar Agendamento
                           </Button>
@@ -990,12 +1072,12 @@ function App() {
               <h2 className="text-2xl font-bold text-white">Gerenciar Agenda</h2>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                  <Button data-testid="btn-new-appointment" className="bg-purple-600 hover:bg-purple-700 text-white">
                     <Plus className="w-4 h-4 mr-2" />
                     Novo Agendamento
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent data-testid="modal-new-appointment" className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="text-white text-2xl flex items-center">
                       <Calendar className="w-6 h-6 mr-2 text-purple-400" />
@@ -1145,6 +1227,26 @@ function App() {
                           {appointment.status}
                         </Badge>
                         <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setAppointmentToEdit(appointment)
+                            setNewAppointment({
+                              title: appointment.title,
+                              description: appointment.description || '',
+                              start_datetime: appointment.start_datetime,
+                              end_datetime: appointment.end_datetime,
+                              client_id: appointment.client_id?.toString() || '',
+                              tattoo_type_id: appointment.tattoo_type_id?.toString() || '',
+                              estimated_price: appointment.estimated_price || 0
+                            })
+                            setShowEditAppointment(true)
+                          }}
+                          className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
                           variant="destructive" 
                           size="sm"
                           onClick={() => setAppointmentToDelete(appointment)}
@@ -1177,12 +1279,12 @@ function App() {
               <h2 className="text-2xl font-bold text-white">Gerenciar Clientes</h2>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="bg-green-600 hover:bg-green-700 text-white">
+                  <Button data-testid="btn-new-client" className="bg-green-600 hover:bg-green-700 text-white">
                     <Plus className="w-4 h-4 mr-2" />
                     Novo Cliente
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-900 border-gray-700 max-w-xl max-h-[90vh] overflow-y-auto">
+                <DialogContent data-testid="modal-new-client" className="bg-gray-900 border-gray-700 max-w-xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="text-white text-2xl flex items-center">
                       <Users className="w-6 h-6 mr-2 text-purple-400" />
@@ -1242,7 +1344,7 @@ function App() {
                     />
 
                     <div className="flex space-x-3 pt-2">
-                      <Button onClick={createClient} className="flex-1 bg-purple-500 hover:bg-purple-600">
+                      <Button data-testid="btn-save-client" onClick={createClient} className="flex-1 bg-purple-500 hover:bg-purple-600">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Cadastrar Cliente
                       </Button>
@@ -1379,6 +1481,189 @@ function App() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal de confirmação de exclusão de agendamento */}
+      {appointmentToDelete && (
+        <Dialog open={!!appointmentToDelete} onOpenChange={() => setAppointmentToDelete(null)}>
+          <DialogContent className="bg-gray-900 border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center">
+                <AlertCircle className="w-6 h-6 mr-2 text-red-500" />
+                Confirmar Exclusão
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
+              <p className="text-white font-semibold">{appointmentToDelete.title || 'Sem título'}</p>
+              <p className="text-gray-300">{appointmentToDelete.client_name}</p>
+              <p className="text-gray-400 text-sm">
+                {appointmentToDelete.start_datetime ? new Date(appointmentToDelete.start_datetime).toLocaleString('pt-BR') : 'Data inválida'}
+              </p>
+            </div>
+            <div className="flex space-x-3">
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  deleteAppointment(appointmentToDelete.id);
+                  setAppointmentToDelete(null);
+                }}
+                className="flex-1"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Excluir
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setAppointmentToDelete(null)}
+                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Modal de edição de agendamento */}
+      {showEditAppointment && (
+        <Dialog open={showEditAppointment} onOpenChange={(open) => {
+          setShowEditAppointment(open)
+          if (!open) {
+            setAppointmentToEdit(null)
+            setNewAppointment({
+              title: '',
+              description: '',
+              start_datetime: '',
+              end_datetime: '',
+              client_id: '',
+              tattoo_type_id: '',
+              estimated_price: 0
+            })
+            setErrors({})
+          }
+        }}>
+          <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white text-2xl flex items-center">
+                <Edit className="w-6 h-6 mr-2 text-purple-400" />
+                Editar Agendamento
+              </DialogTitle>
+              <DialogDescription className="text-gray-400 text-base">
+                Atualize os dados do agendamento abaixo
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-5">
+              <div>
+                <Label htmlFor="edit-title" className="text-white font-medium flex items-center mb-2">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Título do Agendamento *
+                </Label>
+                <Input
+                  id="edit-title"
+                  value={newAppointment.title}
+                  onChange={(e) => setNewAppointment({...newAppointment, title: e.target.value})}
+                  placeholder="Ex: Sessão de tatuagem - Braço direito"
+                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                />
+                {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="edit-client" className="text-white font-medium flex items-center mb-2">
+                  <Users className="w-4 h-4 mr-2" />
+                  Cliente *
+                </Label>
+                <Select value={newAppointment.client_id} onValueChange={(value) => setNewAppointment({...newAppointment, client_id: value})}>
+                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectValue placeholder="Selecione um cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id.toString()}>
+                        {client.name} - {client.phone}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.client && <p className="text-red-400 text-sm mt-1">{errors.client}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-start_datetime" className="text-white font-medium flex items-center mb-2">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Data e Hora de Início *
+                  </Label>
+                  <Input
+                    id="edit-start_datetime"
+                    type="datetime-local"
+                    value={newAppointment.start_datetime}
+                    onChange={(e) => setNewAppointment({...newAppointment, start_datetime: e.target.value})}
+                    className="bg-gray-800 border-gray-600 text-white"
+                  />
+                  {errors.start && <p className="text-red-400 text-sm mt-1">{errors.start}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-end_datetime" className="text-white font-medium flex items-center mb-2">
+                    <Clock className="w-4 h-4 mr-2" />
+                    Data e Hora de Término *
+                  </Label>
+                  <Input
+                    id="edit-end_datetime"
+                    type="datetime-local"
+                    value={newAppointment.end_datetime}
+                    onChange={(e) => setNewAppointment({...newAppointment, end_datetime: e.target.value})}
+                    className="bg-gray-800 border-gray-600 text-white"
+                  />
+                  {errors.end && <p className="text-red-400 text-sm mt-1">{errors.end}</p>}
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-description" className="text-white font-medium flex items-center mb-2">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Descrição
+                </Label>
+                <Textarea
+                  id="edit-description"
+                  value={newAppointment.description}
+                  onChange={(e) => setNewAppointment({...newAppointment, description: e.target.value})}
+                  placeholder="Detalhes sobre o agendamento, observações, etc."
+                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-2">
+                <Button 
+                  onClick={updateAppointment} 
+                  disabled={!isAppointmentFormValid}
+                  className={`flex-1 ${isAppointmentFormValid ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-600 cursor-not-allowed'}`}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Salvar Alterações
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowEditAppointment(false)
+                    setAppointmentToEdit(null)
+                    setErrors({})
+                  }} 
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
     </div>
   );

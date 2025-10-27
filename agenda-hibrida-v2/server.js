@@ -991,15 +991,45 @@ app.post('/api/clients', (req, res) => {
 // Agendamentos com integração Google Calendar
 app.get('/api/appointments', async (req, res) => {
   try {
-    // Buscar do banco local
+    // Buscar do banco local - suporta schema antigo e novo
     db.all(`
-      SELECT a.*, c.name as client_name, c.phone as client_phone, c.email as client_email, 
-             c.folder_path as client_folder, tt.name as tattoo_type, tt.color as type_color
+      SELECT 
+        a.id,
+        a.client_id,
+        a.tattoo_type_id,
+        COALESCE(a.client_name, c.name) as client_name,
+        COALESCE(a.date, DATE(a.start_datetime)) as date,
+        COALESCE(a.time, TIME(a.start_datetime)) as time,
+        COALESCE(a.end_time, TIME(a.end_datetime)) as end_time,
+        COALESCE(a.service, a.title) as service,
+        a.title,
+        COALESCE(a.notes, a.description) as notes,
+        a.description,
+        a.status,
+        a.duration,
+        a.google_event_id,
+        a.google_calendar_id,
+        a.ical_uid,
+        a.external_source,
+        a.external_id,
+        a.last_sync_date,
+        a.start_datetime,
+        a.end_datetime,
+        a.estimated_price,
+        a.created_at,
+        a.updated_at,
+        c.name as client_full_name,
+        c.email as client_email,
+        c.phone as client_phone,
+        c.folder_path as client_folder,
+        tt.name as tattoo_type,
+        tt.color as type_color
       FROM appointments a
       LEFT JOIN clients c ON a.client_id = c.id
       LEFT JOIN tattoo_types tt ON a.tattoo_type_id = tt.id
-      WHERE a.start_datetime >= date('now', '-1 day')
-      ORDER BY a.start_datetime
+      ORDER BY 
+        COALESCE(a.date, DATE(a.start_datetime)) DESC,
+        COALESCE(a.time, TIME(a.start_datetime)) DESC
     `, async (err, localAppointments) => {
       if (err) {
         return res.status(500).json({ error: err.message });
@@ -3610,6 +3640,11 @@ function getFileType(filename) {
 // CRON JOB: Sincronização automática Google Calendar
 // ============================================
 cron.schedule('*/5 * * * *', async () => {
+  // Emitir evento de início da sincronização
+  io.emit('calendar_sync_started', {
+    timestamp: new Date().toISOString()
+  });
+  
   console.log('🔄 [CRON] Iniciando sincronização automática com Google Calendar...');
   try {
     const report = await syncGoogleCalendar(db, {

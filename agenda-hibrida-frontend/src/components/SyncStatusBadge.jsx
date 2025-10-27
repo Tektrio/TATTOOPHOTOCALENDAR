@@ -35,6 +35,11 @@ export default function SyncStatusBadge({ googleStatus }) {
       console.log('✅ WebSocket conectado para sync status');
     });
 
+    newSocket.on('calendar_sync_started', (data) => {
+      console.log('🔄 Sincronização iniciada:', data);
+      setSyncStatus('syncing');
+    });
+
     newSocket.on('calendar_synced', (data) => {
       console.log('📅 Sincronização recebida:', data);
       setLastSync(new Date(data.timestamp));

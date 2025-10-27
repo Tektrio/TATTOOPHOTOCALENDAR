@@ -142,3 +142,4 @@ Depois disso, os workflows serão automaticamente executados! 🚀
 
 **📌 Nota**: Assim que o repositório for criado e o push for feito, você pode criar o PR e os workflows do GitHub Actions serão executados automaticamente.
 
+

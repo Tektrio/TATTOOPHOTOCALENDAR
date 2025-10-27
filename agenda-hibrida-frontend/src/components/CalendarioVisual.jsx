@@ -778,6 +778,8 @@ const CalendarioVisual = () => {
               return (
                 <Card
                   key={index}
+                  data-testid={date ? `calendar-cell-${date.toISOString().split('T')[0]}` : undefined}
+                  data-date={date ? date.toISOString().split('T')[0] : undefined}
                   onClick={() => handleDayClick(date)}
                   onDragOver={handleDragOver}
                   onDragEnter={(e) => handleDragEnter(e, { id: date?.toDateString(), type: 'day' })}
@@ -817,6 +819,9 @@ const CalendarioVisual = () => {
                               <Tooltip key={appointment.id}>
                                 <TooltipTrigger asChild>
                                   <div
+                                    data-testid={`appointment-${appointment.id}`}
+                                    data-appointment-id={appointment.id}
+                                    data-date={appointment.date || (appointment.start_datetime ? appointment.start_datetime.split('T')[0] : '')}
                                     draggable={true}
                                     onDragStart={(e) => handleDragStart(e, appointment)}
                                     onDragEnd={handleDragEnd}
@@ -982,7 +987,10 @@ const CalendarioVisual = () => {
                         return (
                           <Tooltip key={dayIdx}>
                             <TooltipTrigger asChild>
-                              <div 
+                              <div
+                                data-testid={`calendar-cell-week-${day.toISOString().split('T')[0]}-${hour}`}
+                                data-date={day.toISOString().split('T')[0]}
+                                data-hour={hour}
                                 onDragOver={handleDragOver}
                                 onDragEnter={(e) => handleDragEnter(e, { id: cellId, type: 'hour', day, hour })}
                                 onDragLeave={handleDragLeave}
@@ -994,7 +1002,10 @@ const CalendarioVisual = () => {
                                 `}>
                                 {hourAppointments.map((apt, aptIdx) => (
                                   <div 
-                                    key={aptIdx} 
+                                    key={aptIdx}
+                                    data-testid={`appointment-${apt.id}`}
+                                    data-appointment-id={apt.id}
+                                    data-date={apt.date || (apt.start_datetime ? apt.start_datetime.split('T')[0] : '')}
                                     draggable={true}
                                     onDragStart={(e) => handleDragStart(e, apt)}
                                     onDragEnd={handleDragEnd}
@@ -1040,7 +1051,10 @@ const CalendarioVisual = () => {
                       </div>
 
                       {/* Coluna de agendamentos */}
-                      <div 
+                      <div
+                        data-testid={`calendar-cell-day-${currentDate.toISOString().split('T')[0]}-${hour}`}
+                        data-date={currentDate.toISOString().split('T')[0]}
+                        data-hour={hour}
                         className={`col-span-10 min-h-[100px] p-4 border rounded transition-all
                           ${dropTarget && dropTarget.id === `day-${hour}` 
                             ? 'border-purple-400 border-2 bg-purple-400/20' 
@@ -1059,7 +1073,10 @@ const CalendarioVisual = () => {
                               return (
                                 <Tooltip key={apt.id}>
                                   <TooltipTrigger asChild>
-                                    <Card 
+                                    <Card
+                                      data-testid={`appointment-${apt.id}`}
+                                      data-appointment-id={apt.id}
+                                      data-date={apt.date || (apt.start_datetime ? apt.start_datetime.split('T')[0] : '')}
                                       draggable={true}
                                       onDragStart={(e) => handleDragStart(e, apt)}
                                       onDragEnd={handleDragEnd}

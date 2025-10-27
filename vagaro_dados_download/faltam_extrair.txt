@@ -1,0 +1,31 @@
+RELATÓRIOS PARA EXTRAIR (ANO A ANO: 2023, 2024, 2025)
+
+SALES (Vendas):
+[ ] Employee Sales: 2024 ⬜, 2025 ⬜
+[ ] Sales Summary: 2025 ⬜
+[ ] Transaction List: 2025 ⬜
+[ ] Payment Distribution: 2024 ⬜, 2025 ⬜
+[ ] Product Sales: 2023 ⬜, 2024 ⬜, 2025 ⬜
+[ ] Services/Classes: 2023 ⬜, 2024 ⬜
+[ ] Trends: 2023 ⬜, 2024 ⬜, 2025 ⬜
+[ ] Combined Report: 2023 ⬜, 2024 ⬜, 2025 ⬜
+[ ] Deposits Each Transaction: 2024 ⬜, 2025 ⬜
+[ ] Deposits Daily: 2025 ⬜
+
+APPOINTMENTS:
+[ ] Appointments Summary: 2023 ⬜, 2025 ⬜
+[ ] Source: 2023 ⬜, 2024 ⬜, 2025 ⬜
+[ ] Missed Checkouts: 2023 ⬜, 2024 ⬜, 2025 ⬜
+[ ] Booking %: 2023 ⬜, 2024 ⬜, 2025 ⬜
+[ ] Cancellations: 2023 ⬜, 2024 ⬜, 2025 ⬜
+
+EMPLOYEES:
+[ ] Customer Retention: 2023 ⬜, 2024 ⬜, 2025 ⬜
+[ ] Rebooking: 2023 ⬜, 2024 ⬜, 2025 ⬜  
+[ ] Time Card: 2023 ⬜, 2024 ⬜, 2025 ⬜
+[ ] Payroll: 2023 ⬜, 2024 ⬜, 2025 ⬜
+
+CUSTOMERS:
+[ ] New vs Returning: 2023 ⬜, 2024 ⬜, 2025 ⬜
+
+TOTAL: ~50+ relatórios faltando

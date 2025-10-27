@@ -10,17 +10,17 @@ test.describe('Client Management Tests', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     
-    // Navigate to Clients tab
-    await page.click('button:has-text("Clientes"), [role="tab"]:has-text("Clientes")');
+    // Navigate to Clients tab using data-testid
+    await page.click('[data-testid="tab-clients"]');
     await page.waitForTimeout(1000);
   });
 
   test('should open new client modal', async ({ page }) => {
-    // Click "Novo Cliente" button
-    await page.click('button:has-text("Novo Cliente"), button:has-text("Novo")');
+    // Click "Novo Cliente" button using data-testid
+    await page.click('[data-testid="btn-new-client"]');
     
-    // Verify modal opened
-    await expect(page.locator('text=/Novo Cliente|Cadastrar Cliente/i')).toBeVisible({ timeout: 5000 });
+    // Verify modal opened using data-testid
+    await expect(page.locator('[data-testid="modal-new-client"]')).toBeVisible({ timeout: 10000 });
     
     // Verify form fields are present
     await expect(page.locator('input[name="name"], input[placeholder*="Nome"]')).toBeVisible();
@@ -38,11 +38,11 @@ test.describe('Client Management Tests', () => {
       address: 'Rua Teste E2E, 123'
     };
     
-    // Open new client modal
-    await page.click('button:has-text("Novo Cliente"), button:has-text("Novo")');
+    // Open new client modal using data-testid
+    await page.click('[data-testid="btn-new-client"]');
     await page.waitForTimeout(500);
     
-    // Fill form fields
+    // Fill form fields (mantendo seletores genéricos para inputs)
     await page.fill('input[name="name"], input[placeholder*="Nome"]', clientData.name);
     await page.fill('input[name="email"], input[placeholder*="Email"], input[type="email"]', clientData.email);
     await page.fill('input[name="phone"], input[placeholder*="Telefone"]', clientData.phone);
@@ -53,8 +53,8 @@ test.describe('Client Management Tests', () => {
       await addressField.fill(clientData.address);
     }
     
-    // Submit form
-    await page.click('button:has-text("Salvar"), button:has-text("Criar"), button[type="submit"]');
+    // Submit form using data-testid
+    await page.click('[data-testid="btn-save-client"]');
     
     // Wait for success notification or modal to close
     await page.waitForTimeout(2000);
