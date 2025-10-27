@@ -1,0 +1,1860 @@
+{
+  "config": {
+    "configFile": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/playwright.config.js",
+    "rootDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 5,
+    "metadata": {
+      "actualWorkers": 5
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Tablet",
+        "name": "Tablet",
+        "testDir": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 5,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "01-navigation.spec.js",
+      "file": "01-navigation.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Navigation Tests",
+          "file": "01-navigation.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load the main dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2226,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:21.461Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02be17a2568d5257bc3a-05b6e3b93255076644e1",
+              "file": "01-navigation.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should navigate between tabs",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2401,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Clientes|Lista de Clientes/i')\nExpected: visible\nError: strict mode violation: locator('text=/Clientes|Lista de Clientes/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-clients\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-clients\" aria-controls=\"radix-_r_0_-content-clients\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-mu…>…</button> aka getByTestId('tab-clients')\n    2) <h2 class=\"text-2xl font-bold text-white\">Gerenciar Clientes</h2> aka getByRole('heading', { name: 'Gerenciar Clientes' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Clientes|Lista de Clientes/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Clientes|Lista de Clientes/i')\nExpected: visible\nError: strict mode violation: locator('text=/Clientes|Lista de Clientes/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-clients\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-clients\" aria-controls=\"radix-_r_0_-content-clients\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-mu…>…</button> aka getByTestId('tab-clients')\n    2) <h2 class=\"text-2xl font-bold text-white\">Gerenciar Clientes</h2> aka getByRole('heading', { name: 'Gerenciar Clientes' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Clientes|Lista de Clientes/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js:28:70",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js",
+                          "column": 70,
+                          "line": 28
+                        },
+                        "snippet": "  26 |     // Navigate to Clientes tab using data-testid\n  27 |     await page.click('[data-testid=\"tab-clients\"]');\n> 28 |     await expect(page.locator('text=/Clientes|Lista de Clientes/i')).toBeVisible({ timeout: 10000 });\n     |                                                                      ^\n  29 |     \n  30 |     // Navigate to Agendamentos tab\n  31 |     await page.click('[data-testid=\"tab-appointments\"]');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js",
+                            "column": 70,
+                            "line": 28
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Clientes|Lista de Clientes/i')\nExpected: visible\nError: strict mode violation: locator('text=/Clientes|Lista de Clientes/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-clients\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-clients\" aria-controls=\"radix-_r_0_-content-clients\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-mu…>…</button> aka getByTestId('tab-clients')\n    2) <h2 class=\"text-2xl font-bold text-white\">Gerenciar Clientes</h2> aka getByRole('heading', { name: 'Gerenciar Clientes' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Clientes|Lista de Clientes/i')\u001b[22m\n\n\n  26 |     // Navigate to Clientes tab using data-testid\n  27 |     await page.click('[data-testid=\"tab-clients\"]');\n> 28 |     await expect(page.locator('text=/Clientes|Lista de Clientes/i')).toBeVisible({ timeout: 10000 });\n     |                                                                      ^\n  29 |     \n  30 |     // Navigate to Agendamentos tab\n  31 |     await page.click('[data-testid=\"tab-appointments\"]');\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js:28:70"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:23.979Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/01-navigation-Navigation-Tests-should-navigate-between-tabs-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/01-navigation-Navigation-Tests-should-navigate-between-tabs-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/01-navigation-Navigation-Tests-should-navigate-between-tabs-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/01-navigation-Navigation-Tests-should-navigate-between-tabs-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js",
+                        "column": 70,
+                        "line": 28
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "02be17a2568d5257bc3a-9193a0f046739227ea30",
+              "file": "01-navigation.spec.js",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "should display dashboard statistics cards",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2729,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Próximos Agendamentos')\nExpected: visible\nError: strict mode violation: locator('text=Próximos Agendamentos') resolved to 2 elements:\n    1) <div data-slot=\"card-title\" class=\"text-sm font-medium text-white\">Próximos Agendamentos</div> aka getByText('Próximos Agendamentos').first()\n    2) <span class=\"flex items-center\">…</span> aka locator('span').filter({ hasText: 'Próximos Agendamentos' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Próximos Agendamentos')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Próximos Agendamentos')\nExpected: visible\nError: strict mode violation: locator('text=Próximos Agendamentos') resolved to 2 elements:\n    1) <div data-slot=\"card-title\" class=\"text-sm font-medium text-white\">Próximos Agendamentos</div> aka getByText('Próximos Agendamentos').first()\n    2) <span class=\"flex items-center\">…</span> aka locator('span').filter({ hasText: 'Próximos Agendamentos' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Próximos Agendamentos')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js:49:50",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js",
+                          "column": 50,
+                          "line": 49
+                        },
+                        "snippet": "  47 |     \n  48 |     for (const stat of expectedStats) {\n> 49 |       await expect(page.locator(`text=${stat}`)).toBeVisible();\n     |                                                  ^\n  50 |     }\n  51 |     \n  52 |     // Verify numbers are displayed"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js",
+                            "column": 50,
+                            "line": 49
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Próximos Agendamentos')\nExpected: visible\nError: strict mode violation: locator('text=Próximos Agendamentos') resolved to 2 elements:\n    1) <div data-slot=\"card-title\" class=\"text-sm font-medium text-white\">Próximos Agendamentos</div> aka getByText('Próximos Agendamentos').first()\n    2) <span class=\"flex items-center\">…</span> aka locator('span').filter({ hasText: 'Próximos Agendamentos' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Próximos Agendamentos')\u001b[22m\n\n\n  47 |     \n  48 |     for (const stat of expectedStats) {\n> 49 |       await expect(page.locator(`text=${stat}`)).toBeVisible();\n     |                                                  ^\n  50 |     }\n  51 |     \n  52 |     // Verify numbers are displayed\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js:49:50"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:27.182Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/01-navigation-Navigation-T-e6ab0--dashboard-statistics-cards-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/01-navigation-Navigation-T-e6ab0--dashboard-statistics-cards-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/01-navigation-Navigation-T-e6ab0--dashboard-statistics-cards-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/01-navigation-Navigation-T-e6ab0--dashboard-statistics-cards-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/01-navigation.spec.js",
+                        "column": 50,
+                        "line": 49
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "02be17a2568d5257bc3a-aa438a865abbe08bdeb0",
+              "file": "01-navigation.spec.js",
+              "line": 44,
+              "column": 3
+            },
+            {
+              "title": "should have responsive navigation on mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1604,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:30.979Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02be17a2568d5257bc3a-ebb38bf1a41322f32ca9",
+              "file": "01-navigation.spec.js",
+              "line": 56,
+              "column": 3
+            },
+            {
+              "title": "should show sync status indicator",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1854,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Status indicator not found - may not be implemented yet\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:32.792Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02be17a2568d5257bc3a-c5e63a0c00b59ceed089",
+              "file": "01-navigation.spec.js",
+              "line": 71,
+              "column": 3
+            },
+            {
+              "title": "should navigate via dashboard cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2501,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:34.655Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02be17a2568d5257bc3a-167626ad93381c8ff788",
+              "file": "01-navigation.spec.js",
+              "line": 82,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "02-clients.spec.js",
+      "file": "02-clients.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Client Management Tests",
+          "file": "02-clients.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should open new client modal",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 9215,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('input[name=\"phone\"], input[placeholder*=\"Telefone\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"phone\"], input[placeholder*=\"Telefone\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('input[name=\"phone\"], input[placeholder*=\"Telefone\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"phone\"], input[placeholder*=\"Telefone\"]')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/02-clients.spec.js:28:87",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/02-clients.spec.js",
+                          "column": 87,
+                          "line": 28
+                        },
+                        "snippet": "  26 |     await expect(page.locator('input[name=\"name\"], input[placeholder*=\"Nome\"]')).toBeVisible();\n  27 |     await expect(page.locator('input[name=\"email\"], input[placeholder*=\"Email\"], input[type=\"email\"]')).toBeVisible();\n> 28 |     await expect(page.locator('input[name=\"phone\"], input[placeholder*=\"Telefone\"]')).toBeVisible();\n     |                                                                                       ^\n  29 |   });\n  30 |\n  31 |   test('should create a new client', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/02-clients.spec.js",
+                            "column": 87,
+                            "line": 28
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('input[name=\"phone\"], input[placeholder*=\"Telefone\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"phone\"], input[placeholder*=\"Telefone\"]')\u001b[22m\n\n\n  26 |     await expect(page.locator('input[name=\"name\"], input[placeholder*=\"Nome\"]')).toBeVisible();\n  27 |     await expect(page.locator('input[name=\"email\"], input[placeholder*=\"Email\"], input[type=\"email\"]')).toBeVisible();\n> 28 |     await expect(page.locator('input[name=\"phone\"], input[placeholder*=\"Telefone\"]')).toBeVisible();\n     |                                                                                       ^\n  29 |   });\n  30 |\n  31 |   test('should create a new client', async ({ page }) => {\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/02-clients.spec.js:28:87"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:21.467Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/02-clients-Client-Manageme-08bfb-hould-open-new-client-modal-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/02-clients-Client-Manageme-08bfb-hould-open-new-client-modal-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/02-clients-Client-Manageme-08bfb-hould-open-new-client-modal-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/02-clients-Client-Manageme-08bfb-hould-open-new-client-modal-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/02-clients.spec.js",
+                        "column": 87,
+                        "line": 28
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3ab92b4fc7abe535e027-29818956d04f31cd8507",
+              "file": "02-clients.spec.js",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "should create a new client",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "interrupted",
+                      "duration": 8240,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:32.017Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/02-clients-Client-Manageme-3ae2a--should-create-a-new-client-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/02-clients-Client-Manageme-3ae2a--should-create-a-new-client-chromium/video.webm"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/02-clients-Client-Manageme-3ae2a--should-create-a-new-client-chromium/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3ab92b4fc7abe535e027-7f3e08a9cba62a45b597",
+              "file": "02-clients.spec.js",
+              "line": 31,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3ab92b4fc7abe535e027-4389567178ba8df691f9",
+              "file": "02-clients.spec.js",
+              "line": 72,
+              "column": 3
+            },
+            {
+              "title": "should validate email format",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3ab92b4fc7abe535e027-900a289afed349e70dc4",
+              "file": "02-clients.spec.js",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "should search/filter clients",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3ab92b4fc7abe535e027-57220dfd07615222c888",
+              "file": "02-clients.spec.js",
+              "line": 119,
+              "column": 3
+            },
+            {
+              "title": "should display client list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3ab92b4fc7abe535e027-10c451204ad6303c0c12",
+              "file": "02-clients.spec.js",
+              "line": 136,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "03-appointments.spec.js",
+      "file": "03-appointments.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Appointment Management Tests",
+          "file": "03-appointments.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should open new appointment modal",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 4584,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Novo Agendamento|Criar Agendamento/i')\nExpected: visible\nError: strict mode violation: locator('text=/Novo Agendamento|Criar Agendamento/i') resolved to 4 elements:\n    1) <button type=\"button\" data-state=\"open\" aria-expanded=\"true\" aria-haspopup=\"dialog\" data-slot=\"dialog-trigger\" aria-controls=\"radix-_r_c_\" data-testid=\"btn-new-appointment\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visi…>…</button> aka getByTestId('btn-new-appointment')\n    2) <h2 id=\"radix-_r_d_\" data-slot=\"dialog-title\" class=\"font-semibold text-white text-2xl flex items-center\">…</h2> aka getByRole('heading', { name: 'Novo Agendamento' })\n    3) <p id=\"radix-_r_e_\" data-slot=\"dialog-description\" class=\"text-gray-400 text-base\">Preencha os dados abaixo para criar um novo agend…</p> aka getByText('Preencha os dados abaixo para')\n    4) <button data-slot=\"button\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs h-9…>…</button> aka getByRole('button', { name: 'Criar Agendamento' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Novo Agendamento|Criar Agendamento/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Novo Agendamento|Criar Agendamento/i')\nExpected: visible\nError: strict mode violation: locator('text=/Novo Agendamento|Criar Agendamento/i') resolved to 4 elements:\n    1) <button type=\"button\" data-state=\"open\" aria-expanded=\"true\" aria-haspopup=\"dialog\" data-slot=\"dialog-trigger\" aria-controls=\"radix-_r_c_\" data-testid=\"btn-new-appointment\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visi…>…</button> aka getByTestId('btn-new-appointment')\n    2) <h2 id=\"radix-_r_d_\" data-slot=\"dialog-title\" class=\"font-semibold text-white text-2xl flex items-center\">…</h2> aka getByRole('heading', { name: 'Novo Agendamento' })\n    3) <p id=\"radix-_r_e_\" data-slot=\"dialog-description\" class=\"text-gray-400 text-base\">Preencha os dados abaixo para criar um novo agend…</p> aka getByText('Preencha os dados abaixo para')\n    4) <button data-slot=\"button\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs h-9…>…</button> aka getByRole('button', { name: 'Criar Agendamento' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Novo Agendamento|Criar Agendamento/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/03-appointments.spec.js:23:78",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/03-appointments.spec.js",
+                          "column": 78,
+                          "line": 23
+                        },
+                        "snippet": "  21 |     \n  22 |     // Verify modal opened\n> 23 |     await expect(page.locator('text=/Novo Agendamento|Criar Agendamento/i')).toBeVisible({ timeout: 5000 });\n     |                                                                              ^\n  24 |     \n  25 |     // Verify form fields are present\n  26 |     await expect(page.locator('input[name=\"title\"], input[placeholder*=\"Título\"]')).toBeVisible();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/03-appointments.spec.js",
+                            "column": 78,
+                            "line": 23
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Novo Agendamento|Criar Agendamento/i')\nExpected: visible\nError: strict mode violation: locator('text=/Novo Agendamento|Criar Agendamento/i') resolved to 4 elements:\n    1) <button type=\"button\" data-state=\"open\" aria-expanded=\"true\" aria-haspopup=\"dialog\" data-slot=\"dialog-trigger\" aria-controls=\"radix-_r_c_\" data-testid=\"btn-new-appointment\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visi…>…</button> aka getByTestId('btn-new-appointment')\n    2) <h2 id=\"radix-_r_d_\" data-slot=\"dialog-title\" class=\"font-semibold text-white text-2xl flex items-center\">…</h2> aka getByRole('heading', { name: 'Novo Agendamento' })\n    3) <p id=\"radix-_r_e_\" data-slot=\"dialog-description\" class=\"text-gray-400 text-base\">Preencha os dados abaixo para criar um novo agend…</p> aka getByText('Preencha os dados abaixo para')\n    4) <button data-slot=\"button\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs h-9…>…</button> aka getByRole('button', { name: 'Criar Agendamento' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Novo Agendamento|Criar Agendamento/i')\u001b[22m\n\n\n  21 |     \n  22 |     // Verify modal opened\n> 23 |     await expect(page.locator('text=/Novo Agendamento|Criar Agendamento/i')).toBeVisible({ timeout: 5000 });\n     |                                                                              ^\n  24 |     \n  25 |     // Verify form fields are present\n  26 |     await expect(page.locator('input[name=\"title\"], input[placeholder*=\"Título\"]')).toBeVisible();\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/03-appointments.spec.js:23:78"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:21.456Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/03-appointments-Appointmen-700eb--open-new-appointment-modal-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/03-appointments-Appointmen-700eb--open-new-appointment-modal-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/03-appointments-Appointmen-700eb--open-new-appointment-modal-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/03-appointments-Appointmen-700eb--open-new-appointment-modal-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/03-appointments.spec.js",
+                        "column": 78,
+                        "line": 23
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "9951808fd0263408df46-94c025a42029b936bb9a",
+              "file": "03-appointments.spec.js",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "should create a new appointment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 2,
+                      "status": "interrupted",
+                      "duration": 13086,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:27.179Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/03-appointments-Appointmen-78edf-ld-create-a-new-appointment-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/03-appointments-Appointmen-78edf-ld-create-a-new-appointment-chromium/video.webm"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/03-appointments-Appointmen-78edf-ld-create-a-new-appointment-chromium/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9951808fd0263408df46-c163e6ad337029415d45",
+              "file": "03-appointments.spec.js",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should validate appointment required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9951808fd0263408df46-727de359ec105a0be7d7",
+              "file": "03-appointments.spec.js",
+              "line": 90,
+              "column": 3
+            },
+            {
+              "title": "should display calendar view",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9951808fd0263408df46-270ab4797f16579047e4",
+              "file": "03-appointments.spec.js",
+              "line": 106,
+              "column": 3
+            },
+            {
+              "title": "should navigate calendar months",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9951808fd0263408df46-15d7c4f9fd401b5e8ffc",
+              "file": "03-appointments.spec.js",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "should display different calendar views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9951808fd0263408df46-4aa06c10ebfa0f0d5916",
+              "file": "03-appointments.spec.js",
+              "line": 141,
+              "column": 3
+            },
+            {
+              "title": "should click on calendar day",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9951808fd0263408df46-984b42c74c0e94069376",
+              "file": "03-appointments.spec.js",
+              "line": 162,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "04-integration-flow.spec.js",
+      "file": "04-integration-flow.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "End-to-End Integration Flow",
+          "file": "04-integration-flow.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "complete workflow: create client and appointment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "interrupted",
+                      "duration": 18776,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:21.454Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/04-integration-flow-End-to-35cf3-eate-client-and-appointment-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/04-integration-flow-End-to-35cf3-eate-client-and-appointment-chromium/video.webm"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/04-integration-flow-End-to-35cf3-eate-client-and-appointment-chromium/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d9f9a024cd6a5d2ea9be-3161b967f8b582fb31a3",
+              "file": "04-integration-flow.spec.js",
+              "line": 9,
+              "column": 3
+            },
+            {
+              "title": "should handle errors gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d9f9a024cd6a5d2ea9be-8ff4a848aa58e44df4d1",
+              "file": "04-integration-flow.spec.js",
+              "line": 147,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "05-google-sync.spec.js",
+      "file": "05-google-sync.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Google Calendar Sync Tests",
+          "file": "05-google-sync.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show sync status badge in header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 1958,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:21.457Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fbde54cf6270b51ed875-c35ef14fca9dfc66f25c",
+              "file": "05-google-sync.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should display last sync timestamp",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 1881,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:23.706Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fbde54cf6270b51ed875-f5394576129321200ae9",
+              "file": "05-google-sync.spec.js",
+              "line": 21,
+              "column": 3
+            },
+            {
+              "title": "should allow manual sync trigger",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Google Calendar not connected",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/05-google-sync.spec.js",
+                        "line": 57,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "skipped",
+                      "duration": 2242,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:25.599Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Google Calendar not connected",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/05-google-sync.spec.js",
+                            "line": 57,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fbde54cf6270b51ed875-143bb9548e9896884448",
+              "file": "05-google-sync.spec.js",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "should create appointment and sync to Google",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "interrupted",
+                      "duration": 12576,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Success message not shown immediately\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:27.859Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/05-google-sync-Google-Cale-0b0df-ointment-and-sync-to-Google-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/05-google-sync-Google-Cale-0b0df-ointment-and-sync-to-Google-chromium/video.webm"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/05-google-sync-Google-Cale-0b0df-ointment-and-sync-to-Google-chromium/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fbde54cf6270b51ed875-795788626a652d23144f",
+              "file": "05-google-sync.spec.js",
+              "line": 61,
+              "column": 3
+            },
+            {
+              "title": "should show sync error if Google disconnected",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fbde54cf6270b51ed875-943d24db97a0f1bb5c5d",
+              "file": "05-google-sync.spec.js",
+              "line": 124,
+              "column": 3
+            },
+            {
+              "title": "should update sync timestamp after automatic polling",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fbde54cf6270b51ed875-5d2cc4702d278aeaac27",
+              "file": "05-google-sync.spec.js",
+              "line": 140,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "06-import-preview.spec.js",
+      "file": "06-import-preview.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Import Preview Tests",
+          "file": "06-import-preview.spec.js",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should navigate to import tab",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2598,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Importar Dados|Importação|Upload/i')\nExpected: visible\nError: strict mode violation: locator('text=/Importar Dados|Importação|Upload/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-import\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-import\" aria-controls=\"radix-_r_0_-content-import\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted…>…</button> aka getByTestId('tab-import')\n    2) <h1 class=\"text-3xl font-bold mb-2\">Importar Dados</h1> aka getByRole('heading', { name: 'Importar Dados' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Importar Dados|Importação|Upload/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Importar Dados|Importação|Upload/i')\nExpected: visible\nError: strict mode violation: locator('text=/Importar Dados|Importação|Upload/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-import\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-import\" aria-controls=\"radix-_r_0_-content-import\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted…>…</button> aka getByTestId('tab-import')\n    2) <h1 class=\"text-3xl font-bold mb-2\">Importar Dados</h1> aka getByRole('heading', { name: 'Importar Dados' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Importar Dados|Importação|Upload/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/06-import-preview.spec.js:21:76",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/06-import-preview.spec.js",
+                          "column": 76,
+                          "line": 21
+                        },
+                        "snippet": "  19 |     \n  20 |     // Verify import interface is visible\n> 21 |     await expect(page.locator('text=/Importar Dados|Importação|Upload/i')).toBeVisible({ timeout: 5000 });\n     |                                                                            ^\n  22 |   });\n  23 |\n  24 |   test('should show import options', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/06-import-preview.spec.js",
+                            "column": 76,
+                            "line": 21
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Importar Dados|Importação|Upload/i')\nExpected: visible\nError: strict mode violation: locator('text=/Importar Dados|Importação|Upload/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-import\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-import\" aria-controls=\"radix-_r_0_-content-import\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted…>…</button> aka getByTestId('tab-import')\n    2) <h1 class=\"text-3xl font-bold mb-2\">Importar Dados</h1> aka getByRole('heading', { name: 'Importar Dados' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Importar Dados|Importação|Upload/i')\u001b[22m\n\n\n  19 |     \n  20 |     // Verify import interface is visible\n> 21 |     await expect(page.locator('text=/Importar Dados|Importação|Upload/i')).toBeVisible({ timeout: 5000 });\n     |                                                                            ^\n  22 |   });\n  23 |\n  24 |   test('should show import options', async ({ page }) => {\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/06-import-preview.spec.js:21:76"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-27T22:14:37.174Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/06-import-preview-Import-P-81572-ould-navigate-to-import-tab-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/06-import-preview-Import-P-81572-ould-navigate-to-import-tab-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/06-import-preview-Import-P-81572-ould-navigate-to-import-tab-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/06-import-preview-Import-P-81572-ould-navigate-to-import-tab-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/06-import-preview.spec.js",
+                        "column": 76,
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-58677bdccdc9deca01bf",
+              "file": "06-import-preview.spec.js",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "should show import options",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-33219e543421181fc29b",
+              "file": "06-import-preview.spec.js",
+              "line": 24,
+              "column": 3
+            },
+            {
+              "title": "should show file upload area",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-174b3bf7333af1a7e5ef",
+              "file": "06-import-preview.spec.js",
+              "line": 49,
+              "column": 3
+            },
+            {
+              "title": "should validate file type on upload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-a464dacc24248aba2fc0",
+              "file": "06-import-preview.spec.js",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "should show preview after file upload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-8d6f87cf56b00e96d0c8",
+              "file": "06-import-preview.spec.js",
+              "line": 86,
+              "column": 3
+            },
+            {
+              "title": "should display validation statistics in preview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-464d2a45804ca3f1f0ee",
+              "file": "06-import-preview.spec.js",
+              "line": 104,
+              "column": 3
+            },
+            {
+              "title": "should allow editing data in preview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-7bfe0129a51640655833",
+              "file": "06-import-preview.spec.js",
+              "line": 116,
+              "column": 3
+            },
+            {
+              "title": "should show column mapping interface",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-54939d0b5836e717c86c",
+              "file": "06-import-preview.spec.js",
+              "line": 127,
+              "column": 3
+            },
+            {
+              "title": "should filter preview rows by status",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-74ec4f41482ce87af673",
+              "file": "06-import-preview.spec.js",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "should search within preview data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-647127e6b6f27e3567cb",
+              "file": "06-import-preview.spec.js",
+              "line": 152,
+              "column": 3
+            },
+            {
+              "title": "should confirm import with valid data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-359dbe02987643aebce9",
+              "file": "06-import-preview.spec.js",
+              "line": 169,
+              "column": 3
+            },
+            {
+              "title": "should show import progress",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-543b62263bf6a202cc86",
+              "file": "06-import-preview.spec.js",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "should display import report after completion",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdb1c780c1d2c0351d4f-77a5c163e61f206d819e",
+              "file": "06-import-preview.spec.js",
+              "line": 191,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "07-drag-and-drop.spec.js",
+      "file": "07-drag-and-drop.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Drag and Drop Calendar Tests",
+          "file": "07-drag-and-drop.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load calendar view",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-29c586bc22e1d4f86769",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show calendar navigation controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-75e28f957e3dc7cfa721",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "should switch between calendar views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-aea571e5f487fac4b8e0",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 36,
+              "column": 3
+            },
+            {
+              "title": "should display appointments in calendar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-98ea2849cb688485e8dd",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 56,
+              "column": 3
+            },
+            {
+              "title": "should show appointment details on click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-9b9886c596fd785e4fbf",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 74,
+              "column": 3
+            },
+            {
+              "title": "should allow dragging appointments (visual feedback)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-4dfdcafacd41f1388e36",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 101,
+              "column": 3
+            },
+            {
+              "title": "should perform drag and drop to new date",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-45d17aeeb1a24942551c",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "should show visual feedback during drag",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-3da7cbd443aabb8fdce3",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 182,
+              "column": 3
+            },
+            {
+              "title": "should update appointment time after drop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-905934463804ac9d2b90",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 218,
+              "column": 3
+            },
+            {
+              "title": "should handle drop on invalid target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-98e79ef3bd8e30f2c03f",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 231,
+              "column": 3
+            },
+            {
+              "title": "should support multi-day appointments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-39062a99206ce5f715bd",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 244,
+              "column": 3
+            },
+            {
+              "title": "should resize appointments by dragging edges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-32218d435adc15a2eceb",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 260,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "Testing stopped early after 5 maximum allowed failures."
+    }
+  ],
+  "stats": {
+    "startTime": "2025-10-27T22:14:14.786Z",
+    "duration": 25952.999,
+    "expected": 6,
+    "skipped": 41,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}

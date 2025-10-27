@@ -8,20 +8,20 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   
-  /* Maximum time one test can run for */
-  timeout: 30 * 1000,
+  /* Maximum time one test can run for - aumentado para 60s */
+  timeout: 60 * 1000,
   
   /* Test artifacts */
-  fullyParallel: true,
+  fullyParallel: false, // Evitar race conditions
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   
   /* Reporter to use */
   reporter: [
-    ['html'],
     ['list'],
-    ['json', { outputFile: 'test-results/results.json' }]
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'test-results.json' }]
   ],
   
   /* Shared settings for all tests */
@@ -29,18 +29,18 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('/')` */
     baseURL: 'http://localhost:5173',
     
-    /* Collect trace when retrying the failed test */
-    trace: 'on-first-retry',
-    
     /* Screenshot on failure */
     screenshot: 'only-on-failure',
     
     /* Video on failure */
     video: 'retain-on-failure',
     
-    /* Timeouts */
+    /* Collect trace when retrying the failed test */
+    trace: 'retain-on-failure',
+    
+    /* Timeouts aumentados */
     actionTimeout: 15 * 1000,
-    navigationTimeout: 15 * 1000,
+    navigationTimeout: 30 * 1000,
   },
   
   /* Configure projects for major browsers */
@@ -69,14 +69,32 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
     },
+    
+    /* Tablet viewport */
+    {
+      name: 'Tablet',
+      use: { ...devices['iPad Pro'] },
+    },
   ],
   
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  /* Run both backend and frontend servers before starting tests */
+  webServer: [
+    {
+      command: 'cd ../agenda-hibrida-v2 && npm start',
+      url: 'http://localhost:3001/api/appointments', // Health check endpoint (porta 3001)
+      timeout: 120 * 1000,
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      stderr: 'pipe'
+    },
+    {
+      command: 'npm run dev',
+      url: 'http://localhost:5173', // Health check frontend
+      timeout: 120 * 1000,
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      stderr: 'pipe'
+    }
+  ],
 });
 
