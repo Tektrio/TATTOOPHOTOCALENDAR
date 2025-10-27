@@ -1,28 +1,24 @@
-/** @type {import('jest').Config} */
 module.exports = {
   testEnvironment: 'node',
   coverageDirectory: 'coverage',
+  testMatch: [
+    '**/__tests__/**/*.test.js',
+    '**/?(*.)+(spec|test).js'
+  ],
   collectCoverageFrom: [
     'services/**/*.js',
     'routes/**/*.js',
-    '!**/node_modules/**',
-    '!**/__tests__/**'
+    '!**/__tests__/**',
+    '!**/node_modules/**'
   ],
-  testMatch: [
-    '**/__tests__/**/*.test.js'
-  ],
-  verbose: true,
+  coverageThreshold: {
+    global: {
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50
+    }
+  },
   testTimeout: 10000,
-  setupFilesAfterEnv: ['<rootDir>/__tests__/setup.js'],
-  // Coverage threshold removido temporariamente durante implementação gradual
-  // Será reativado quando todos os serviços tiverem testes
-  // coverageThreshold: {
-  //   global: {
-  //     branches: 70,
-  //     functions: 70,
-  //     lines: 70,
-  //     statements: 70
-  //   }
-  // }
+  verbose: true
 };
-
