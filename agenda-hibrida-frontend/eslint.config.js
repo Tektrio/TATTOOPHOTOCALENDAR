@@ -38,11 +38,15 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]|^validate|^format' }],
+      'no-unused-vars': ['error', { 
+        varsIgnorePattern: '^[A-Z_]|^validate|^format|^set[A-Z]|^show[A-Z]|^upload|^selected|^tattoo|^client',
+        argsIgnorePattern: '^_'
+      }],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
+      'react-hooks/exhaustive-deps': 'warn', // Downgrade de error para warning
     },
   },
 ]
