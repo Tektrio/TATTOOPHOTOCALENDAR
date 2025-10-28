@@ -82,11 +82,11 @@ export default function VagaroImport() {
 
   const loadImportLogs = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/imports/logs`);
+      const response = await fetch(`${API_URL}/api/imports/vagaro/logs`);
       const data = await response.json();
       
       if (data.success) {
-        setImportLogs(data.logs);
+        setImportLogs(data.logs || []);
       }
     } catch (err) {
       console.error('Erro ao carregar logs:', err);
@@ -112,26 +112,27 @@ export default function VagaroImport() {
   };
 
   const handleImport = async () => {
-    if (!file || !selectedType) {
-      setError('Selecione o tipo de importação e o arquivo');
+    if (!file) {
+      setError('Selecione um arquivo para importar');
       return;
     }
 
     setUploading(true);
-    setProgress(0);
+    setProgress(10);
     setError(null);
     setResult(null);
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('import_type', selectedType.id);
-    formData.append('update_existing', updateExisting);
 
     try {
-      const response = await fetch(`${API_URL}/api/imports/vagaro`, {
+      // Usar novo endpoint com detecção automática
+      const response = await fetch(`${API_URL}/api/imports/vagaro/upload`, {
         method: 'POST',
         body: formData
       });
+
+      setProgress(50);
 
       const data = await response.json();
 
@@ -140,7 +141,7 @@ export default function VagaroImport() {
         setProgress(100);
         loadImportLogs(); // Recarregar logs
       } else {
-        throw new Error(data.message || 'Erro ao importar arquivo');
+        throw new Error(data.error || 'Erro ao importar arquivo');
       }
     } catch (err) {
       console.error('Erro na importação:', err);
@@ -191,82 +192,31 @@ export default function VagaroImport() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Importação de Dados Vagaro</h1>
         <p className="text-gray-500">
-          Importe clientes, transações e funcionários do seu sistema Vagaro
+          Sistema detecta automaticamente o tipo de arquivo e importa todos os dados
         </p>
+        <Alert className="mt-4">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Detecção Automática:</strong> Não precisa selecionar o tipo! O sistema identifica automaticamente se é CustomersList, DepositReport, Services, GiftCards ou Forms.
+          </AlertDescription>
+        </Alert>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Coluna Esquerda: Seleção e Upload */}
+        {/* Coluna Esquerda: Upload */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Seleção de Tipo */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">1. Selecione o Tipo de Importação</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {IMPORT_TYPES.map((type) => {
-                const Icon = type.icon;
-                const isSelected = selectedType?.id === type.id;
-
-                return (
-                  <button
-                    key={type.id}
-                    onClick={() => !type.disabled && setSelectedType(type)}
-                    disabled={type.disabled}
-                    className={`p-4 rounded-lg border-2 text-left transition-all ${
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : type.disabled
-                        ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    data-testid={`import-type-${type.id}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`${type.color} p-2 rounded-lg text-white`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold flex items-center gap-2">
-                          {type.name}
-                          {type.disabled && (
-                            <Badge variant="secondary" className="text-xs">Em breve</Badge>
-                          )}
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">{type.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
-
           {/* Upload de Arquivo */}
-          {selectedType && (
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">2. Faça Upload do Arquivo Excel</h2>
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">📁 Faça Upload do Arquivo Excel do Vagaro</h2>
               
-              {/* Informações do tipo selecionado */}
-              <Alert className="mb-4">
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Campos obrigatórios:</strong> {selectedType.requiredFields.join(', ')}
-                  <br />
-                  <strong>Campos opcionais:</strong> {selectedType.optionalFields.join(', ')}
-                </AlertDescription>
-              </Alert>
+            <Alert className="mb-4">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Arquivos suportados:</strong> CustomersList.xlsx, DepositReport.xlsx, Services.xlsx, GiftCardsManagement.xlsx, Unsigned Forms.xlsx
+              </AlertDescription>
+            </Alert>
 
               <div className="space-y-4">
-                {/* Botão de Template */}
-                <Button
-                  variant="outline"
-                  onClick={() => downloadTemplate(selectedType.id)}
-                  className="w-full"
-                  data-testid="btn-download-template"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Baixar Template de Exemplo
-                </Button>
-
                 {/* Input de Arquivo */}
                 <div className="border-2 border-dashed rounded-lg p-8 text-center">
                   <input
@@ -301,18 +251,6 @@ export default function VagaroImport() {
                   </label>
                 </div>
 
-                {/* Opções */}
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={updateExisting}
-                    onChange={(e) => setUpdateExisting(e.target.checked)}
-                    className="rounded"
-                    data-testid="checkbox-update-existing"
-                  />
-                  <span className="text-sm">Atualizar registros existentes (sobrescrever duplicatas)</span>
-                </label>
-
                 {/* Botão de Importação */}
                 <Button
                   onClick={handleImport}
@@ -324,12 +262,12 @@ export default function VagaroImport() {
                   {uploading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Importando...
+                      Detectando e Importando...
                     </>
                   ) : (
                     <>
                       <Upload className="w-4 h-4 mr-2" />
-                      Iniciar Importação
+                      Detectar e Importar Automaticamente
                     </>
                   )}
                 </Button>
@@ -357,30 +295,41 @@ export default function VagaroImport() {
                     Importação Concluída!
                   </h3>
                   
+                  {result.file && (
+                    <div className="mb-3">
+                      <p className="text-sm text-gray-600">
+                        <strong>Arquivo:</strong> {result.file}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Duração:</strong> {result.duration}
+                      </p>
+                    </div>
+                  )}
+                  
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                     <div className="bg-white rounded-lg p-3">
                       <p className="text-xs text-gray-500">Total</p>
-                      <p className="text-2xl font-bold">{result.stats.total}</p>
+                      <p className="text-2xl font-bold">{result.stats?.total || 0}</p>
                     </div>
                     <div className="bg-white rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Importados</p>
-                      <p className="text-2xl font-bold text-green-600">{result.stats.successful}</p>
+                      <p className="text-xs text-gray-500">Criados</p>
+                      <p className="text-2xl font-bold text-green-600">{result.stats?.created || 0}</p>
                     </div>
                     <div className="bg-white rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Pulados</p>
-                      <p className="text-2xl font-bold text-yellow-600">{result.stats.skipped}</p>
+                      <p className="text-xs text-gray-500">Atualizados</p>
+                      <p className="text-2xl font-bold text-blue-600">{result.stats?.updated || 0}</p>
                     </div>
                     <div className="bg-white rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Falhas</p>
-                      <p className="text-2xl font-bold text-red-600">{result.stats.failed}</p>
+                      <p className="text-xs text-gray-500">Erros</p>
+                      <p className="text-2xl font-bold text-red-600">{result.stats?.errors?.length || 0}</p>
                     </div>
                   </div>
 
-                  {result.stats.failed > 0 && (
+                  {result.stats?.errors?.length > 0 && (
                     <Alert className="mt-4" variant="destructive">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        {result.stats.failed} registro(s) falharam. Verifique os logs para mais detalhes.
+                        {result.stats.errors.length} registro(s) com erro. Verifique os logs para mais detalhes.
                       </AlertDescription>
                     </Alert>
                   )}

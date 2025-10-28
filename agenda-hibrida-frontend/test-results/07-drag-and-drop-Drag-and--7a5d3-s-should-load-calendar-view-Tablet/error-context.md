@@ -26,181 +26,181 @@
                 - generic [ref=e39]:
                   - img [ref=e40]
                   - generic [ref=e42]: Drive
-            - button "Google Calendar • há 4 minutos" [ref=e43] [cursor=pointer]:
+            - button "Google Calendar • há 5 minutos" [ref=e43] [cursor=pointer]:
               - img [ref=e44]
               - generic [ref=e46]: Google Calendar
               - generic [ref=e47]: •
               - img [ref=e48]
-              - generic [ref=e51]: há 4 minutos
+              - generic [ref=e51]: há 5 minutos
             - button "Desconectar Google" [ref=e52]
     - generic [ref=e54]:
-      - tablist [ref=e55]:
-        - tab "Dashboard" [ref=e56]:
+      - tablist [ref=e56]:
+        - tab "Dashboard" [ref=e57]:
           - img
           - text: Dashboard
-        - tab "Calendário Visual" [active] [selected] [ref=e57]:
+        - tab "Calendário Visual" [active] [selected] [ref=e58]:
           - img
           - text: Calendário Visual
-        - tab "Agendamentos" [ref=e58]:
+        - tab "Agendamentos" [ref=e59]:
           - img
           - text: Agendamentos
-        - tab "Clientes" [ref=e59]:
+        - tab "Clientes" [ref=e60]:
           - img
           - text: Clientes
-        - tab "Importar Dados" [ref=e60]:
+        - tab "Importação (Excel/ICS)" [ref=e61]:
           - img
-          - text: Importar Dados
-        - tab "Galeria" [ref=e61]:
+          - text: Importação (Excel/ICS)
+        - tab "Galeria" [ref=e62]:
           - img
           - text: Galeria
-        - tab "Google Drive" [ref=e62]:
+        - tab "Google Drive" [ref=e63]:
           - img
           - text: Google Drive
-        - tab "Financeiro" [ref=e63]:
+        - tab "Financeiro" [ref=e64]:
           - img
           - text: Financeiro
-        - tab "Funcionários" [ref=e64]:
+        - tab "Funcionários" [ref=e65]:
           - img
           - text: Funcionários
-        - tab "Importar Vagaro" [ref=e65]:
+        - tab "Vagaro (Completo)" [ref=e66]:
           - img
-          - text: Importar Vagaro
-        - tab "Configurações" [ref=e66]:
+          - text: Vagaro (Completo)
+        - tab "Configurações" [ref=e67]:
           - img
           - text: Configurações
-      - tabpanel "Calendário Visual" [ref=e67]:
-        - generic [ref=e68]:
-          - generic [ref=e70]:
-            - generic [ref=e71]:
-              - heading "outubro de 2025" [level=2] [ref=e72]:
-                - img [ref=e73]
+      - tabpanel "Calendário Visual" [ref=e68]:
+        - generic [ref=e69]:
+          - generic [ref=e71]:
+            - generic [ref=e72]:
+              - heading "outubro de 2025" [level=2] [ref=e73]:
+                - img [ref=e74]
                 - text: outubro de 2025
-              - generic [ref=e75]:
-                - generic [ref=e76]:
-                  - button [ref=e77]:
-                    - img
+              - generic [ref=e76]:
+                - generic [ref=e77]:
                   - button [ref=e78]:
                     - img
                   - button [ref=e79]:
                     - img
                   - button [ref=e80]:
                     - img
-                - img [ref=e83] [cursor=pointer]
-                - button [ref=e86]:
+                  - button [ref=e81]:
+                    - img
+                - img [ref=e84] [cursor=pointer]
+                - button [ref=e87]:
                   - img
-                - button "Hoje" [ref=e87]
-                - button [ref=e88]:
+                - button "Hoje" [ref=e88]
+                - button [ref=e89]:
                   - img
-            - generic [ref=e89]:
-              - generic [ref=e90]: Dom
-              - generic [ref=e91]: Seg
-              - generic [ref=e92]: Ter
-              - generic [ref=e93]: Qua
-              - generic [ref=e94]: Qui
-              - generic [ref=e95]: Sex
-              - generic [ref=e96]: Sáb
-            - generic [ref=e97]:
-              - generic [ref=e107] [cursor=pointer]: "1"
-              - generic [ref=e112] [cursor=pointer]: "2"
-              - generic [ref=e117] [cursor=pointer]: "3"
-              - generic [ref=e122] [cursor=pointer]: "4"
-              - generic [ref=e127] [cursor=pointer]: "5"
-              - generic [ref=e130] [cursor=pointer]:
-                - generic [ref=e131]:
-                  - generic [ref=e132]: "6"
-                  - generic [ref=e133]: "1"
-                - generic [ref=e135]:
-                  - generic [ref=e136]:
-                    - generic [ref=e137]:
-                      - img [ref=e138]
-                      - generic [ref=e141]: Cliente_MCP_1761155612529
-                    - generic [ref=e142]:
-                      - img [ref=e143]
-                      - generic [ref=e145]: (11) 98765-4321
-                    - generic [ref=e146]:
-                      - img [ref=e147]
-                      - generic [ref=e150]: Criado automaticamente via DevTools
-                  - generic [ref=e152]:
-                    - img [ref=e153]
-                    - generic [ref=e157]: Sem imagens
-              - generic [ref=e161] [cursor=pointer]: "7"
-              - generic [ref=e166] [cursor=pointer]: "8"
-              - generic [ref=e171] [cursor=pointer]: "9"
-              - generic [ref=e176] [cursor=pointer]: "10"
-              - generic [ref=e181] [cursor=pointer]: "11"
-              - generic [ref=e186] [cursor=pointer]: "12"
-              - generic [ref=e191] [cursor=pointer]: "13"
-              - generic [ref=e196] [cursor=pointer]: "14"
-              - generic [ref=e201] [cursor=pointer]: "15"
-              - generic [ref=e206] [cursor=pointer]: "16"
-              - generic [ref=e211] [cursor=pointer]: "17"
-              - generic [ref=e216] [cursor=pointer]: "18"
-              - generic [ref=e221] [cursor=pointer]: "19"
-              - generic [ref=e226] [cursor=pointer]: "20"
-              - generic [ref=e231] [cursor=pointer]: "21"
-              - generic [ref=e234] [cursor=pointer]:
-                - generic [ref=e235]:
-                  - generic [ref=e236]: "22"
-                  - generic [ref=e237]: "2"
-                - generic [ref=e238]:
-                  - generic [ref=e239]:
-                    - generic [ref=e240]:
-                      - generic [ref=e241]:
-                        - img [ref=e242]
-                        - generic [ref=e245]: Cliente_MCP_Teste_1761155261119
-                      - generic [ref=e246]:
-                        - img [ref=e247]
-                        - generic [ref=e249]: (11) 98765-4321
-                      - generic [ref=e250]:
-                        - img [ref=e251]
-                        - generic [ref=e254]: Criado automaticamente para validação
-                    - generic [ref=e256]:
-                      - img [ref=e257]
-                      - generic [ref=e261]: Sem imagens
-                  - generic [ref=e262]:
-                    - generic [ref=e263]:
-                      - generic [ref=e264]:
-                        - img [ref=e265]
-                        - generic [ref=e268]: Cliente Exemplo
-                      - generic [ref=e269]:
-                        - img [ref=e270]
-                        - generic [ref=e272]: (11) 99999-9999
-                      - generic [ref=e273]:
-                        - img [ref=e274]
-                        - generic [ref=e277]: asdaaswdas
-                    - generic [ref=e279]:
-                      - img [ref=e280]
-                      - generic [ref=e284]: Sem imagens
-              - generic [ref=e288] [cursor=pointer]: "23"
-              - generic [ref=e293] [cursor=pointer]: "24"
-              - generic [ref=e298] [cursor=pointer]: "25"
-              - generic [ref=e303] [cursor=pointer]: "26"
-              - generic [ref=e308] [cursor=pointer]: "27"
-              - generic [ref=e313] [cursor=pointer]: "28"
-              - generic [ref=e318] [cursor=pointer]: "29"
-              - generic [ref=e323] [cursor=pointer]: "30"
-              - generic [ref=e328] [cursor=pointer]: "31"
-          - generic [ref=e332]:
-            - generic [ref=e333]:
-              - generic [ref=e336]: Hoje
-              - generic [ref=e339]: Com agendamentos
-              - generic [ref=e340]:
-                - img [ref=e341]
-                - generic [ref=e344]: Nome do cliente
-              - generic [ref=e345]:
-                - img [ref=e346]
-                - generic [ref=e348]: Telefone
-              - generic [ref=e349]:
-                - img [ref=e350]
-                - generic [ref=e353]: Descrição
-            - generic [ref=e354]:
-              - generic [ref=e355]:
-                - img [ref=e356]
-                - generic [ref=e358]: "Dica:"
-                - generic [ref=e359]: Clique em qualquer dia para ver os detalhes completos dos agendamentos
-              - generic [ref=e360]:
-                - img [ref=e361]
-                - generic [ref=e363]: "Dica:"
-                - generic [ref=e364]: Dê duplo clique em qualquer imagem para abrir a pasta do cliente
+            - generic [ref=e90]:
+              - generic [ref=e91]: Dom
+              - generic [ref=e92]: Seg
+              - generic [ref=e93]: Ter
+              - generic [ref=e94]: Qua
+              - generic [ref=e95]: Qui
+              - generic [ref=e96]: Sex
+              - generic [ref=e97]: Sáb
+            - generic [ref=e98]:
+              - generic [ref=e108] [cursor=pointer]: "1"
+              - generic [ref=e113] [cursor=pointer]: "2"
+              - generic [ref=e118] [cursor=pointer]: "3"
+              - generic [ref=e123] [cursor=pointer]: "4"
+              - generic [ref=e128] [cursor=pointer]: "5"
+              - generic [ref=e131] [cursor=pointer]:
+                - generic [ref=e132]:
+                  - generic [ref=e133]: "6"
+                  - generic [ref=e134]: "1"
+                - generic [ref=e136]:
+                  - generic [ref=e137]:
+                    - generic [ref=e138]:
+                      - img [ref=e139]
+                      - generic [ref=e142]: Cliente_MCP_1761155612529
+                    - generic [ref=e143]:
+                      - img [ref=e144]
+                      - generic [ref=e146]: (11) 98765-4321
+                    - generic [ref=e147]:
+                      - img [ref=e148]
+                      - generic [ref=e151]: Criado automaticamente via DevTools
+                  - generic [ref=e153]:
+                    - img [ref=e154]
+                    - generic [ref=e158]: Sem imagens
+              - generic [ref=e162] [cursor=pointer]: "7"
+              - generic [ref=e167] [cursor=pointer]: "8"
+              - generic [ref=e172] [cursor=pointer]: "9"
+              - generic [ref=e177] [cursor=pointer]: "10"
+              - generic [ref=e182] [cursor=pointer]: "11"
+              - generic [ref=e187] [cursor=pointer]: "12"
+              - generic [ref=e192] [cursor=pointer]: "13"
+              - generic [ref=e197] [cursor=pointer]: "14"
+              - generic [ref=e202] [cursor=pointer]: "15"
+              - generic [ref=e207] [cursor=pointer]: "16"
+              - generic [ref=e212] [cursor=pointer]: "17"
+              - generic [ref=e217] [cursor=pointer]: "18"
+              - generic [ref=e222] [cursor=pointer]: "19"
+              - generic [ref=e227] [cursor=pointer]: "20"
+              - generic [ref=e232] [cursor=pointer]: "21"
+              - generic [ref=e235] [cursor=pointer]:
+                - generic [ref=e236]:
+                  - generic [ref=e237]: "22"
+                  - generic [ref=e238]: "2"
+                - generic [ref=e239]:
+                  - generic [ref=e240]:
+                    - generic [ref=e241]:
+                      - generic [ref=e242]:
+                        - img [ref=e243]
+                        - generic [ref=e246]: Cliente_MCP_Teste_1761155261119
+                      - generic [ref=e247]:
+                        - img [ref=e248]
+                        - generic [ref=e250]: (11) 98765-4321
+                      - generic [ref=e251]:
+                        - img [ref=e252]
+                        - generic [ref=e255]: Criado automaticamente para validação
+                    - generic [ref=e257]:
+                      - img [ref=e258]
+                      - generic [ref=e262]: Sem imagens
+                  - generic [ref=e263]:
+                    - generic [ref=e264]:
+                      - generic [ref=e265]:
+                        - img [ref=e266]
+                        - generic [ref=e269]: Cliente Exemplo
+                      - generic [ref=e270]:
+                        - img [ref=e271]
+                        - generic [ref=e273]: (11) 99999-9999
+                      - generic [ref=e274]:
+                        - img [ref=e275]
+                        - generic [ref=e278]: asdaaswdas
+                    - generic [ref=e280]:
+                      - img [ref=e281]
+                      - generic [ref=e285]: Sem imagens
+              - generic [ref=e289] [cursor=pointer]: "23"
+              - generic [ref=e294] [cursor=pointer]: "24"
+              - generic [ref=e299] [cursor=pointer]: "25"
+              - generic [ref=e304] [cursor=pointer]: "26"
+              - generic [ref=e309] [cursor=pointer]: "27"
+              - generic [ref=e314] [cursor=pointer]: "28"
+              - generic [ref=e319] [cursor=pointer]: "29"
+              - generic [ref=e324] [cursor=pointer]: "30"
+              - generic [ref=e329] [cursor=pointer]: "31"
+          - generic [ref=e333]:
+            - generic [ref=e334]:
+              - generic [ref=e337]: Hoje
+              - generic [ref=e340]: Com agendamentos
+              - generic [ref=e341]:
+                - img [ref=e342]
+                - generic [ref=e345]: Nome do cliente
+              - generic [ref=e346]:
+                - img [ref=e347]
+                - generic [ref=e349]: Telefone
+              - generic [ref=e350]:
+                - img [ref=e351]
+                - generic [ref=e354]: Descrição
+            - generic [ref=e355]:
+              - generic [ref=e356]:
+                - img [ref=e357]
+                - generic [ref=e359]: "Dica:"
+                - generic [ref=e360]: Clique em qualquer dia para ver os detalhes completos dos agendamentos
+              - generic [ref=e361]:
+                - img [ref=e362]
+                - generic [ref=e364]: "Dica:"
+                - generic [ref=e365]: Dê duplo clique em qualquer imagem para abrir a pasta do cliente
   - region "Notifications alt+T"
 ```

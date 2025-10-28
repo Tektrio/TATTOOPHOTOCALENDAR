@@ -10,7 +10,7 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Switch } from './ui/switch';
 import { Moon, Sun, Languages, Settings as SettingsIcon, Check } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const SettingsPanel = () => {
   const [theme, setTheme] = useState('dark');
@@ -76,10 +76,17 @@ const SettingsPanel = () => {
   };
 
   const resetSettings = () => {
-    handleThemeChange('dark');
-    handleLanguageChange('pt');
-    handleAutoSyncChange(true);
-    handleNotificationsChange(true);
+    setTheme('dark');
+    setLanguage('pt');
+    setAutoSync(true);
+    setNotifications(true);
+    
+    localStorage.setItem('theme', 'dark');
+    localStorage.setItem('language', 'pt');
+    localStorage.setItem('autoSync', 'true');
+    localStorage.setItem('notifications', 'true');
+    
+    applyTheme('dark');
     toast.success('Configurações restauradas para padrão! 🔄');
   };
 

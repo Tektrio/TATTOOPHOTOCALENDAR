@@ -145,7 +145,9 @@ app.locals.db = db;
 
 // Rotas de importação e sincronização - CORRIGIDO BUG #003
 const importsRouter = require('./routes/imports');
+const vagaroImportRouter = require('./routes/vagaroImport');
 app.use('/api/imports', importsRouter);
+app.use('/api/imports/vagaro', vagaroImportRouter);
 app.use('/api/auth', importsRouter);
 app.use('/api/sync', importsRouter);
 
@@ -265,10 +267,17 @@ db.serialize(() => {
     records_failed INTEGER DEFAULT 0,
     error_details TEXT,
     file_name TEXT,
+    file_type TEXT,
+    total_rows INTEGER DEFAULT 0,
+    created_rows INTEGER DEFAULT 0,
+    updated_rows INTEGER DEFAULT 0,
+    skipped_rows INTEGER DEFAULT 0,
+    error_rows INTEGER DEFAULT 0,
+    errors TEXT,
     batch_id TEXT,
     started_at DATETIME,
     completed_at DATETIME,
-    duration_seconds INTEGER,
+    duration_seconds REAL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 

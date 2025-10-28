@@ -1,0 +1,1 @@
+{"success":false,"message":"Erro ao listar contas Google","error":"SQLITE_ERROR: no such table: google_accounts"}
