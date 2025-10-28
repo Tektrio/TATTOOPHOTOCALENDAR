@@ -139,11 +139,11 @@ router.get('/:id/forms/:formId', (req, res) => {
   const query = `
     SELECT 
       cf.*,
-      ft.name as template_name,
-      ft.type as template_type,
-      ft.fields as template_fields
+      cust_f.name as template_name,
+      cust_f.type as template_type,
+      cust_f.fields as template_fields
     FROM customer_forms cf
-    LEFT JOIN form_templates ft ON cf.template_id = ft.id
+    LEFT JOIN custom_forms cust_f ON cf.form_id = cust_f.id
     WHERE cf.id = ? AND cf.client_id = ?
   `;
   
@@ -159,7 +159,7 @@ router.get('/:id/forms/:formId', (req, res) => {
     
     const form = {
       ...row,
-      responses: row.responses ? JSON.parse(row.responses) : {},
+      form_data: row.form_data ? JSON.parse(row.form_data) : {},
       template_fields: row.template_fields ? JSON.parse(row.template_fields) : []
     };
     
@@ -171,27 +171,26 @@ router.get('/:id/forms/:formId', (req, res) => {
 router.post('/:id/forms', (req, res) => {
   const { id } = req.params;
   const {
-    template_id,
-    responses,
-    appointment_id,
-    status = 'completed'
+    form_id,
+    form_data,
+    appointment_id
   } = req.body;
   
-  if (!template_id || !responses) {
+  if (!form_id || !form_data) {
     return res.status(400).json({
-      error: 'Template e respostas são obrigatórios'
+      error: 'Formulário e dados são obrigatórios'
     });
   }
   
   const query = `
     INSERT INTO customer_forms (
-      client_id, template_id, appointment_id, responses, status, filled_at
-    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      client_id, form_id, appointment_id, form_data, filled_at
+    ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
   `;
   
   req.app.locals.db.run(
     query,
-    [id, template_id, appointment_id, JSON.stringify(responses), status],
+    [id, form_id, appointment_id, JSON.stringify(form_data)],
     function(err) {
       if (err) {
         console.error('Erro ao salvar formulário:', err);
@@ -209,19 +208,18 @@ router.post('/:id/forms', (req, res) => {
 // PUT /api/customers/:id/forms/:formId - Atualizar formulário
 router.put('/:id/forms/:formId', (req, res) => {
   const { id, formId } = req.params;
-  const { responses, status } = req.body;
+  const { form_data } = req.body;
   
   const query = `
     UPDATE customer_forms
-    SET responses = COALESCE(?, responses),
-        status = COALESCE(?, status),
+    SET form_data = COALESCE(?, form_data),
         updated_at = CURRENT_TIMESTAMP
     WHERE id = ? AND client_id = ?
   `;
   
   req.app.locals.db.run(
     query,
-    [responses ? JSON.stringify(responses) : null, status, formId, id],
+    [form_data ? JSON.stringify(form_data) : null, formId, id],
     function(err) {
       if (err) {
         console.error('Erro ao atualizar formulário:', err);
