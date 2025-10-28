@@ -25,6 +25,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const PreferencesTab = ({ clientId }) => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -58,7 +60,7 @@ const PreferencesTab = ({ clientId }) => {
   const fetchPreferences = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/clients/${clientId}/preferences`);
+      const response = await fetch(`${API_BASE}/api/clients/${clientId}/preferences`);
       const result = await response.json();
       
       if (result.success && result.data) {
@@ -82,7 +84,7 @@ const PreferencesTab = ({ clientId }) => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/clients/${clientId}/preferences`, {
+      const response = await fetch(`${API_BASE}/api/clients/${clientId}/preferences`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(preferences)
