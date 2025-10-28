@@ -5,6 +5,9 @@ import { Toaster } from 'sonner'
 import './index.css'
 import App from './App.jsx'
 import ClientProfile from './pages/ClientProfile.jsx'
+import CustomerPage from './pages/CustomerPage.jsx'
+import NewCustomerPage from './pages/NewCustomerPage.jsx'
+import Customers from './pages/Customers.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -12,6 +15,9 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/clients/:clientId" element={<ClientProfile />} />
+        <Route path="/customers" element={<Customers />} />
+        <Route path="/customers/new" element={<NewCustomerPage />} />
+        <Route path="/customers/:id" element={<CustomerPage />} />
       </Routes>
       <Toaster 
         position="top-right" 

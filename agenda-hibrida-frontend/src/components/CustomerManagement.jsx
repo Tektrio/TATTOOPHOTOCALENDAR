@@ -28,6 +28,7 @@ const CustomerManagement = ({ customerId, onClose }) => {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
+  const [shouldEditProfile, setShouldEditProfile] = useState(false);
 
   useEffect(() => {
     if (customerId) {
@@ -96,11 +97,32 @@ const CustomerManagement = ({ customerId, onClose }) => {
             </Button>
             
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  if (customer.email) {
+                    window.location.href = `mailto:${customer.email}`;
+                  } else if (customer.phone) {
+                    // Remover caracteres especiais do telefone para WhatsApp
+                    const cleanPhone = customer.phone.replace(/\D/g, '');
+                    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+                  } else {
+                    alert('Cliente não possui email ou telefone cadastrado');
+                  }
+                }}
+              >
                 <Mail className="mr-2 h-4 w-4" />
                 Mensagem
               </Button>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setActiveTab('profile');
+                  setShouldEditProfile(true);
+                }}
+              >
                 Editar Perfil
               </Button>
             </div>
@@ -247,7 +269,12 @@ const CustomerManagement = ({ customerId, onClose }) => {
         </TabsList>
 
         <TabsContent value="profile">
-          <ProfileTab customer={customer} onUpdate={fetchCustomer} />
+          <ProfileTab 
+            customer={customer} 
+            onUpdate={fetchCustomer} 
+            shouldEdit={shouldEditProfile}
+            onEditStart={() => setShouldEditProfile(false)}
+          />
         </TabsContent>
 
         <TabsContent value="appointments">

@@ -25,13 +25,23 @@ import { ptBR } from 'date-fns/locale';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-const ProfileTab = ({ customer, onUpdate }) => {
+const ProfileTab = ({ customer, onUpdate, shouldEdit, onEditStart }) => {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ ...customer });
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(customer?.avatar_url || null);
   const fileInputRef = useRef(null);
+
+  // Ativar modo de edição quando shouldEdit for true
+  React.useEffect(() => {
+    if (shouldEdit && !editing) {
+      setEditing(true);
+      if (onEditStart) {
+        onEditStart(); // Notificar que a edição foi iniciada
+      }
+    }
+  }, [shouldEdit]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));

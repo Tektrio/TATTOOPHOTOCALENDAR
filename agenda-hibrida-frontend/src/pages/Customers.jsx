@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -18,6 +19,7 @@ import { toast } from 'sonner';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const Customers = () => {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -223,9 +225,7 @@ const Customers = () => {
   };
 
   const handleCustomerClick = (customer) => {
-    setSelectedCustomer(customer);
-    // Aqui você pode navegar para a página de detalhes do cliente
-    // window.location.href = `/customers/${customer.id}`;
+    navigate(`/customers/${customer.id}`);
   };
 
   if (loading) {
@@ -250,7 +250,10 @@ const Customers = () => {
             {searchTerm || filterTag !== 'all' || filterDateRange !== 'all' ? ' (filtrado)' : ''}
           </p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+        <Button 
+          onClick={() => navigate('/customers/new')}
+          className="bg-purple-600 hover:bg-purple-700 text-white"
+        >
           <UserPlus className="w-4 h-4 mr-2" />
           Adicionar Cliente
         </Button>
