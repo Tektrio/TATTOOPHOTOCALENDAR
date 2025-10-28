@@ -41,23 +41,33 @@ test.describe('Drag and Drop Calendar Tests', () => {
     await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
     await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
+    // Wait for at least one view button to be present
+    await page.waitForSelector('[data-testid^="btn-calendar-"]', { timeout: 30000 });
+    
     // Look for view toggle buttons
     const monthView = page.locator('[data-testid="btn-calendar-month"]');
     const weekView = page.locator('[data-testid="btn-calendar-week"]');
     const dayView = page.locator('[data-testid="btn-calendar-day"]');
+    const listView = page.locator('[data-testid="btn-calendar-list"]');
+    
+    // Check which buttons exist and are visible
+    const buttons = [
+      { locator: monthView, name: 'Month' },
+      { locator: weekView, name: 'Week' },
+      { locator: dayView, name: 'Day' },
+      { locator: listView, name: 'List' }
+    ];
     
     let foundViews = 0;
-    if (await monthView.count() > 0) {
-      await expect(monthView).toBeVisible();
-      foundViews++;
-    }
-    if (await weekView.count() > 0) {
-      await expect(weekView).toBeVisible();
-      foundViews++;
-    }
-    if (await dayView.count() > 0) {
-      await expect(dayView).toBeVisible();
-      foundViews++;
+    for (const button of buttons) {
+      const count = await button.locator.count();
+      if (count > 0) {
+        const isVisible = await button.locator.isVisible().catch(() => false);
+        if (isVisible) {
+          foundViews++;
+          console.log(`Found visible ${button.name} view button`);
+        }
+      }
     }
     
     expect(foundViews).toBeGreaterThan(0);

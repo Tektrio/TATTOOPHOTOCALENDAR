@@ -690,55 +690,102 @@ function App() {
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <div className="container mx-auto px-4 py-6">
+      {/* Navigation Tabs - Visual Melhorado com Nomes Completos */}
+      <div className="container mx-auto px-4 py-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-8 bg-white/10 backdrop-blur-md">
-            <TabsTrigger value="dashboard" data-testid="tab-dashboard" className="data-[state=active]:bg-white/20">
-              <Monitor className="w-4 h-4 mr-2" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="calendar" data-testid="tab-calendar" className="data-[state=active]:bg-white/20">
-              <Calendar className="w-4 h-4 mr-2" />
-              Calendário Visual
-            </TabsTrigger>
-            <TabsTrigger value="appointments" data-testid="tab-appointments" className="data-[state=active]:bg-white/20">
-              <Clock className="w-4 h-4 mr-2" />
-              Agendamentos
-            </TabsTrigger>
-            <TabsTrigger value="clients" data-testid="tab-clients" className="data-[state=active]:bg-white/20">
-              <Users className="w-4 h-4 mr-2" />
-              Clientes
-            </TabsTrigger>
-            <TabsTrigger value="import" data-testid="tab-import" className="data-[state=active]:bg-white/20">
-              <Upload className="w-4 h-4 mr-2" />
-              Importar Dados
-            </TabsTrigger>
-            <TabsTrigger value="gallery" data-testid="tab-gallery" className="data-[state=active]:bg-white/20">
-              <Image className="w-4 h-4 mr-2" />
-              Galeria
-            </TabsTrigger>
-            <TabsTrigger value="drive" data-testid="tab-drive" className="data-[state=active]:bg-white/20">
-              <Cloud className="w-4 h-4 mr-2" />
-              Google Drive
-            </TabsTrigger>
-            <TabsTrigger value="financial" data-testid="tab-financial" className="data-[state=active]:bg-white/20">
-              <DollarSign className="w-4 h-4 mr-2" />
-              Financeiro
-            </TabsTrigger>
-            <TabsTrigger value="employees" data-testid="tab-employees" className="data-[state=active]:bg-white/20">
-              <Users className="w-4 h-4 mr-2" />
-              Funcionários
-            </TabsTrigger>
-            <TabsTrigger value="vagaro-import" data-testid="tab-vagaro-import" className="data-[state=active]:bg-white/20">
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Importar Vagaro
-            </TabsTrigger>
-            <TabsTrigger value="settings" data-testid="tab-settings" className="data-[state=active]:bg-white/20">
-              <Settings className="w-4 h-4 mr-2" />
-              Configurações
-            </TabsTrigger>
-          </TabsList>
+          <div className="bg-gradient-to-r from-purple-900/30 via-blue-900/30 to-purple-900/30 backdrop-blur-xl rounded-2xl p-3 border border-white/10 shadow-2xl">
+            <TabsList className="flex flex-wrap justify-center gap-2 bg-transparent p-0">
+              <TabsTrigger 
+                value="dashboard" 
+                data-testid="tab-dashboard" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Monitor className="w-4 h-4" />
+                Dashboard
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="calendar" 
+                data-testid="tab-calendar" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Calendar className="w-4 h-4" />
+                Calendário Visual
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="appointments" 
+                data-testid="tab-appointments" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Clock className="w-4 h-4" />
+                Agendamentos
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="clients" 
+                data-testid="tab-clients" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Users className="w-4 h-4" />
+                Clientes
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="import" 
+                data-testid="tab-import" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Upload className="w-4 h-4" />
+                Importação
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="gallery" 
+                data-testid="tab-gallery" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Image className="w-4 h-4" />
+                Galeria
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="drive" 
+                data-testid="tab-drive" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Cloud className="w-4 h-4" />
+                Google Drive
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="financial" 
+                data-testid="tab-financial" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <DollarSign className="w-4 h-4" />
+                Financeiro
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="employees" 
+                data-testid="tab-employees" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Users className="w-4 h-4" />
+                Funcionários
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="settings" 
+                data-testid="tab-settings" 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-500 data-[state=active]:to-gray-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+              >
+                <Settings className="w-4 h-4" />
+                Configurações
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6 mt-6">
@@ -1284,11 +1331,45 @@ function App() {
             </div>
           </TabsContent>
 
-          {/* Import Tab */}
+          {/* Import Tab - Unificada com sub-abas */}
           <TabsContent value="import" className="mt-6">
-            <Suspense fallback={<div className="text-white text-center py-8">Carregando assistente de importação...</div>}>
-              <ImportWizard />
-            </Suspense>
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                  <Upload className="w-6 h-6" />
+                  Central de Importação
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  Importe dados de diferentes fontes para o sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="wizard" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-white/5">
+                    <TabsTrigger value="wizard" className="data-[state=active]:bg-purple-600">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Excel / ICS / CSV
+                    </TabsTrigger>
+                    <TabsTrigger value="vagaro" className="data-[state=active]:bg-purple-600">
+                      <FileSpreadsheet className="w-4 h-4 mr-2" />
+                      Vagaro (Completo)
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="wizard" className="mt-4">
+                    <Suspense fallback={<div className="text-white text-center py-8">Carregando assistente de importação...</div>}>
+                      <ImportWizard />
+                    </Suspense>
+                  </TabsContent>
+                  
+                  <TabsContent value="vagaro" className="mt-4">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <VagaroImport />
+                    </Suspense>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Clients Tab */}
@@ -1324,13 +1405,6 @@ function App() {
           <TabsContent value="employees" className="space-y-6 mt-6">
             <Suspense fallback={<LoadingSpinner />}>
               <Employees />
-            </Suspense>
-          </TabsContent>
-
-          {/* Vagaro Import Tab */}
-          <TabsContent value="vagaro-import" className="space-y-6 mt-6">
-            <Suspense fallback={<LoadingSpinner />}>
-              <VagaroImport />
             </Suspense>
           </TabsContent>
 

@@ -46,18 +46,27 @@ const Customers = () => {
       if (!response.ok) throw new Error('Erro ao buscar clientes');
       const data = await response.json();
       
-      // Garantir que data é um array
+      // Normalizar dados dos clientes
+      let normalizedData = [];
       if (Array.isArray(data)) {
-        setCustomers(data);
+        normalizedData = data;
       } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
         // API retorna {data: [], pagination: {}} 
-        setCustomers(data.data);
+        normalizedData = data.data;
       } else if (data && typeof data === 'object' && Array.isArray(data.customers)) {
-        setCustomers(data.customers);
+        normalizedData = data.customers;
       } else {
         console.warn('API retornou formato inesperado:', data);
-        setCustomers([]);
+        normalizedData = [];
       }
+      
+      // Normalizar tags para cada cliente
+      normalizedData = normalizedData.map(customer => ({
+        ...customer,
+        tags: normalizeTags(customer.tags)
+      }));
+      
+      setCustomers(normalizedData);
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
       toast.error('Erro ao carregar clientes');
@@ -65,6 +74,28 @@ const Customers = () => {
     } finally {
       setLoading(false);
     }
+  };
+  
+  // Função auxiliar para normalizar tags
+  const normalizeTags = (tags) => {
+    // Se tags já é um array, retornar
+    if (Array.isArray(tags)) {
+      return tags;
+    }
+    
+    // Se tags é uma string JSON, fazer parse
+    if (typeof tags === 'string' && tags.trim().length > 0) {
+      try {
+        const parsed = JSON.parse(tags);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn('Erro ao fazer parse de tags:', tags);
+        return [];
+      }
+    }
+    
+    // Caso contrário, retornar array vazio
+    return [];
   };
 
   const fetchTags = async () => {

@@ -716,6 +716,7 @@ const CalendarioVisual = () => {
                         variant={viewMode === 'month' ? 'default' : 'ghost'}
                         size="sm"
                         className={viewMode === 'month' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                        data-testid="btn-calendar-month"
                       >
                         <Grid className="w-4 h-4" />
                       </Button>
@@ -730,6 +731,7 @@ const CalendarioVisual = () => {
                         variant={viewMode === 'week' ? 'default' : 'ghost'}
                         size="sm"
                         className={viewMode === 'week' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                        data-testid="btn-calendar-week"
                       >
                         <CalendarIcon className="w-4 h-4" />
                       </Button>
@@ -744,6 +746,7 @@ const CalendarioVisual = () => {
                         variant={viewMode === 'day' ? 'default' : 'ghost'}
                         size="sm"
                         className={viewMode === 'day' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                        data-testid="btn-calendar-day"
                       >
                         <Clock className="w-4 h-4" />
                       </Button>
@@ -758,6 +761,7 @@ const CalendarioVisual = () => {
                         variant={viewMode === 'list' ? 'default' : 'ghost'}
                         size="sm"
                         className={viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                        data-testid="btn-calendar-list"
                       >
                         <List className="w-4 h-4" />
                       </Button>
@@ -774,6 +778,7 @@ const CalendarioVisual = () => {
                       onClick={goToPrevious}
                       variant="outline"
                       size="sm"
+                      data-testid="btn-calendar-prev"
                       className="border-white/20 text-white hover:bg-white/10"
                     >
                       <ChevronLeft className="w-4 h-4" />
@@ -791,6 +796,7 @@ const CalendarioVisual = () => {
                       variant="outline"
                       size="sm"
                       className="border-white/20 text-white hover:bg-white/10"
+                      data-testid="btn-calendar-next"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
