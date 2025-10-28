@@ -9,6 +9,7 @@ import DocumentsTab from '../components/client/DocumentsTab';
 import HealthTab from '../components/client/HealthTab';
 import CommunicationTab from '../components/client/CommunicationTab';
 import PrivateNotesTab from '../components/client/PrivateNotesTab';
+import PreferencesTab from '../components/client/PreferencesTab';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -20,6 +21,7 @@ const tabs = [
   { id: 'photos', label: 'Fotos', icon: '📷' },
   { id: 'documents', label: 'Documentos', icon: '📄' },
   { id: 'health', label: 'Saúde', icon: '🏥' },
+  { id: 'preferences', label: 'Preferências', icon: '⚙️' },
   { id: 'communication', label: 'Comunicação', icon: '💬' },
   { id: 'financial', label: 'Financeiro', icon: '💰' },
   { id: 'private-notes', label: 'Notas Privadas', icon: '🔒' }
@@ -138,6 +140,9 @@ function ClientProfile() {
 
       case 'health':
         return <HealthTab clientId={clientId} />;
+
+      case 'preferences':
+        return <PreferencesTab clientId={clientId} />;
 
       case 'communication':
         return <CommunicationTab clientId={clientId} />;

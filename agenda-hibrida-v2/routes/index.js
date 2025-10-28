@@ -53,14 +53,14 @@ function registerRoutes(app) {
   // Rotas de Serviços (Service Types)
   app.use('/api/services', servicesRouter);
   
-  // Rotas de Detalhes de Clientes (12 abas)
+  // Rotas de Detalhes de Clientes (12 Abas)
   app.use('/api/clients', clientDetailsRouter);
   
   console.log('✅ Rotas de gestão de clientes registradas');
   console.log('✅ Rotas de importação e sincronização registradas');
   console.log('✅ Rotas de Google multi-conta registradas');
   console.log('✅ Rotas de serviços registradas');
-  console.log('✅ Rotas de detalhes de clientes registradas');
+  console.log('✅ Rotas de detalhes de clientes registradas (40+ endpoints)');
 }
 
 module.exports = { registerRoutes };
