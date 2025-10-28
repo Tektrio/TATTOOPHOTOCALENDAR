@@ -46,7 +46,14 @@ router.get('/:id/gift-cards', (req, res) => {
       return res.status(500).json({ error: 'Erro ao buscar gift cards' });
     }
     
-    res.json(rows);
+    // Mapear campos do backend para nomes esperados pelo frontend
+    const mappedRows = rows.map(row => ({
+      ...row,
+      issued_date: row.purchased_at,
+      expiry_date: row.expires_at
+    }));
+    
+    res.json(mappedRows);
   });
 });
 
@@ -85,7 +92,49 @@ router.get('/', (req, res) => {
       return res.status(500).json({ error: 'Erro ao buscar gift cards' });
     }
     
-    res.json(rows);
+    // Mapear campos do backend para nomes esperados pelo frontend
+    const mappedRows = rows.map(row => ({
+      ...row,
+      issued_date: row.purchased_at,
+      expiry_date: row.expires_at
+    }));
+    
+    res.json(mappedRows);
+  });
+});
+
+// GET /api/gift-cards/code/:code - Buscar gift card por código (DEVE VIR ANTES DE /:id)
+router.get('/code/:code', (req, res) => {
+  const { code } = req.params;
+  
+  const query = `
+    SELECT 
+      gc.*,
+      c.name as client_name,
+      c.email as client_email
+    FROM gift_cards gc
+    JOIN clients c ON gc.client_id = c.id
+    WHERE gc.code = ?
+  `;
+  
+  req.app.locals.db.get(query, [code], (err, row) => {
+    if (err) {
+      console.error('Erro ao buscar gift card:', err);
+      return res.status(500).json({ error: 'Erro ao buscar gift card' });
+    }
+    
+    if (!row) {
+      return res.status(404).json({ error: 'Gift card não encontrado' });
+    }
+    
+    // Mapear campos do backend para nomes esperados pelo frontend
+    const response = {
+      ...row,
+      issued_date: row.purchased_at,
+      expiry_date: row.expires_at
+    };
+    
+    res.json(response);
   });
 });
 
@@ -129,7 +178,14 @@ router.get('/:id', (req, res) => {
         row.usage_history = usage;
       }
       
-      res.json(row);
+      // Mapear campos do backend para nomes esperados pelo frontend
+      const response = {
+        ...row,
+        issued_date: row.purchased_at,
+        expiry_date: row.expires_at
+      };
+      
+      res.json(response);
     });
   });
 });
@@ -308,34 +364,6 @@ router.delete('/:id', (req, res) => {
     }
     
     res.json({ message: 'Gift card deletado com sucesso' });
-  });
-});
-
-// GET /api/gift-cards/code/:code - Buscar gift card por código
-router.get('/code/:code', (req, res) => {
-  const { code } = req.params;
-  
-  const query = `
-    SELECT 
-      gc.*,
-      c.name as client_name,
-      c.email as client_email
-    FROM gift_cards gc
-    JOIN clients c ON gc.client_id = c.id
-    WHERE gc.code = ?
-  `;
-  
-  req.app.locals.db.get(query, [code], (err, row) => {
-    if (err) {
-      console.error('Erro ao buscar gift card:', err);
-      return res.status(500).json({ error: 'Erro ao buscar gift card' });
-    }
-    
-    if (!row) {
-      return res.status(404).json({ error: 'Gift card não encontrado' });
-    }
-    
-    res.json(row);
   });
 });
 
