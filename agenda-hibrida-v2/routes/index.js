@@ -11,6 +11,8 @@ const productsRouter = require('./products');
 const invoicesRouter = require('./invoices');
 const packagesRouter = require('./packages');
 const importsRouter = require('./imports');
+const googleAccountsRouter = require('./google-accounts');
+const servicesRouter = require('./services');
 
 /**
  * Registrar todas as rotas no app Express
@@ -44,8 +46,16 @@ function registerRoutes(app) {
   app.use('/api/auth', importsRouter);
   app.use('/api/sync', importsRouter);
   
+  // Rotas de Google Multi-Account
+  app.use('/api/google/accounts', googleAccountsRouter);
+  
+  // Rotas de Serviços (Service Types)
+  app.use('/api/services', servicesRouter);
+  
   console.log('✅ Rotas de gestão de clientes registradas');
   console.log('✅ Rotas de importação e sincronização registradas');
+  console.log('✅ Rotas de Google multi-conta registradas');
+  console.log('✅ Rotas de serviços registradas');
 }
 
 module.exports = { registerRoutes };

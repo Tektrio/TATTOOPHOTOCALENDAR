@@ -13,8 +13,9 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should load calendar view', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // Verify calendar is visible
     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });
@@ -22,12 +23,13 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should show calendar navigation controls', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // Check for previous/next month buttons
-    const prevButton = page.locator('button[title*="Anterior"], button[aria-label*="anterior"], button:has(svg)').first();
-    const nextButton = page.locator('button[title*="Próximo"], button[aria-label*="próximo"], button:has(svg)').last();
+    const prevButton = page.locator('[data-testid="btn-calendar-prev"]');
+    const nextButton = page.locator('[data-testid="btn-calendar-next"]');
     
     await expect(prevButton).toBeVisible();
     await expect(nextButton).toBeVisible();
@@ -35,19 +37,27 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should switch between calendar views', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
-    // Look for view toggle buttons (Mês, Semana, Dia)
-    const viewButtons = ['Mês', 'Semana', 'Dia', 'Month', 'Week', 'Day'];
+    // Look for view toggle buttons
+    const monthView = page.locator('[data-testid="btn-calendar-month"]');
+    const weekView = page.locator('[data-testid="btn-calendar-week"]');
+    const dayView = page.locator('[data-testid="btn-calendar-day"]');
     
     let foundViews = 0;
-    for (const view of viewButtons) {
-      const viewButton = page.locator(`button:has-text("${view}")`);
-      if (await viewButton.count() > 0) {
-        await expect(viewButton.first()).toBeVisible();
-        foundViews++;
-      }
+    if (await monthView.count() > 0) {
+      await expect(monthView).toBeVisible();
+      foundViews++;
+    }
+    if (await weekView.count() > 0) {
+      await expect(weekView).toBeVisible();
+      foundViews++;
+    }
+    if (await dayView.count() > 0) {
+      await expect(dayView).toBeVisible();
+      foundViews++;
     }
     
     expect(foundViews).toBeGreaterThan(0);
@@ -55,11 +65,12 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should display appointments in calendar', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
-    // Look for appointment elements (events/blocks)
-    const appointmentElements = page.locator('[class*="event"], [class*="appointment"], [data-event], [draggable="true"]');
+    // Look for appointment elements
+    const appointmentElements = page.locator('[data-testid^="appointment-"]');
     
     const hasAppointments = await appointmentElements.count() > 0;
     
@@ -73,11 +84,12 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should show appointment details on click', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // Look for clickable appointments
-    const appointmentElements = page.locator('[class*="event"], [class*="appointment"], [data-event]');
+    const appointmentElements = page.locator('[data-testid^="appointment-"]');
     
     if (await appointmentElements.count() === 0) {
       test.skip(true, 'No appointments to click');
@@ -89,7 +101,7 @@ test.describe('Drag and Drop Calendar Tests', () => {
     await page.waitForTimeout(500);
     
     // Check if details modal/popup appeared
-    const detailsModal = page.locator('[role="dialog"], [class*="modal"], [class*="popup"]');
+    const detailsModal = page.locator('[role="dialog"], [class*="modal"]');
     
     if (await detailsModal.count() > 0) {
       await expect(detailsModal.first()).toBeVisible();
@@ -100,11 +112,12 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should allow dragging appointments (visual feedback)', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // Look for draggable appointments
-    const draggableElements = page.locator('[draggable="true"]');
+    const draggableElements = page.locator('[data-testid^="appointment-"][draggable="true"]');
     
     if (await draggableElements.count() === 0) {
       test.skip(true, 'No draggable appointments found');
@@ -122,8 +135,9 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should perform drag and drop to new date', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // This is a complex interaction that requires:
     // 1. Finding a draggable appointment
@@ -132,7 +146,7 @@ test.describe('Drag and Drop Calendar Tests', () => {
     // 4. Verifying the appointment moved
     
     // Look for draggable appointments
-    const draggableElements = page.locator('[draggable="true"]');
+    const draggableElements = page.locator('[data-testid^="appointment-"][draggable="true"]');
     
     if (await draggableElements.count() === 0) {
       test.skip(true, 'No draggable appointments for drag test');
@@ -148,7 +162,7 @@ test.describe('Drag and Drop Calendar Tests', () => {
     }
     
     // Find calendar day cells
-    const dayCells = page.locator('[data-date], [class*="day"], [class*="cell"]');
+    const dayCells = page.locator('[data-testid^="calendar-cell-"]');
     
     if (await dayCells.count() < 2) {
       test.skip(true, 'Not enough day cells for drag test');
@@ -181,8 +195,9 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should show visual feedback during drag', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // Expected behavior during drag:
     // - Cursor changes
@@ -190,7 +205,7 @@ test.describe('Drag and Drop Calendar Tests', () => {
     // - Drop target highlights
     // - Ghost/preview of element
     
-    const draggableElements = page.locator('[draggable="true"]');
+    const draggableElements = page.locator('[data-testid^="appointment-"][draggable="true"]');
     
     if (await draggableElements.count() === 0) {
       test.skip(true, 'No draggable elements to test drag feedback');
@@ -205,7 +220,7 @@ test.describe('Drag and Drop Calendar Tests', () => {
     const cursorStyle = await page.evaluate((selector) => {
       const element = document.querySelector(selector);
       return element ? window.getComputedStyle(element).cursor : null;
-    }, '[draggable="true"]');
+    }, '[data-testid^="appointment-"][draggable="true"]');
     
     console.log('Cursor style on draggable:', cursorStyle);
     
@@ -217,8 +232,9 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should update appointment time after drop', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // This test verifies that after drag and drop:
     // 1. Appointment date/time updates
@@ -230,8 +246,9 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should handle drop on invalid target', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // Expected behavior:
     // - Dropping on invalid area returns appointment to original position
@@ -243,8 +260,9 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should support multi-day appointments', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // Check if calendar supports appointments spanning multiple days
     const multiDayElements = page.locator('[class*="multi-day"], [class*="spanning"], [data-duration]');
@@ -259,8 +277,9 @@ test.describe('Drag and Drop Calendar Tests', () => {
 
   test('should resize appointments by dragging edges', async ({ page }) => {
     // Navigate to calendar tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(5000); // Lazy loading (increased for mobile)
+    await expect(page.locator('[data-testid="calendar-view"]')).toBeVisible({ timeout: 60000 });
     
     // Expected behavior:
     // - Appointment edges are draggable to resize

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Phone, User, FileText, Folder, Grid, List, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Phone, User, FileText, Folder, Grid, List, Clock, Users } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { toast } from 'sonner';
 import ConflictResolver from './ConflictResolver';
 import SyncStatusIndicator from './SyncStatusIndicator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import {
   Tooltip,
   TooltipContent,
@@ -37,10 +38,36 @@ const CalendarioVisual = () => {
   const [showConflictModal, setShowConflictModal] = useState(false); // Modal de conflitos
   const [draggedAppointment, setDraggedAppointment] = useState(null); // Appointment sendo arrastado
   const [dropTarget, setDropTarget] = useState(null); // Alvo do drop
+  
+  // Novos estados para Multi-Conta Google
+  const [googleAccounts, setGoogleAccounts] = useState([]);
+  const [activeAccount, setActiveAccount] = useState('all'); // 'all' ou ID da conta
+  const [accountsLoading, setAccountsLoading] = useState(false);
 
   useEffect(() => {
+    loadGoogleAccounts();
     loadData();
   }, [currentDate]);
+
+  useEffect(() => {
+    loadData(); // Recarregar dados quando mudar a conta ativa
+  }, [activeAccount]);
+
+  // Carregar contas Google cadastradas
+  const loadGoogleAccounts = async () => {
+    try {
+      setAccountsLoading(true);
+      const response = await fetch(`${API_URL}/api/google/accounts`);
+      if (response.ok) {
+        const data = await response.json();
+        setGoogleAccounts(data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar contas Google:', error);
+    } finally {
+      setAccountsLoading(false);
+    }
+  };
 
   // Extrair telefone do título se vier do Google Calendar
   const extractPhoneFromTitle = (title) => {
@@ -138,12 +165,27 @@ const CalendarioVisual = () => {
   const getAppointmentsForDay = (date) => {
     if (!date) return [];
     
-    return appointments.filter(apt => {
+    let filtered = appointments.filter(apt => {
       const aptDate = new Date(apt.start_datetime);
       return aptDate.getDate() === date.getDate() &&
              aptDate.getMonth() === date.getMonth() &&
              aptDate.getFullYear() === date.getFullYear();
     });
+
+    // Filtrar por conta Google ativa
+    if (activeAccount !== 'all') {
+      filtered = filtered.filter(apt => apt.account_id === parseInt(activeAccount));
+    }
+
+    return filtered;
+  };
+
+  // Obter todos os agendamentos filtrados pela conta ativa
+  const getFilteredAppointments = () => {
+    if (activeAccount === 'all') {
+      return appointments;
+    }
+    return appointments.filter(apt => apt.account_id === parseInt(activeAccount));
   };
 
   // Obter imagens para um agendamento pelo telefone
@@ -446,7 +488,7 @@ const CalendarioVisual = () => {
     });
 
     return (
-      <div className="space-y-6">
+      <div className="calendar-view space-y-6" data-testid="calendar-view">
         {/* Header do Dia Expandido */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardContent className="p-6">
@@ -651,7 +693,7 @@ const CalendarioVisual = () => {
 
   return (
     <TooltipProvider>
-      <div className="space-y-6">
+      <div className="calendar-view space-y-6" data-testid="calendar-view">
         {/* Header do Calendário */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardContent className="p-6">
@@ -756,6 +798,40 @@ const CalendarioVisual = () => {
                 )}
               </div>
             </div>
+
+            {/* Tabs de Contas Google (Multi-Account) */}
+            {googleAccounts.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm font-medium text-white">Contas Google:</span>
+                </div>
+                <Tabs value={activeAccount} onValueChange={setActiveAccount} className="w-full">
+                  <TabsList className="bg-white/5 p-1" data-testid="tabs-google-accounts">
+                    <TabsTrigger
+                      value="all"
+                      className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/70"
+                      data-testid="tab-account-all"
+                    >
+                      Todas as Contas
+                    </TabsTrigger>
+                    {googleAccounts.map(account => (
+                      <TabsTrigger
+                        key={account.id}
+                        value={String(account.id)}
+                        className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/70"
+                        data-testid={`tab-account-${account.id}`}
+                      >
+                        {account.account_name || account.account_email}
+                        {account.is_primary && (
+                          <Badge className="ml-2 bg-yellow-500 text-black text-xs">Principal</Badge>
+                        )}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+            )}
 
             {/* VISTA DE MÊS */}
             {viewMode === 'month' && (

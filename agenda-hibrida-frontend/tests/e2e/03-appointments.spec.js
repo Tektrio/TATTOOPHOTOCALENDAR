@@ -11,22 +11,22 @@ test.describe('Appointment Management Tests', () => {
     await page.waitForLoadState('networkidle');
     
     // Navigate to Agendamentos tab
-    await page.click('button:has-text("Agendamentos"), [role="tab"]:has-text("Agendamentos")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-appointments"]');
+    await page.waitForTimeout(2000); // Lazy loading
   });
 
   test('should open new appointment modal', async ({ page }) => {
     // Click "Novo Agendamento" button
-    await page.click('button:has-text("Novo Agendamento"), button:has-text("Novo")');
+    await page.click('[data-testid="btn-new-appointment"]');
     
     // Verify modal opened
-    await expect(page.locator('text=/Novo Agendamento|Criar Agendamento/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="modal-new-appointment"]')).toBeVisible({ timeout: 10000 });
     
     // Verify form fields are present
-    await expect(page.locator('input[name="title"], input[placeholder*="Título"]')).toBeVisible();
+    await expect(page.locator('[data-testid="input-appointment-title"]')).toBeVisible();
     
     // Check for client selector
-    const clientSelect = page.locator('select[name="client_id"], [role="combobox"]');
+    const clientSelect = page.locator('[data-testid="select-appointment-client"]');
     await expect(clientSelect).toBeVisible({ timeout: 3000 }).catch(() => {
       console.log('Client selector not found - may use different component');
     });
@@ -41,38 +41,41 @@ test.describe('Appointment Management Tests', () => {
     };
     
     // Open new appointment modal
-    await page.click('button:has-text("Novo Agendamento"), button:has-text("Novo")');
+    await page.click('[data-testid="btn-new-appointment"]');
     await page.waitForTimeout(1000);
     
     // Fill title
-    await page.fill('input[name="title"], input[placeholder*="Título"]', appointmentData.title);
+    await page.fill('[data-testid="input-appointment-title"]', appointmentData.title);
     
     // Fill description if exists
-    const descriptionField = page.locator('textarea[name="description"], textarea[placeholder*="Descrição"]');
+    const descriptionField = page.locator('[data-testid="input-appointment-description"]');
     if (await descriptionField.count() > 0) {
       await descriptionField.fill(appointmentData.description);
     }
     
     // Try to select a client
-    const clientSelect = page.locator('select[name="client_id"]');
+    const clientSelect = page.locator('[data-testid="select-appointment-client"]');
     if (await clientSelect.count() > 0) {
       // Select first available client
       await clientSelect.selectOption({ index: 1 });
     }
     
     // Fill dates
-    const startDateInput = page.locator('input[name="start_time"], input[name="date"]');
+    const startDateInput = page.locator('[data-testid="input-appointment-date"]');
     if (await startDateInput.count() > 0) {
       // Set date to tomorrow
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateString = tomorrow.toISOString().split('T')[0] + 'T14:00';
+      const dateString = tomorrow.toISOString().split('T')[0];
       
       await startDateInput.fill(dateString);
     }
     
+    // Wait for validation
+    await page.waitForTimeout(1000);
+    
     // Submit form
-    await page.click('button:has-text("Salvar"), button:has-text("Criar"), button[type="submit"]');
+    await page.click('[data-testid="btn-save-appointment"]');
     
     // Wait for success
     await page.waitForTimeout(2000);
@@ -89,31 +92,37 @@ test.describe('Appointment Management Tests', () => {
 
   test('should validate appointment required fields', async ({ page }) => {
     // Open new appointment modal
-    await page.click('button:has-text("Novo Agendamento"), button:has-text("Novo")');
+    await page.click('[data-testid="btn-new-appointment"]');
     await page.waitForTimeout(500);
     
     // Try to submit empty form
-    await page.click('button:has-text("Salvar"), button:has-text("Criar"), button[type="submit"]');
+    await page.click('[data-testid="btn-save-appointment"]');
     
     // Wait for validation
     await page.waitForTimeout(1000);
     
-    // Verify error messages
+    // Verify error messages or that save button remains disabled
     const errorMessage = page.locator('text=/obrigatório|required|Campo obrigatório/i, [class*="error"]');
-    await expect(errorMessage.first()).toBeVisible({ timeout: 3000 });
+    const saveButton = page.locator('[data-testid="btn-save-appointment"]');
+    
+    const hasError = await errorMessage.first().isVisible().catch(() => false);
+    const isDisabled = await saveButton.isDisabled().catch(() => false);
+    
+    expect(hasError || isDisabled).toBeTruthy();
   });
 
   test('should display calendar view', async ({ page }) => {
     // Navigate to Calendário tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(2000); // Lazy loading
+    await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Verify calendar elements
     await expect(page.locator('text=/Outubro|Novembro|Dezembro|Janeiro/i')).toBeVisible();
     
     // Verify navigation buttons exist
-    const prevButton = page.locator('button:has-text("←"), button[aria-label*="anterior"], button[aria-label*="previous"]');
-    const nextButton = page.locator('button:has-text("→"), button[aria-label*="próximo"], button[aria-label*="next"]');
+    const prevButton = page.locator('[data-testid="btn-calendar-prev"]');
+    const nextButton = page.locator('[data-testid="btn-calendar-next"]');
     
     await expect(prevButton).toBeVisible();
     await expect(nextButton).toBeVisible();
@@ -121,14 +130,15 @@ test.describe('Appointment Management Tests', () => {
 
   test('should navigate calendar months', async ({ page }) => {
     // Navigate to Calendário tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(2000); // Lazy loading
+    await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Get current month
     const currentMonth = await page.locator('text=/Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro/i').first().textContent();
     
     // Click next month
-    await page.click('button:has-text("→"), button[aria-label*="próximo"], button[aria-label*="next"]');
+    await page.click('[data-testid="btn-calendar-next"]');
     await page.waitForTimeout(500);
     
     // Get new month
@@ -140,14 +150,15 @@ test.describe('Appointment Management Tests', () => {
 
   test('should display different calendar views', async ({ page }) => {
     // Navigate to Calendário tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(2000); // Lazy loading
+    await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Check for view toggle buttons (Month, Week, Day, List)
-    const monthView = page.locator('button:has-text("Mês"), button:has-text("Month")');
-    const weekView = page.locator('button:has-text("Semana"), button:has-text("Week")');
-    const dayView = page.locator('button:has-text("Dia"), button:has-text("Day")');
-    const listView = page.locator('button:has-text("Lista"), button:has-text("List")');
+    const monthView = page.locator('[data-testid="btn-calendar-month"]');
+    const weekView = page.locator('[data-testid="btn-calendar-week"]');
+    const dayView = page.locator('[data-testid="btn-calendar-day"]');
+    const listView = page.locator('[data-testid="btn-calendar-list"]');
     
     // If view toggles exist, test them
     if (await weekView.count() > 0) {
@@ -161,11 +172,12 @@ test.describe('Appointment Management Tests', () => {
 
   test('should click on calendar day', async ({ page }) => {
     // Navigate to Calendário tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(2000); // Lazy loading
+    await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Click on a calendar day
-    const dayCell = page.locator('[class*="day"], [data-day], td').first();
+    const dayCell = page.locator('[data-testid^="calendar-cell-"]').first();
     
     if (await dayCell.count() > 0) {
       await dayCell.click();

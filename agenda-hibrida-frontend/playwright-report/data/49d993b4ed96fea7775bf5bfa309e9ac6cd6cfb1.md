@@ -1,0 +1,191 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e15]:
+            - heading "Agenda Híbrida" [level=1] [ref=e16]
+            - paragraph [ref=e17]: Sistema Visual para Tatuadores
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - img [ref=e20]
+            - generic [ref=e24]: hybrid
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - img [ref=e29]
+                - generic [ref=e33]: Google Conectado
+              - generic [ref=e34]:
+                - generic [ref=e35]:
+                  - img [ref=e36]
+                  - generic [ref=e38]: Calendar
+                - generic [ref=e39]:
+                  - img [ref=e40]
+                  - generic [ref=e42]: Drive
+            - button "Google Calendar • há 3 minutos" [ref=e43] [cursor=pointer]:
+              - img [ref=e44]
+              - generic [ref=e46]: Google Calendar
+              - generic [ref=e47]: •
+              - img [ref=e48]
+              - generic [ref=e51]: há 3 minutos
+            - button "Desconectar Google" [ref=e52]
+    - generic [ref=e54]:
+      - tablist [ref=e55]:
+        - tab "Dashboard" [ref=e56]:
+          - img
+          - text: Dashboard
+        - tab "Calendário Visual" [active] [selected] [ref=e57]:
+          - img
+          - text: Calendário Visual
+        - tab "Agendamentos" [ref=e58]:
+          - img
+          - text: Agendamentos
+        - tab "Clientes" [ref=e59]:
+          - img
+          - text: Clientes
+        - tab "Importar Dados" [ref=e60]:
+          - img
+          - text: Importar Dados
+        - tab "Galeria" [ref=e61]:
+          - img
+          - text: Galeria
+        - tab "Google Drive" [ref=e62]:
+          - img
+          - text: Google Drive
+        - tab "Financeiro" [ref=e63]:
+          - img
+          - text: Financeiro
+        - tab "Funcionários" [ref=e64]:
+          - img
+          - text: Funcionários
+        - tab "Importar Vagaro" [ref=e65]:
+          - img
+          - text: Importar Vagaro
+        - tab "Configurações" [ref=e66]:
+          - img
+          - text: Configurações
+      - tabpanel "Calendário Visual" [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - heading "outubro de 2025" [level=2] [ref=e72]:
+                - img [ref=e73]
+                - text: outubro de 2025
+              - generic [ref=e75]:
+                - generic [ref=e76]:
+                  - button [ref=e77]:
+                    - img
+                  - button [ref=e78]:
+                    - img
+                  - button [ref=e79]:
+                    - img
+                  - button [ref=e80]:
+                    - img
+                - img [ref=e83] [cursor=pointer]
+                - button [ref=e86]:
+                  - img
+                - button "Hoje" [ref=e87]
+                - button [ref=e88]:
+                  - img
+            - generic [ref=e89]:
+              - generic [ref=e90]: Dom
+              - generic [ref=e91]: Seg
+              - generic [ref=e92]: Ter
+              - generic [ref=e93]: Qua
+              - generic [ref=e94]: Qui
+              - generic [ref=e95]: Sex
+              - generic [ref=e96]: Sáb
+            - generic [ref=e97]:
+              - generic [ref=e107] [cursor=pointer]: "1"
+              - generic [ref=e112] [cursor=pointer]: "2"
+              - generic [ref=e117] [cursor=pointer]: "3"
+              - generic [ref=e122] [cursor=pointer]: "4"
+              - generic [ref=e127] [cursor=pointer]: "5"
+              - generic [ref=e132] [cursor=pointer]: "6"
+              - generic [ref=e137] [cursor=pointer]: "7"
+              - generic [ref=e142] [cursor=pointer]: "8"
+              - generic [ref=e147] [cursor=pointer]: "9"
+              - generic [ref=e152] [cursor=pointer]: "10"
+              - generic [ref=e157] [cursor=pointer]: "11"
+              - generic [ref=e162] [cursor=pointer]: "12"
+              - generic [ref=e167] [cursor=pointer]: "13"
+              - generic [ref=e172] [cursor=pointer]: "14"
+              - generic [ref=e177] [cursor=pointer]: "15"
+              - generic [ref=e182] [cursor=pointer]: "16"
+              - generic [ref=e187] [cursor=pointer]: "17"
+              - generic [ref=e192] [cursor=pointer]: "18"
+              - generic [ref=e197] [cursor=pointer]: "19"
+              - generic [ref=e202] [cursor=pointer]: "20"
+              - generic [ref=e207] [cursor=pointer]: "21"
+              - generic [ref=e210] [cursor=pointer]:
+                - generic [ref=e211]:
+                  - generic [ref=e212]: "22"
+                  - generic [ref=e213]: "3"
+                - generic [ref=e214]:
+                  - generic [ref=e215]:
+                    - generic [ref=e216]:
+                      - generic [ref=e217]:
+                        - generic: Cliente_MCP_1761155612529
+                      - generic [ref=e222]: (11) 98765-4321
+                      - generic [ref=e223]:
+                        - generic: Criado automaticamente via DevTools
+                    - generic [ref=e227]:
+                      - img [ref=e228]
+                      - generic [ref=e232]: Sem imagens
+                  - generic [ref=e233]:
+                    - generic [ref=e234]:
+                      - generic [ref=e235]:
+                        - generic: Cliente_MCP_Teste_1761155261119
+                      - generic [ref=e240]: (11) 98765-4321
+                      - generic [ref=e241]:
+                        - generic: Criado automaticamente para validação
+                    - generic [ref=e245]:
+                      - img [ref=e246]
+                      - generic [ref=e250]: Sem imagens
+                  - generic [ref=e251]:
+                    - generic [ref=e252]:
+                      - generic [ref=e253]:
+                        - generic: Cliente Exemplo
+                      - generic [ref=e258]: (11) 99999-9999
+                      - generic [ref=e259]:
+                        - generic: asdaaswdas
+                    - generic [ref=e263]:
+                      - img [ref=e264]
+                      - generic [ref=e268]: Sem imagens
+              - generic [ref=e272] [cursor=pointer]: "23"
+              - generic [ref=e277] [cursor=pointer]: "24"
+              - generic [ref=e282] [cursor=pointer]: "25"
+              - generic [ref=e287] [cursor=pointer]: "26"
+              - generic [ref=e292] [cursor=pointer]: "27"
+              - generic [ref=e297] [cursor=pointer]: "28"
+              - generic [ref=e302] [cursor=pointer]: "29"
+              - generic [ref=e307] [cursor=pointer]: "30"
+              - generic [ref=e312] [cursor=pointer]: "31"
+          - generic [ref=e316]:
+            - generic [ref=e317]:
+              - generic [ref=e320]: Hoje
+              - generic [ref=e323]: Com agendamentos
+              - generic [ref=e324]:
+                - img [ref=e325]
+                - generic [ref=e328]: Nome do cliente
+              - generic [ref=e329]:
+                - img [ref=e330]
+                - generic [ref=e332]: Telefone
+              - generic [ref=e333]:
+                - img [ref=e334]
+                - generic [ref=e337]: Descrição
+            - generic [ref=e338]:
+              - generic [ref=e339]:
+                - img [ref=e340]
+                - generic [ref=e342]: "Dica:"
+                - generic [ref=e343]: Clique em qualquer dia para ver os detalhes completos dos agendamentos
+              - generic [ref=e344]:
+                - img [ref=e345]
+                - generic [ref=e347]: "Dica:"
+                - generic [ref=e348]: Dê duplo clique em qualquer imagem para abrir a pasta do cliente
+  - region "Notifications alt+T"
+```
