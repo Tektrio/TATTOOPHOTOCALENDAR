@@ -13,10 +13,10 @@ router.get('/:id/packages', (req, res) => {
   let query = `
     SELECT 
       p.*,
-      pt.name as package_type_name,
-      pt.sessions_count as total_sessions
-    FROM client_packages p
-    LEFT JOIN package_types pt ON p.package_type_id = pt.id
+      sp.name as package_type_name,
+      sp.total_sessions
+    FROM customer_packages p
+    LEFT JOIN service_packages sp ON p.package_id = sp.id
     WHERE p.client_id = ?
   `;
   
@@ -27,7 +27,7 @@ router.get('/:id/packages', (req, res) => {
     params.push(status);
   }
   
-  query += ' ORDER BY p.purchase_date DESC';
+  query += ' ORDER BY p.purchased_at DESC';
   
   req.app.locals.db.all(query, params, (err, rows) => {
     if (err) {
@@ -45,11 +45,11 @@ router.get('/', (req, res) => {
     SELECT 
       p.*,
       c.name as client_name,
-      pt.name as package_type_name
-    FROM client_packages p
+      sp.name as package_type_name
+    FROM customer_packages p
     JOIN clients c ON p.client_id = c.id
-    LEFT JOIN package_types pt ON p.package_type_id = pt.id
-    ORDER BY p.purchase_date DESC
+    LEFT JOIN service_packages sp ON p.package_id = sp.id
+    ORDER BY p.purchased_at DESC
   `;
   
   req.app.locals.db.all(query, [], (err, rows) => {
@@ -62,9 +62,9 @@ router.get('/', (req, res) => {
   });
 });
 
-// GET /api/package-types - Listar tipos de pacotes disponíveis
+// GET /api/packages/types - Listar tipos de pacotes disponíveis
 router.get('/types', (req, res) => {
-  const query = 'SELECT * FROM package_types WHERE active = 1 ORDER BY sessions_count ASC';
+  const query = 'SELECT * FROM service_packages WHERE is_active = 1 ORDER BY total_sessions ASC';
   
   req.app.locals.db.all(query, [], (err, rows) => {
     if (err) {
@@ -80,41 +80,37 @@ router.get('/types', (req, res) => {
 router.post('/', (req, res) => {
   const {
     client_id,
-    package_type_id,
-    name,
-    sessions_count,
-    sessions_used = 0,
-    price,
-    discount = 0,
-    final_price,
-    valid_until,
+    package_id,
+    total_sessions,
+    used_sessions = 0,
+    purchase_price,
+    expires_at,
     notes
   } = req.body;
   
-  if (!client_id || !sessions_count || !price) {
+  if (!client_id || !package_id || !total_sessions || !purchase_price) {
     return res.status(400).json({
-      error: 'Cliente, quantidade de sessões e preço são obrigatórios'
+      error: 'Cliente, pacote, quantidade de sessões e preço são obrigatórios'
     });
   }
   
+  const remaining_sessions = total_sessions - used_sessions;
+  
   const query = `
-    INSERT INTO client_packages (
-      client_id, package_type_id, name, sessions_count, sessions_used,
-      price, discount, final_price, purchase_date, valid_until, status, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, 'active', ?)
+    INSERT INTO customer_packages (
+      client_id, package_id, total_sessions, used_sessions, remaining_sessions,
+      purchase_price, purchased_at, expires_at, status
+    ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, 'active')
   `;
   
   const params = [
     client_id,
-    package_type_id,
-    name,
-    sessions_count,
-    sessions_used,
-    price,
-    discount,
-    final_price || (price - discount),
-    valid_until,
-    notes
+    package_id,
+    total_sessions,
+    used_sessions,
+    remaining_sessions,
+    purchase_price,
+    expires_at
   ];
   
   req.app.locals.db.run(query, params, function(err) {
@@ -138,11 +134,12 @@ router.post('/:id/use', (req, res) => {
   // Verificar se o pacote existe e tem sessões disponíveis
   const checkQuery = `
     SELECT 
-      sessions_count,
-      sessions_used,
+      total_sessions,
+      used_sessions,
+      remaining_sessions,
       status,
-      valid_until
-    FROM client_packages
+      expires_at
+    FROM customer_packages
     WHERE id = ?
   `;
   
@@ -160,28 +157,29 @@ router.post('/:id/use', (req, res) => {
       return res.status(400).json({ error: 'Pacote não está ativo' });
     }
     
-    if (pkg.sessions_used >= pkg.sessions_count) {
+    if (pkg.remaining_sessions <= 0) {
       return res.status(400).json({ error: 'Todas as sessões já foram usadas' });
     }
     
     // Verificar validade
-    if (pkg.valid_until && new Date(pkg.valid_until) < new Date()) {
+    if (pkg.expires_at && new Date(pkg.expires_at) < new Date()) {
       return res.status(400).json({ error: 'Pacote expirado' });
     }
     
     // Incrementar sessões usadas
-    const newSessionsUsed = pkg.sessions_used + 1;
-    const newStatus = newSessionsUsed >= pkg.sessions_count ? 'completed' : 'active';
+    const newUsedSessions = pkg.used_sessions + 1;
+    const newRemainingSessions = pkg.total_sessions - newUsedSessions;
+    const newStatus = newRemainingSessions <= 0 ? 'completed' : 'active';
     
     const updateQuery = `
-      UPDATE client_packages
-      SET sessions_used = ?,
-          status = ?,
-          updated_at = CURRENT_TIMESTAMP
+      UPDATE customer_packages
+      SET used_sessions = ?,
+          remaining_sessions = ?,
+          status = ?
       WHERE id = ?
     `;
     
-    req.app.locals.db.run(updateQuery, [newSessionsUsed, newStatus, id], function(err) {
+    req.app.locals.db.run(updateQuery, [newUsedSessions, newRemainingSessions, newStatus, id], function(err) {
       if (err) {
         console.error('Erro ao usar sessão:', err);
         return res.status(500).json({ error: 'Erro ao usar sessão' });
@@ -189,20 +187,20 @@ router.post('/:id/use', (req, res) => {
       
       // Registrar uso no histórico
       const historyQuery = `
-        INSERT INTO package_usage_history (
-          package_id, appointment_id, used_at, notes
-        ) VALUES (?, ?, CURRENT_TIMESTAMP, ?)
+        INSERT INTO package_usage (
+          customer_package_id, appointment_id, sessions_used, used_at
+        ) VALUES (?, ?, 1, CURRENT_TIMESTAMP)
       `;
       
-      req.app.locals.db.run(historyQuery, [id, appointment_id, notes], (err) => {
+      req.app.locals.db.run(historyQuery, [id, appointment_id], (err) => {
         if (err) {
           console.error('Erro ao registrar histórico:', err);
         }
         
         res.json({
           message: 'Sessão usada com sucesso',
-          sessions_used: newSessionsUsed,
-          sessions_remaining: pkg.sessions_count - newSessionsUsed,
+          used_sessions: newUsedSessions,
+          remaining_sessions: newRemainingSessions,
           status: newStatus
         });
       });
@@ -219,9 +217,9 @@ router.get('/:id/history', (req, res) => {
       h.*,
       a.title as appointment_title,
       a.start_datetime
-    FROM package_usage_history h
+    FROM package_usage h
     LEFT JOIN appointments a ON h.appointment_id = a.id
-    WHERE h.package_id = ?
+    WHERE h.customer_package_id = ?
     ORDER BY h.used_at DESC
   `;
   
@@ -238,18 +236,16 @@ router.get('/:id/history', (req, res) => {
 // PUT /api/packages/:id - Atualizar pacote
 router.put('/:id', (req, res) => {
   const { id } = req.params;
-  const { status, valid_until, notes } = req.body;
+  const { status, expires_at } = req.body;
   
   const query = `
-    UPDATE client_packages
+    UPDATE customer_packages
     SET status = COALESCE(?, status),
-        valid_until = COALESCE(?, valid_until),
-        notes = COALESCE(?, notes),
-        updated_at = CURRENT_TIMESTAMP
+        expires_at = COALESCE(?, expires_at)
     WHERE id = ?
   `;
   
-  req.app.locals.db.run(query, [status, valid_until, notes, id], function(err) {
+  req.app.locals.db.run(query, [status, expires_at, id], function(err) {
     if (err) {
       console.error('Erro ao atualizar pacote:', err);
       return res.status(500).json({ error: 'Erro ao atualizar pacote' });
@@ -267,7 +263,7 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
   
-  req.app.locals.db.run('DELETE FROM client_packages WHERE id = ?', [id], function(err) {
+  req.app.locals.db.run('DELETE FROM customer_packages WHERE id = ?', [id], function(err) {
     if (err) {
       console.error('Erro ao deletar pacote:', err);
       return res.status(500).json({ error: 'Erro ao deletar pacote' });

@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/form-templates', (req, res) => {
   const { type, is_active = true } = req.query;
   
-  let query = 'SELECT * FROM form_templates WHERE 1=1';
+  let query = 'SELECT * FROM custom_forms WHERE 1=1';
   const params = [];
   
   if (type) {
@@ -44,7 +44,7 @@ router.get('/form-templates', (req, res) => {
 router.get('/form-templates/:id', (req, res) => {
   const { id } = req.params;
   
-  req.app.locals.db.get('SELECT * FROM form_templates WHERE id = ?', [id], (err, row) => {
+  req.app.locals.db.get('SELECT * FROM custom_forms WHERE id = ?', [id], (err, row) => {
     if (err) {
       console.error('Erro ao buscar template:', err);
       return res.status(500).json({ error: 'Erro ao buscar template' });
@@ -72,13 +72,13 @@ router.post('/form-templates', (req, res) => {
   }
   
   const query = `
-    INSERT INTO form_templates (name, description, type, fields)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO custom_forms (name, description, fields)
+    VALUES (?, ?, ?)
   `;
   
   req.app.locals.db.run(
     query,
-    [name, description, type, JSON.stringify(fields)],
+    [name, description, JSON.stringify(fields)],
     function(err) {
       if (err) {
         console.error('Erro ao criar template:', err);
@@ -101,23 +101,17 @@ router.get('/:id/forms', (req, res) => {
   let query = `
     SELECT 
       cf.*,
-      ft.name as template_name,
-      ft.type as template_type
+      cust_f.name as template_name
     FROM customer_forms cf
-    LEFT JOIN form_templates ft ON cf.template_id = ft.id
+    LEFT JOIN custom_forms cust_f ON cf.form_id = cust_f.id
     WHERE cf.client_id = ?
   `;
   
   const params = [id];
   
   if (template_id) {
-    query += ' AND cf.template_id = ?';
+    query += ' AND cf.form_id = ?';
     params.push(template_id);
-  }
-  
-  if (status) {
-    query += ' AND cf.status = ?';
-    params.push(status);
   }
   
   query += ' ORDER BY cf.filled_at DESC';
@@ -131,7 +125,7 @@ router.get('/:id/forms', (req, res) => {
     // Parse do JSON para cada formulário
     const forms = rows.map(f => ({
       ...f,
-      responses: f.responses ? JSON.parse(f.responses) : {}
+      form_data: f.form_data ? JSON.parse(f.form_data) : {}
     }));
     
     res.json(forms);

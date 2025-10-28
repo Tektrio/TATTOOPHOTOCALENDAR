@@ -10,6 +10,8 @@ const customerFormsRouter = require('./customer-forms');
 const productsRouter = require('./products');
 const invoicesRouter = require('./invoices');
 const packagesRouter = require('./packages');
+const giftCardsRouter = require('./gift-cards');
+const membershipsRouter = require('./memberships');
 const importsRouter = require('./imports');
 const googleAccountsRouter = require('./google-accounts');
 const servicesRouter = require('./services');
@@ -30,6 +32,8 @@ function registerRoutes(app) {
   app.use('/api/customers', customerFilesRouter);
   app.use('/api/customers', customerFormsRouter);
   app.use('/api/customers', packagesRouter);
+  app.use('/api/customers', giftCardsRouter);
+  app.use('/api/customers', membershipsRouter);
   
   // Rotas de Produtos
   app.use('/api/products', productsRouter);
@@ -39,6 +43,12 @@ function registerRoutes(app) {
   
   // Rotas de Pacotes
   app.use('/api/packages', packagesRouter);
+  
+  // Rotas de Gift Cards
+  app.use('/api/gift-cards', giftCardsRouter);
+  
+  // Rotas de Memberships
+  app.use('/api/memberships', membershipsRouter);
   
   // Rotas de Form Templates
   app.use('/api', customerFormsRouter);
@@ -61,6 +71,7 @@ function registerRoutes(app) {
   app.use('/api/imports/vagaro', vagaroImportRouter);
   
   console.log('✅ Rotas de gestão de clientes registradas');
+  console.log('✅ Rotas de gift cards e memberships registradas');
   console.log('✅ Rotas de importação e sincronização registradas');
   console.log('✅ Rotas de Google multi-conta registradas');
   console.log('✅ Rotas de serviços registradas');
