@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:analyze": "vite build --mode analyze && vite-bundle-analyzer ./dist/stats.json",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=-1",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "size": "npm run build && size-limit",
