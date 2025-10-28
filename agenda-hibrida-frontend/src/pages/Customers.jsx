@@ -90,7 +90,7 @@ const Customers = () => {
       try {
         const parsed = JSON.parse(tags);
         return Array.isArray(parsed) ? parsed : [];
-      } catch (e) {
+      } catch (_e) {
         console.warn('Erro ao fazer parse de tags:', tags);
         return [];
       }

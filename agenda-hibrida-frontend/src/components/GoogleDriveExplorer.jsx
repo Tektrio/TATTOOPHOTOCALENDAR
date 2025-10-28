@@ -754,7 +754,7 @@ export default function GoogleDriveExplorer() {
         } else {
           errorCount++
         }
-      } catch (error) {
+      } catch (_error) {
         errorCount++
       }
     }

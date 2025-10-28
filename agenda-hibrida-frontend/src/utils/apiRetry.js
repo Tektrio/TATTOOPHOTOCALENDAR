@@ -245,7 +245,7 @@ export const apiPut = async (endpoint, body, options = {}) => {
 
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   } catch (error) {
-    throw new Error(`PUT falhou: ${error.message}`);
+    throw new Error(`PUT falhou: ${error?.message || 'Erro desconhecido'}`);
   }
 };
 
