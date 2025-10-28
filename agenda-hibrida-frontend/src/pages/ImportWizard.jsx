@@ -241,7 +241,7 @@ export default function ImportWizard() {
     const hasErrors = report.errors && report.errors.length > 0;
     
     return (
-      <Card className="p-6 mt-4">
+      <Card className="p-6 mt-4" data-testid="import-stats">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           {hasErrors ? (
             <AlertCircle className="w-5 h-5 text-yellow-500" />
@@ -297,7 +297,7 @@ export default function ImportWizard() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="container mx-auto p-6 max-w-6xl" data-testid="import-wizard">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Importar Dados</h1>
         <p className="text-gray-600">
@@ -362,6 +362,7 @@ export default function ImportWizard() {
                 accept=".xlsx,.xls"
                 onChange={handleVagaroFileChange}
                 disabled={vagaroLoading}
+                data-testid="input-upload-excel"
                 className="block w-full text-sm text-gray-500
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-full file:border-0

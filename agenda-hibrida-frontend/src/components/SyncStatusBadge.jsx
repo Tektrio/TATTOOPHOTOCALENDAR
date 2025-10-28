@@ -122,7 +122,11 @@ export default function SyncStatusBadge({ googleStatus }) {
   // Se Google não está autenticado, não mostrar badge
   if (!googleStatus?.authenticated) {
     return (
-      <Badge variant="outline" className="text-gray-400 bg-gray-800/50 border-gray-600">
+      <Badge 
+        variant="outline" 
+        className="text-gray-400 bg-gray-800/50 border-gray-600"
+        data-testid="sync-status-badge"
+      >
         <CloudOff className="w-3 h-3 mr-1" />
         Google desconectado
       </Badge>
@@ -134,7 +138,10 @@ export default function SyncStatusBadge({ googleStatus }) {
     switch (syncStatus) {
       case 'syncing':
         return (
-          <Badge className="bg-blue-500/20 text-blue-300 border-blue-400 animate-pulse">
+          <Badge 
+            className="bg-blue-500/20 text-blue-300 border-blue-400 animate-pulse"
+            data-testid="sync-status-badge"
+          >
             <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
             Sincronizando...
           </Badge>
@@ -142,7 +149,10 @@ export default function SyncStatusBadge({ googleStatus }) {
 
       case 'success':
         return (
-          <Badge className="bg-green-500/20 text-green-300 border-green-400">
+          <Badge 
+            className="bg-green-500/20 text-green-300 border-green-400"
+            data-testid="sync-status-badge"
+          >
             <CheckCircle2 className="w-3 h-3 mr-1" />
             Sincronizado
             {syncStats && (
@@ -155,7 +165,10 @@ export default function SyncStatusBadge({ googleStatus }) {
 
       case 'error':
         return (
-          <Badge className="bg-red-500/20 text-red-300 border-red-400">
+          <Badge 
+            className="bg-red-500/20 text-red-300 border-red-400"
+            data-testid="sync-status-badge"
+          >
             <AlertCircle className="w-3 h-3 mr-1" />
             Erro na sincronização
           </Badge>
@@ -170,14 +183,15 @@ export default function SyncStatusBadge({ googleStatus }) {
                        hover:bg-purple-500/30 hover:border-purple-300 
                        transition-all cursor-pointer"
             title="Clique para sincronizar manualmente"
+            data-testid="btn-manual-sync"
           >
             <Cloud className="w-3 h-3 mr-1.5" />
-            <span className="font-semibold">Google Calendar</span>
+            <span className="font-semibold" data-testid="sync-status-badge">Google Calendar</span>
             {lastSync && (
               <>
                 <span className="mx-1.5 text-purple-300">•</span>
                 <Clock className="w-3 h-3 mr-1" />
-                <span className="text-purple-300">
+                <span className="text-purple-300" data-testid="sync-timestamp">
                   {formatDistanceToNow(lastSync, { 
                     addSuffix: true, 
                     locale: ptBR 
@@ -188,7 +202,7 @@ export default function SyncStatusBadge({ googleStatus }) {
             {!lastSync && (
               <>
                 <span className="mx-1.5 text-purple-300">•</span>
-                <span className="text-purple-300 italic">Nunca sincronizado</span>
+                <span className="text-purple-300 italic" data-testid="sync-timestamp">Nunca sincronizado</span>
               </>
             )}
           </button>

@@ -13,14 +13,14 @@ test.describe('Google Calendar Sync Tests', () => {
 
   test('should show sync status badge in header', async ({ page }) => {
     // Look for sync status badge
-    const syncBadge = page.locator('text=/Google Calendar|Sincronizando|Sincronizado/i');
+    const syncBadge = page.locator('[data-testid="sync-status-badge"]');
     
     await expect(syncBadge).toBeVisible({ timeout: 10000 });
   });
 
   test('should display last sync timestamp', async ({ page }) => {
     // Check for timestamp text (e.g., "há 5 minutos", "nunca sincronizado")
-    const timestampText = page.locator('text=/há.*minuto|nunca sincronizado/i');
+    const timestampText = page.locator('[data-testid="sync-timestamp"]');
     
     const hasTimestamp = await timestampText.count() > 0;
     
@@ -32,22 +32,22 @@ test.describe('Google Calendar Sync Tests', () => {
   });
 
   test('should allow manual sync trigger', async ({ page }) => {
-    // Look for sync button or clickable badge
-    const syncTrigger = page.locator('[role="button"]:has-text("Google Calendar"), button:has-text("Sincronizar")').first();
+    // Look for sync button
+    const syncTrigger = page.locator('[data-testid="btn-manual-sync"]');
     
     if (await syncTrigger.count() > 0 && await syncTrigger.isVisible()) {
       // Click to trigger manual sync
       await syncTrigger.click();
       
       // Wait for syncing state
-      await expect(page.locator('text=/Sincronizando/i')).toBeVisible({ timeout: 5000 }).catch(() => {
+      await expect(page.locator('[data-testid="sync-status-badge"]:has-text("Sincronizando")')).toBeVisible({ timeout: 5000 }).catch(() => {
         console.log('Syncing indicator not shown - sync may be instant');
       });
       
       // Wait for success state
       await page.waitForTimeout(2000);
       
-      const successIndicator = page.locator('text=/Sincronizado|eventos/i');
+      const successIndicator = page.locator('[data-testid="sync-status-badge"]:has-text("Sincronizado")');
       const hasSuccess = await successIndicator.count() > 0;
       
       if (hasSuccess) {
@@ -60,24 +60,23 @@ test.describe('Google Calendar Sync Tests', () => {
 
   test('should create appointment and sync to Google', async ({ page }) => {
     // Navigate to Agendamentos tab
-    await page.click('button:has-text("Agendamentos"), [role="tab"]:has-text("Agendamentos")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-appointments"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Click "Novo Agendamento" button
-    const newAppointmentButton = page.locator('button:has-text("Novo Agendamento"), button:has-text("Adicionar")');
+    const newAppointmentButton = page.locator('[data-testid="btn-new-appointment"]');
     
     if (await newAppointmentButton.count() === 0) {
       test.skip(true, 'New appointment button not found');
       return;
     }
     
-    await newAppointmentButton.first().click();
+    await newAppointmentButton.click();
     await page.waitForTimeout(500);
     
     // Fill appointment form
-    const titleField = page.getByRole('textbox', { name: /título|serviço/i }).first();
-    const dateField = page.locator('input[type="date"]').first();
-    const timeField = page.locator('input[type="time"]').first();
+    const titleField = page.locator('[data-testid="input-appointment-title"]');
+    const dateField = page.locator('[data-testid="input-appointment-date"]');
     
     if (await titleField.count() > 0) {
       await titleField.fill('Teste Sincronização Google E2E');
@@ -91,12 +90,11 @@ test.describe('Google Calendar Sync Tests', () => {
       await dateField.fill(dateStr);
     }
     
-    if (await timeField.count() > 0) {
-      await timeField.fill('14:00');
-    }
+    // Wait for validation
+    await page.waitForTimeout(1000);
     
     // Submit form
-    await page.click('button:has-text("Salvar"), button:has-text("Criar")');
+    await page.click('[data-testid="btn-save-appointment"]');
     
     // Wait for success message
     await expect(page.locator('text=/sucesso|criado|salvo/i')).toBeVisible({ timeout: 5000 }).catch(() => {
@@ -107,13 +105,13 @@ test.describe('Google Calendar Sync Tests', () => {
     await expect(page.locator('text=Teste Sincronização Google E2E')).toBeVisible({ timeout: 10000 });
     
     // Clean up: Delete the test appointment
-    const deleteButton = page.locator('button[title*="Excluir"], button[aria-label*="Excluir"], button:has-text("Excluir")').first();
+    const deleteButton = page.locator('[data-testid^="btn-delete-appointment-"]').first();
     
     if (await deleteButton.count() > 0) {
       await deleteButton.click();
       
       // Confirm deletion if dialog appears
-      await page.click('button:has-text("Confirmar"), button:has-text("Sim"), button:has-text("Excluir")').catch(() => {
+      await page.click('[data-testid="btn-confirm-delete"]').catch(() => {
         console.log('No confirmation dialog');
       });
       
@@ -122,24 +120,25 @@ test.describe('Google Calendar Sync Tests', () => {
   });
 
   test('should show sync error if Google disconnected', async ({ page }) => {
-    // Check if Google is connected
-    const connectedIndicator = page.locator('text=/Conectado|Calendar/i');
-    const disconnectedIndicator = page.locator('text=/Desconectado|desconectar/i');
+    // Check if Google is connected via sync badge
+    const syncBadge = page.locator('[data-testid="sync-status-badge"]');
     
-    const isConnected = await connectedIndicator.count() > 0;
+    await expect(syncBadge).toBeVisible({ timeout: 10000 });
     
-    if (!isConnected && await disconnectedIndicator.count() > 0) {
+    const badgeText = await syncBadge.textContent();
+    
+    if (badgeText.includes('desconectado')) {
       // Google is disconnected, this is expected state
-      await expect(disconnectedIndicator.first()).toBeVisible();
+      console.log('Google Calendar está desconectado');
     } else {
       // Google is connected, test passes
-      await expect(connectedIndicator.first()).toBeVisible();
+      console.log('Google Calendar está conectado');
     }
   });
 
   test('should update sync timestamp after automatic polling', async ({ page }) => {
     // Get initial timestamp if visible
-    const timestampLocator = page.locator('text=/há.*minuto|há.*segundo/i');
+    const timestampLocator = page.locator('[data-testid="sync-timestamp"]');
     
     const hasTimestamp = await timestampLocator.count() > 0;
     

@@ -14,17 +14,17 @@ test.describe('Import Preview Tests', () => {
 
   test('should navigate to import tab', async ({ page }) => {
     // Click on Import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Verify import interface is visible
-    await expect(page.locator('text=/Importar Dados|Importação|Upload/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="import-wizard"]')).toBeVisible({ timeout: 10000 });
   });
 
   test('should show import options', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Check for import type options
     const importOptions = [
@@ -48,26 +48,24 @@ test.describe('Import Preview Tests', () => {
 
   test('should show file upload area', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
-    // Look for file input or upload button
-    const fileInput = page.locator('input[type="file"]').first();
-    const uploadButton = page.locator('button:has-text("Upload"), button:has-text("Escolher"), text=/Arraste.*arquivo/i');
+    // Look for file input
+    const fileInput = page.locator('[data-testid="input-upload-excel"]');
     
     const hasFileInput = await fileInput.count() > 0;
-    const hasUploadButton = await uploadButton.count() > 0;
     
-    expect(hasFileInput || hasUploadButton).toBeTruthy();
+    expect(hasFileInput).toBeTruthy();
   });
 
   test('should validate file type on upload', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Look for file input
-    const fileInput = page.locator('input[type="file"]').first();
+    const fileInput = page.locator('[data-testid="input-upload-excel"]');
     
     if (await fileInput.count() === 0) {
       test.skip(true, 'File input not found');
@@ -85,8 +83,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should show preview after file upload', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // This test would upload a sample file and verify preview
     // For now, we'll document the expected behavior
@@ -103,8 +101,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should display validation statistics in preview', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Check for statistics cards (even if empty)
     const statsTerms = ['Total', 'Válidos', 'Erros', 'Duplicatas', 'Avisos'];
@@ -115,8 +113,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should allow editing data in preview', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Expected behavior: rows with errors should have edit button
     // This test documents expected functionality
@@ -126,8 +124,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should show column mapping interface', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Expected: Column mapping dropdowns should appear after file upload
     // Columns: Nome, Email, Telefone, Data, Horário, etc.
@@ -137,8 +135,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should filter preview rows by status', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Expected filter buttons: Todos, Válidos, Avisos, Erros
     const filterButtons = ['Todos', 'Válidos', 'Avisos', 'Erros'];
@@ -151,8 +149,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should search within preview data', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Look for search input
     const searchInput = page.locator('input[placeholder*="Buscar"], input[type="search"]');
@@ -168,8 +166,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should confirm import with valid data', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Expected: Import button should be enabled only with valid data
     // Should show confirmation dialog with statistics
@@ -179,8 +177,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should show import progress', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Expected: Progress bar or spinner during import
     // Success message after completion
@@ -190,8 +188,8 @@ test.describe('Import Preview Tests', () => {
 
   test('should display import report after completion', async ({ page }) => {
     // Navigate to import tab
-    await page.click('button:has-text("Importar"), [role="tab"]:has-text("Importar")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="tab-import"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Expected report fields:
     // - Total processados

@@ -171,7 +171,7 @@ export default function ExcelFieldMapper({ preview, type, onImport, onCancel }) 
         </h3>
         
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm border-collapse" data-testid="preview-table">
             <thead>
               <tr className="bg-gray-100">
                 {Object.entries(fields).map(([field, label]) => {
@@ -221,7 +221,7 @@ export default function ExcelFieldMapper({ preview, type, onImport, onCancel }) 
         <Button variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button onClick={handleImport} size="lg">
+        <Button onClick={handleImport} size="lg" data-testid="btn-confirm-import">
           <Upload className="w-4 h-4 mr-2" />
           Importar {preview.totalRows} {type === 'clients' ? 'Clientes' : 'Agendamentos'}
         </Button>

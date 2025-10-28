@@ -31,6 +31,11 @@ const CalendarioVisual = lazy(() => import('./components/CalendarioVisual.jsx'))
 const GoogleDriveExplorer = lazy(() => import('./components/GoogleDriveExplorer.jsx'))
 const CustomerManagement = lazy(() => import('./components/CustomerManagement.jsx'))
 const ImportWizard = lazy(() => import('./pages/ImportWizard.jsx'))
+const Customers = lazy(() => import('./pages/Customers.jsx'))
+const FinancialDashboard = lazy(() => import('./pages/FinancialDashboard.jsx'))
+const Employees = lazy(() => import('./pages/Employees.jsx'))
+const VagaroImport = lazy(() => import('./pages/VagaroImport.jsx'))
+const SettingsPanel = lazy(() => import('./components/SettingsPanel.jsx'))
 
 // Componentes menores mantêm import normal
 import SeletorHorarioMelhorado from './components/SeletorHorarioMelhorado.jsx'
@@ -64,6 +69,7 @@ import {
   DollarSign,
   FileImage,
   FileText,
+  FileSpreadsheet,
   FolderOpen,
   Plus,
   Edit,
@@ -716,6 +722,18 @@ function App() {
               <Cloud className="w-4 h-4 mr-2" />
               Google Drive
             </TabsTrigger>
+            <TabsTrigger value="financial" data-testid="tab-financial" className="data-[state=active]:bg-white/20">
+              <DollarSign className="w-4 h-4 mr-2" />
+              Financeiro
+            </TabsTrigger>
+            <TabsTrigger value="employees" data-testid="tab-employees" className="data-[state=active]:bg-white/20">
+              <Users className="w-4 h-4 mr-2" />
+              Funcionários
+            </TabsTrigger>
+            <TabsTrigger value="vagaro-import" data-testid="tab-vagaro-import" className="data-[state=active]:bg-white/20">
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Importar Vagaro
+            </TabsTrigger>
             <TabsTrigger value="settings" data-testid="tab-settings" className="data-[state=active]:bg-white/20">
               <Settings className="w-4 h-4 mr-2" />
               Configurações
@@ -1275,140 +1293,9 @@ function App() {
 
           {/* Clients Tab */}
           <TabsContent value="clients" className="space-y-6 mt-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">Gerenciar Clientes</h2>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button data-testid="btn-new-client" className="bg-green-600 hover:bg-green-700 text-white">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Novo Cliente
-                  </Button>
-                </DialogTrigger>
-                <DialogContent data-testid="modal-new-client" className="bg-gray-900 border-gray-700 max-w-xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-white text-2xl flex items-center">
-                      <Users className="w-6 h-6 mr-2 text-purple-400" />
-                      Novo Cliente
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-400 text-base">
-                      Cadastre um novo cliente no sistema
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="space-y-4">
-                    <ValidatedInput
-                      id="clientName"
-                      label={<span className="flex items-center"><User className="w-4 h-4 mr-2" />Nome Completo</span>}
-                      type="text"
-                      value={newClient.name}
-                      onChange={(e) => setNewClient({...newClient, name: e.target.value})}
-                      validationFn={validateName}
-                      required={true}
-                      placeholder="Nome completo do cliente"
-                      error={errors.name}
-                      className="mt-2"
-                    />
-
-                    <ValidatedInput
-                      id="clientEmail"
-                      label={<span className="flex items-center"><Mail className="w-4 h-4 mr-2" />Email</span>}
-                      type="email"
-                      value={newClient.email}
-                      onChange={(e) => setNewClient({...newClient, email: e.target.value})}
-                      validationFn={validateEmail}
-                      placeholder="email@exemplo.com"
-                      error={errors.email}
-                      className="mt-2"
-                    />
-
-                    <ValidatedInput
-                      id="clientPhone"
-                      label={<span className="flex items-center"><Phone className="w-4 h-4 mr-2" />Telefone</span>}
-                      type="tel"
-                      value={newClient.phone}
-                      onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
-                      validationFn={validatePhone}
-                      placeholder="(11) 99999-9999"
-                      error={errors.phone}
-                      className="mt-2"
-                    />
-
-                    <ValidatedTextarea
-                      id="clientNotes"
-                      label={<span className="flex items-center"><FileText className="w-4 h-4 mr-2" />Observações</span>}
-                      value={newClient.notes}
-                      onChange={(e) => setNewClient({...newClient, notes: e.target.value})}
-                      placeholder="Informações adicionais sobre o cliente"
-                      rows={3}
-                      className="mt-2"
-                    />
-
-                    <div className="flex space-x-3 pt-2">
-                      <Button data-testid="btn-save-client" onClick={createClient} className="flex-1 bg-purple-500 hover:bg-purple-600">
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Cadastrar Cliente
-                      </Button>
-                      <Button variant="outline" onClick={() => setErrors({})} className="border-gray-600 text-gray-300 hover:bg-gray-800">
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Cancelar
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {clients.map((client) => (
-                <Card key={client.id} className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/20 transition-colors cursor-pointer">
-                  <CardHeader>
-                    <CardTitle className="text-white">{client.name}</CardTitle>
-                    <CardDescription className="text-purple-200">
-                      {client.email || 'Email não informado'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {client.phone && (
-                        <p className="text-purple-200 text-sm">📱 {client.phone}</p>
-                      )}
-                      <p className="text-purple-300 text-sm">
-                        {client.appointments_count || 0} agendamento(s)
-                      </p>
-                      <div className="flex space-x-2 mt-4">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="flex-1"
-                          onClick={() => setViewingCustomerId(client.id)}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Ver
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleScheduleFromClient(client.id)}
-                        >
-                          <Calendar className="w-4 h-4 mr-2" />
-                          Agendar
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <FolderOpen className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => setClientToDelete(client)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Suspense fallback={<div className="text-white text-center py-8">Carregando clientes...</div>}>
+              <Customers />
+            </Suspense>
           </TabsContent>
 
           {/* Gallery Tab */}
@@ -1426,58 +1313,32 @@ function App() {
           </TabsContent>
 
           {/* Settings Tab */}
+          {/* Financial Tab */}
+          <TabsContent value="financial" className="space-y-6 mt-6">
+            <Suspense fallback={<LoadingSpinner />}>
+              <FinancialDashboard />
+            </Suspense>
+          </TabsContent>
+
+          {/* Employees Tab */}
+          <TabsContent value="employees" className="space-y-6 mt-6">
+            <Suspense fallback={<LoadingSpinner />}>
+              <Employees />
+            </Suspense>
+          </TabsContent>
+
+          {/* Vagaro Import Tab */}
+          <TabsContent value="vagaro-import" className="space-y-6 mt-6">
+            <Suspense fallback={<LoadingSpinner />}>
+              <VagaroImport />
+            </Suspense>
+          </TabsContent>
+
+          {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6 mt-6">
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardHeader>
-                <CardTitle className="text-white">Configurações do Sistema</CardTitle>
-                <CardDescription className="text-purple-200">
-                  Configure o armazenamento híbrido e integrações
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Tipos de tatuagem */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-semibold">Tipos de Tatuagem</h3>
-                    <Button onClick={() => setShowNewTattooType(true)} size="sm">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Adicionar
-                    </Button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {tattooTypes.map((type) => (
-                      <div key={type.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div 
-                            className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: type.color }}
-                          />
-                          <div>
-                            <p className="text-white font-medium">{type.name}</p>
-                            <p className="text-purple-200 text-sm">
-                              {type.duration_hours}h • R$ {type.base_price}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => setTattooTypeToDelete(type)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Suspense fallback={<LoadingSpinner />}>
+              <SettingsPanel />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
