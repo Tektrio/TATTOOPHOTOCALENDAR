@@ -36,7 +36,13 @@ router.get('/:id/memberships', (req, res) => {
       return res.status(500).json({ error: 'Erro ao buscar memberships' });
     }
     
-    res.json(rows);
+    // Mapear campos do backend para nomes esperados pelo frontend
+    const mappedRows = rows.map(row => ({
+      ...row,
+      monthly_fee: row.plan_monthly_fee
+    }));
+    
+    res.json(mappedRows);
   });
 });
 
@@ -49,7 +55,8 @@ router.get('/', (req, res) => {
       cm.*,
       c.name as client_name,
       c.email as client_email,
-      mp.name as plan_name
+      mp.name as plan_name,
+      mp.price as plan_monthly_fee
     FROM customer_memberships cm
     JOIN clients c ON cm.client_id = c.id
     LEFT JOIN membership_plans mp ON cm.membership_plan_id = mp.id
@@ -76,7 +83,13 @@ router.get('/', (req, res) => {
       return res.status(500).json({ error: 'Erro ao buscar memberships' });
     }
     
-    res.json(rows);
+    // Mapear campos do backend para nomes esperados pelo frontend
+    const mappedRows = rows.map(row => ({
+      ...row,
+      monthly_fee: row.plan_monthly_fee
+    }));
+    
+    res.json(mappedRows);
   });
 });
 
@@ -113,7 +126,7 @@ router.get('/:id', (req, res) => {
     // Buscar histórico de pagamentos
     const paymentsQuery = `
       SELECT * FROM membership_payments
-      WHERE membership_id = ?
+      WHERE customer_membership_id = ?
       ORDER BY payment_date DESC
     `;
     
@@ -125,7 +138,13 @@ router.get('/:id', (req, res) => {
         row.payments = payments;
       }
       
-      res.json(row);
+      // Mapear campos do backend para nomes esperados pelo frontend
+      const response = {
+        ...row,
+        monthly_fee: row.plan_monthly_fee
+      };
+      
+      res.json(response);
     });
   });
 });
@@ -223,11 +242,11 @@ router.post('/:id/payment', (req, res) => {
     // Registrar pagamento
     const paymentQuery = `
       INSERT INTO membership_payments (
-        membership_id, amount, payment_method, payment_date, notes
-      ) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)
+        customer_membership_id, amount, payment_method, payment_date
+      ) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
     `;
     
-    req.app.locals.db.run(paymentQuery, [id, amount, payment_method, notes], function(err) {
+    req.app.locals.db.run(paymentQuery, [id, amount, payment_method], function(err) {
       if (err) {
         console.error('Erro ao registrar pagamento:', err);
         return res.status(500).json({ error: 'Erro ao registrar pagamento' });
