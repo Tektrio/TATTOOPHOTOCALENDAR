@@ -243,6 +243,7 @@ export const apiUpload = async (endpoint, file, onProgress, config = {}) => {
         try {
           const response = JSON.parse(xhr.responseText);
           resolve(response);
+        // eslint-disable-next-line no-unused-vars
         } catch (error) {
           resolve(xhr.responseText);
         }
