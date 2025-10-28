@@ -14,6 +14,8 @@ import {
   PiggyBank
 } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const FinancialTab = ({ clientId }) => {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('12months');
@@ -33,7 +35,7 @@ const FinancialTab = ({ clientId }) => {
     try {
       setLoading(true);
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/clients/${clientId}/financial-history?period=${period}`
+        `${API_BASE}/api/clients/${clientId}/financial-history?period=${period}`
       );
       const result = await response.json();
       
