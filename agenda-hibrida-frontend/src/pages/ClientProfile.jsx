@@ -11,6 +11,7 @@ import HealthTab from '../components/client/HealthTab';
 import CommunicationTab from '../components/client/CommunicationTab';
 import PrivateNotesTab from '../components/client/PrivateNotesTab';
 import PreferencesTab from '../components/client/PreferencesTab';
+import FinancialTab from '../components/client/FinancialTab';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -91,8 +92,10 @@ function ClientProfile() {
       case 'private-notes':
         return <PrivateNotesTab clientId={clientId} />;
 
-      case 'sessions':
       case 'financial':
+        return <FinancialTab clientId={clientId} />;
+
+      case 'sessions':
         return (
           <div className="p-6">
             <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
