@@ -13,6 +13,7 @@ const packagesRouter = require('./packages');
 const importsRouter = require('./imports');
 const googleAccountsRouter = require('./google-accounts');
 const servicesRouter = require('./services');
+const clientDetailsRouter = require('./clientDetails');
 
 /**
  * Registrar todas as rotas no app Express
@@ -52,10 +53,14 @@ function registerRoutes(app) {
   // Rotas de Serviços (Service Types)
   app.use('/api/services', servicesRouter);
   
+  // Rotas de Detalhes de Clientes (12 abas)
+  app.use('/api/clients', clientDetailsRouter);
+  
   console.log('✅ Rotas de gestão de clientes registradas');
   console.log('✅ Rotas de importação e sincronização registradas');
   console.log('✅ Rotas de Google multi-conta registradas');
   console.log('✅ Rotas de serviços registradas');
+  console.log('✅ Rotas de detalhes de clientes registradas');
 }
 
 module.exports = { registerRoutes };
