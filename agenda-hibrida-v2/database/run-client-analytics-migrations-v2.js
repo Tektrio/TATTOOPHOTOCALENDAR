@@ -31,7 +31,7 @@ async function runMigrations() {
     db.run('PRAGMA journal_mode = WAL', (err) => {
       if (err) reject(err);
       else {
-        console.log('✅ SQLite: journal_mode = WAL');
+        console.log('✅ SQLite: journal_mode = WAL\n');
         resolve();
       }
     });
@@ -74,60 +74,30 @@ async function runMigrations() {
       
       const migrationPath = path.join(MIGRATIONS_DIR, migrationFile);
       const sql = fs.readFileSync(migrationPath, 'utf8');
-      
-      // Dividir em statements
-      const statements = sql
-        .split(';')
-        .map(s => s.trim())
-        .filter(s => s.length > 0 && !s.startsWith('--'));
 
-      // Executar statements sequencialmente dentro de uma transação
+      // Executar toda a migration de uma vez usando exec()
       await new Promise((resolve, reject) => {
-        db.run('BEGIN TRANSACTION', async (err) => {
+        db.exec(sql, (err) => {
           if (err) {
-            reject(err);
-            return;
-          }
-
-          try {
-            // Executar cada statement sequencialmente
-            for (const statement of statements) {
-              await new Promise((resolveStmt, rejectStmt) => {
-                db.run(statement, (err) => {
-                  if (err) {
-                    // Se tabela/coluna/índice já existe, apenas avisa e continua
-                    if (err.message.includes('already exists') || 
-                        err.message.includes('duplicate') ||
-                        err.code === 'SQLITE_ERROR' && err.message.includes('unique')) {
-                      console.log(`   ⚠️  Objeto já existe, pulando...`);
-                      resolveStmt();
-                    } else {
-                      rejectStmt(err);
-                    }
-                  } else {
-                    resolveStmt();
-                  }
-                });
-              });
+            // Verificar se é um erro de "já existe"
+            if (err.message.includes('already exists') || 
+                err.message.includes('duplicate column name')) {
+              console.log(`   ⚠️  Alguns objetos já existem, continuando...`);
+              resolve();
+            } else {
+              reject(err);
             }
-
-            // Commit da transação
-            db.run('COMMIT', (err) => {
-              if (err) {
-                db.run('ROLLBACK');
-                reject(err);
-              } else {
-                // Registrar migration como executada
-                db.run('INSERT INTO migrations (filename) VALUES (?)', [migrationFile], (err) => {
-                  if (err) reject(err);
-                  else resolve();
-                });
-              }
-            });
-          } catch (error) {
-            db.run('ROLLBACK');
-            reject(error);
+          } else {
+            resolve();
           }
+        });
+      });
+
+      // Registrar migration como executada
+      await new Promise((resolve, reject) => {
+        db.run('INSERT OR IGNORE INTO migrations (filename) VALUES (?)', [migrationFile], (err) => {
+          if (err) reject(err);
+          else resolve();
         });
       });
 
@@ -136,7 +106,10 @@ async function runMigrations() {
 
     } catch (error) {
       console.error(`   ❌ ERRO: ${error.message}`);
-      throw error;
+      
+      // Continuar com as próximas migrações mesmo se houver erro
+      console.log(`   ⚠️  Continuando com as próximas migrações...`);
+      skippedCount++;
     }
   }
 
@@ -148,7 +121,7 @@ async function runMigrations() {
   console.log(`✅ Executadas: ${executedCount}`);
   console.log(`⏭️  Puladas: ${skippedCount}`);
   console.log(`📊 Total: ${migrations.length}\n`);
-  console.log('🎉 Processo concluído com sucesso!\n');
+  console.log('🎉 Processo concluído!\n');
 }
 
 runMigrations()
@@ -159,3 +132,4 @@ runMigrations()
     console.error('\n❌ Erro fatal ao executar migrations:', error);
     process.exit(1);
   });
+

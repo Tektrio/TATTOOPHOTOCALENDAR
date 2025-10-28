@@ -737,7 +737,7 @@ function App() {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
               >
                 <Upload className="w-4 h-4" />
-                Importação (Excel/ICS)
+                Importação
               </TabsTrigger>
               
               <TabsTrigger 
@@ -774,15 +774,6 @@ function App() {
               >
                 <Users className="w-4 h-4" />
                 Funcionários
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="vagaro-import" 
-                data-testid="tab-vagaro-import" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-fuchsia-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                Vagaro (Completo)
               </TabsTrigger>
               
               <TabsTrigger 
@@ -1340,11 +1331,45 @@ function App() {
             </div>
           </TabsContent>
 
-          {/* Import Tab */}
+          {/* Import Tab - Unificada com sub-abas */}
           <TabsContent value="import" className="mt-6">
-            <Suspense fallback={<div className="text-white text-center py-8">Carregando assistente de importação...</div>}>
-              <ImportWizard />
-            </Suspense>
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                  <Upload className="w-6 h-6" />
+                  Central de Importação
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  Importe dados de diferentes fontes para o sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="wizard" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-white/5">
+                    <TabsTrigger value="wizard" className="data-[state=active]:bg-purple-600">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Excel / ICS / CSV
+                    </TabsTrigger>
+                    <TabsTrigger value="vagaro" className="data-[state=active]:bg-purple-600">
+                      <FileSpreadsheet className="w-4 h-4 mr-2" />
+                      Vagaro (Completo)
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="wizard" className="mt-4">
+                    <Suspense fallback={<div className="text-white text-center py-8">Carregando assistente de importação...</div>}>
+                      <ImportWizard />
+                    </Suspense>
+                  </TabsContent>
+                  
+                  <TabsContent value="vagaro" className="mt-4">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <VagaroImport />
+                    </Suspense>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Clients Tab */}
@@ -1380,13 +1405,6 @@ function App() {
           <TabsContent value="employees" className="space-y-6 mt-6">
             <Suspense fallback={<LoadingSpinner />}>
               <Employees />
-            </Suspense>
-          </TabsContent>
-
-          {/* Vagaro Import Tab */}
-          <TabsContent value="vagaro-import" className="space-y-6 mt-6">
-            <Suspense fallback={<LoadingSpinner />}>
-              <VagaroImport />
             </Suspense>
           </TabsContent>
 
