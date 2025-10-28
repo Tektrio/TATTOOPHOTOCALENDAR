@@ -43,16 +43,22 @@ router.use((req, res, next) => {
   const DocumentService = require('../services/documentService');
   const HealthService = require('../services/healthService');
   const CommunicationService = require('../services/communicationService');
+  const PreferencesService = require('../services/preferencesService');
   const analyticsService = require('../services/analyticsService');
 
+  // Inicializar banco de dados no analyticsService
+  const db = req.app.get('db');
+  analyticsService.setDatabase(db);
+
   req.services = {
-    waitingList: new WaitingListService(req.app.get('db')),
-    project: new ProjectService(req.app.get('db')),
-    photo: new PhotoService(req.app.get('db')),
+    waitingList: new WaitingListService(db),
+    project: new ProjectService(db),
+    photo: new PhotoService(db),
     analytics: analyticsService,
-    document: new DocumentService(req.app.get('db')),
-    health: new HealthService(req.app.get('db')),
-    communication: new CommunicationService(req.app.get('db'))
+    document: new DocumentService(db),
+    health: new HealthService(db),
+    communication: new CommunicationService(db),
+    preferences: new PreferencesService(db)
   };
 
   next();
@@ -735,6 +741,43 @@ router.get('/:clientId/frequent-services', async (req, res) => {
     res.json({ success: true, data: services });
   } catch (error) {
     console.error('Error fetching frequent services:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ======================
+// PREFERENCES ROUTES
+// ======================
+
+// GET /api/clients/:clientId/preferences
+router.get('/:clientId/preferences', async (req, res) => {
+  try {
+    const preferences = await req.services.preferences.getPreferences(req.params.clientId);
+    res.json({ success: true, data: preferences });
+  } catch (error) {
+    console.error('Error fetching preferences:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/clients/:clientId/preferences
+router.post('/:clientId/preferences', async (req, res) => {
+  try {
+    const result = await req.services.preferences.savePreferences(req.params.clientId, req.body);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error saving preferences:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PUT /api/clients/:clientId/preferences
+router.put('/:clientId/preferences', async (req, res) => {
+  try {
+    const result = await req.services.preferences.updatePreferences(req.params.clientId, req.body);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error updating preferences:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

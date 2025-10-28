@@ -1,14 +1,26 @@
-const db = require('../config/database');
-
 /**
  * Service para cálculo de métricas e analytics dos clientes
  * Agrega dados de múltiplas tabelas para fornecer insights
+ * 
+ * VERSÃO SIMPLIFICADA: Usa tabela 'appointments' existente
  */
+
+// Referência ao banco de dados (será definida pela rota)
+let db = null;
+
+/**
+ * Definir instância do banco de dados
+ */
+function setDatabase(database) {
+  db = database;
+}
 
 /**
  * Calcular métricas gerais de um cliente
  */
 async function getClientMetrics(clientId) {
+  if (!db) throw new Error('Database not initialized');
+  
   return new Promise(async (resolve, reject) => {
     try {
       const metrics = {};
@@ -16,45 +28,116 @@ async function getClientMetrics(clientId) {
       // 1. Total de sessões realizadas
       metrics.total_sessions = await getTotalSessions(clientId);
 
-      // 2. Total gasto
+      // 2. Total gasto (estimado)
       metrics.total_spent = await getTotalSpent(clientId);
 
-      // 3. Total de gorjetas
-      metrics.total_tips = await getTotalTips(clientId);
+      // 3. Total de gorjetas (não disponível na tabela atual)
+      metrics.total_tips = 0;
 
-      // 4. Última visita
-      metrics.last_visit = await getLastVisit(clientId);
-
-      // 5. Próximo agendamento
-      metrics.next_appointment = await getNextAppointment(clientId);
-
-      // 6. Taxa de cancelamento
+      // 4. Taxa de cancelamento
       metrics.cancellation_rate = await getCancellationRate(clientId);
 
-      // 7. Projetos ativos
-      metrics.active_projects = await getActiveProjects(clientId);
+      // 5. Duração média das sessões
+      metrics.avg_session_duration = await getAverageDuration(clientId);
 
-      // 8. Projetos concluídos
-      metrics.completed_projects = await getCompletedProjects(clientId);
+      // 6. Data da última visita
+      metrics.last_visit = await getLastVisit(clientId);
 
-      // 9. Documentos pendentes
-      metrics.pending_documents = await getPendingDocuments(clientId);
+      // 7. Próximo agendamento
+      metrics.next_appointment = await getNextAppointment(clientId);
 
-      // 10. Tempo médio de sessão
-      metrics.avg_session_duration = await getAvgSessionDuration(clientId);
+      // 8. Status VIP (baseado em valor gasto)
+      metrics.vip_status = metrics.total_spent > 5000 ? 'vip' : 
+                          metrics.total_spent > 2000 ? 'premium' : 'standard';
 
-      // 11. Frequência de visitas (dias entre sessões)
-      metrics.visit_frequency_days = await getVisitFrequency(clientId);
-
-      // 12. Status VIP (baseado em gasto)
-      metrics.vip_status = calculateVIPStatus(metrics.total_spent);
+      // 9. Cliente desde
+      metrics.client_since = await getClientSince(clientId);
 
       resolve(metrics);
     } catch (error) {
+      console.error('Error getting client metrics:', error);
       reject(error);
     }
   });
 }
+
+/**
+ * Histórico financeiro do cliente
+ */
+async function getFinancialHistory(clientId, period = '12months') {
+  if (!db) throw new Error('Database not initialized');
+  
+  return new Promise((resolve, reject) => {
+    // Calcular data inicial baseada no período
+    let dateFilter = '';
+    switch (period) {
+      case '3months':
+        dateFilter = "AND date(start_datetime) >= date('now', '-3 months')";
+        break;
+      case '6months':
+        dateFilter = "AND date(start_datetime) >= date('now', '-6 months')";
+        break;
+      case '12months':
+        dateFilter = "AND date(start_datetime) >= date('now', '-12 months')";
+        break;
+      case 'all':
+      default:
+        dateFilter = '';
+    }
+
+    db.all(
+      `SELECT 
+         date(start_datetime) as date,
+         COUNT(*) as sessions,
+         SUM(COALESCE(estimated_price, 0)) as amount,
+         0 as tips,
+         service as service_name
+       FROM appointments
+       WHERE client_id = ?
+         AND status IN ('completed', 'confirmado', 'checked_in')
+         ${dateFilter}
+       GROUP BY date(start_datetime)
+       ORDER BY date DESC`,
+      [clientId],
+      (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows || []);
+      }
+    );
+  });
+}
+
+/**
+ * Serviços mais frequentes do cliente
+ */
+async function getMostFrequentServices(clientId, limit = 5) {
+  if (!db) throw new Error('Database not initialized');
+  
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT 
+         COALESCE(service, 'Serviço não especificado') as service_name,
+         COUNT(*) as count,
+         SUM(COALESCE(estimated_price, 0)) as total_spent
+       FROM appointments
+       WHERE client_id = ? 
+         AND status IN ('completed', 'confirmado', 'checked_in')
+         AND service IS NOT NULL
+       GROUP BY service
+       ORDER BY count DESC
+       LIMIT ?`,
+      [clientId, limit],
+      (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows || []);
+      }
+    );
+  });
+}
+
+// ========================================
+// FUNÇÕES AUXILIARES
+// ========================================
 
 /**
  * Total de sessões realizadas
@@ -63,9 +146,9 @@ function getTotalSessions(clientId) {
   return new Promise((resolve, reject) => {
     db.get(
       `SELECT COUNT(*) as count 
-       FROM vagaro_appointments 
+       FROM appointments
        WHERE client_id = ? 
-         AND status IN ('completed', 'checked_in')`,
+         AND status IN ('completed', 'confirmado', 'checked_in')`,
       [clientId],
       (err, row) => {
         if (err) reject(err);
@@ -76,82 +159,19 @@ function getTotalSessions(clientId) {
 }
 
 /**
- * Total gasto pelo cliente
+ * Total gasto pelo cliente (estimado)
  */
 function getTotalSpent(clientId) {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT SUM(total_amount) as total 
-       FROM vagaro_transactions 
+      `SELECT SUM(COALESCE(estimated_price, 0)) as total 
+       FROM appointments
        WHERE client_id = ? 
-         AND transaction_type IN ('sale', 'appointment')
-         AND status = 'completed'`,
+         AND status IN ('completed', 'confirmado', 'checked_in')`,
       [clientId],
       (err, row) => {
         if (err) reject(err);
         else resolve(row?.total || 0);
-      }
-    );
-  });
-}
-
-/**
- * Total de gorjetas
- */
-function getTotalTips(clientId) {
-  return new Promise((resolve, reject) => {
-    db.get(
-      `SELECT SUM(tip_amount) as total 
-       FROM vagaro_transactions 
-       WHERE client_id = ? 
-         AND tip_amount > 0`,
-      [clientId],
-      (err, row) => {
-        if (err) reject(err);
-        else resolve(row?.total || 0);
-      }
-    );
-  });
-}
-
-/**
- * Data da última visita
- */
-function getLastVisit(clientId) {
-  return new Promise((resolve, reject) => {
-    db.get(
-      `SELECT appointment_date 
-       FROM vagaro_appointments 
-       WHERE client_id = ? 
-         AND status IN ('completed', 'checked_in')
-       ORDER BY appointment_date DESC 
-       LIMIT 1`,
-      [clientId],
-      (err, row) => {
-        if (err) reject(err);
-        else resolve(row?.appointment_date || null);
-      }
-    );
-  });
-}
-
-/**
- * Próximo agendamento
- */
-function getNextAppointment(clientId) {
-  return new Promise((resolve, reject) => {
-    db.get(
-      `SELECT appointment_date, service_name 
-       FROM vagaro_appointments 
-       WHERE client_id = ? 
-         AND status = 'scheduled'
-         AND appointment_date >= datetime('now')
-       ORDER BY appointment_date ASC 
-       LIMIT 1`,
-      [clientId],
-      (err, row) => {
-        if (err) reject(err);
-        else resolve(row || null);
       }
     );
   });
@@ -166,17 +186,14 @@ function getCancellationRate(clientId) {
       `SELECT 
          COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled,
          COUNT(*) as total
-       FROM vagaro_appointments 
+       FROM appointments
        WHERE client_id = ?`,
       [clientId],
       (err, row) => {
         if (err) reject(err);
         else {
-          if (!row || row.total === 0) {
-            resolve(0);
-          } else {
-            resolve((row.cancelled / row.total) * 100);
-          }
+          const rate = row && row.total > 0 ? (row.cancelled / row.total) * 100 : 0;
+          resolve(Math.round(rate * 100) / 100);
         }
       }
     );
@@ -184,200 +201,91 @@ function getCancellationRate(clientId) {
 }
 
 /**
- * Projetos ativos
+ * Duração média das sessões (em minutos)
  */
-function getActiveProjects(clientId) {
+function getAverageDuration(clientId) {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT COUNT(*) as count 
-       FROM client_projects 
+      `SELECT AVG(COALESCE(duration, 60)) as avg_duration
+       FROM appointments
        WHERE client_id = ? 
-         AND status IN ('planning', 'in_progress')`,
+         AND status IN ('completed', 'confirmado', 'checked_in')`,
       [clientId],
       (err, row) => {
         if (err) reject(err);
-        else resolve(row?.count || 0);
+        else resolve(Math.round(row?.avg_duration || 60));
       }
     );
   });
 }
 
 /**
- * Projetos concluídos
+ * Data da última visita
  */
-function getCompletedProjects(clientId) {
+function getLastVisit(clientId) {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT COUNT(*) as count 
-       FROM client_projects 
+      `SELECT start_datetime
+       FROM appointments
        WHERE client_id = ? 
-         AND status = 'completed'`,
+         AND status IN ('completed', 'confirmado', 'checked_in')
+       ORDER BY start_datetime DESC 
+       LIMIT 1`,
       [clientId],
       (err, row) => {
         if (err) reject(err);
-        else resolve(row?.count || 0);
+        else resolve(row?.start_datetime || null);
       }
     );
   });
 }
 
 /**
- * Documentos pendentes
+ * Próximo agendamento
  */
-function getPendingDocuments(clientId) {
+function getNextAppointment(clientId) {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT COUNT(*) as count 
-       FROM client_documents 
+      `SELECT start_datetime, service, title
+       FROM appointments
        WHERE client_id = ? 
-         AND status = 'pending'`,
+         AND status IN ('scheduled', 'pendente', 'confirmado')
+         AND datetime(start_datetime) >= datetime('now')
+       ORDER BY start_datetime ASC 
+       LIMIT 1`,
       [clientId],
       (err, row) => {
         if (err) reject(err);
-        else resolve(row?.count || 0);
+        else resolve(row ? {
+          date: row.start_datetime,
+          service: row.service || row.title
+        } : null);
       }
     );
   });
 }
 
 /**
- * Duração média de sessões (em minutos)
+ * Cliente desde quando
  */
-function getAvgSessionDuration(clientId) {
+function getClientSince(clientId) {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT AVG(duration_minutes) as avg_duration 
-       FROM vagaro_appointments 
-       WHERE client_id = ? 
-         AND status IN ('completed', 'checked_in')
-         AND duration_minutes > 0`,
+      `SELECT created_at
+       FROM clients
+       WHERE id = ?`,
       [clientId],
       (err, row) => {
         if (err) reject(err);
-        else resolve(row?.avg_duration || 0);
-      }
-    );
-  });
-}
-
-/**
- * Frequência de visitas (média de dias entre sessões)
- */
-function getVisitFrequency(clientId) {
-  return new Promise((resolve, reject) => {
-    db.all(
-      `SELECT appointment_date 
-       FROM vagaro_appointments 
-       WHERE client_id = ? 
-         AND status IN ('completed', 'checked_in')
-       ORDER BY appointment_date ASC`,
-      [clientId],
-      (err, rows) => {
-        if (err) {
-          reject(err);
-        } else if (!rows || rows.length < 2) {
-          resolve(0);
-        } else {
-          // Calcular média de dias entre sessões
-          let totalDays = 0;
-          for (let i = 1; i < rows.length; i++) {
-            const date1 = new Date(rows[i-1].appointment_date);
-            const date2 = new Date(rows[i].appointment_date);
-            const diffDays = (date2 - date1) / (1000 * 60 * 60 * 24);
-            totalDays += diffDays;
-          }
-          resolve(totalDays / (rows.length - 1));
-        }
-      }
-    );
-  });
-}
-
-/**
- * Calcular status VIP baseado em gasto total
- */
-function calculateVIPStatus(totalSpent) {
-  if (totalSpent >= 10000) return { level: 'platinum', label: 'Platina', icon: '💎' };
-  if (totalSpent >= 5000) return { level: 'gold', label: 'Ouro', icon: '🥇' };
-  if (totalSpent >= 1000) return { level: 'silver', label: 'Prata', icon: '🥈' };
-  return { level: 'bronze', label: 'Bronze', icon: '🥉' };
-}
-
-/**
- * Obter histórico financeiro por período
- */
-async function getFinancialHistory(clientId, period = '12months') {
-  return new Promise((resolve, reject) => {
-    let dateFilter = '';
-    switch (period) {
-      case '30days':
-        dateFilter = "AND transaction_date >= date('now', '-30 days')";
-        break;
-      case '3months':
-        dateFilter = "AND transaction_date >= date('now', '-3 months')";
-        break;
-      case '6months':
-        dateFilter = "AND transaction_date >= date('now', '-6 months')";
-        break;
-      case '12months':
-        dateFilter = "AND transaction_date >= date('now', '-12 months')";
-        break;
-      case 'all':
-      default:
-        dateFilter = '';
-    }
-
-    db.all(
-      `SELECT 
-         strftime('%Y-%m', transaction_date) as month,
-         SUM(total_amount) as total,
-         SUM(tip_amount) as tips,
-         COUNT(*) as count
-       FROM vagaro_transactions 
-       WHERE client_id = ? 
-         AND transaction_type IN ('sale', 'appointment')
-         AND status = 'completed'
-         ${dateFilter}
-       GROUP BY month
-       ORDER BY month ASC`,
-      [clientId],
-      (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows || []);
-      }
-    );
-  });
-}
-
-/**
- * Obter serviços mais frequentes
- */
-async function getMostFrequentServices(clientId, limit = 5) {
-  return new Promise((resolve, reject) => {
-    db.all(
-      `SELECT 
-         service_name,
-         COUNT(*) as count,
-         SUM(service_price) as total_spent
-       FROM vagaro_appointments 
-       WHERE client_id = ? 
-         AND status IN ('completed', 'checked_in')
-         AND service_name IS NOT NULL
-       GROUP BY service_name
-       ORDER BY count DESC
-       LIMIT ?`,
-      [clientId, limit],
-      (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows || []);
+        else resolve(row?.created_at || null);
       }
     );
   });
 }
 
 module.exports = {
+  setDatabase,
   getClientMetrics,
   getFinancialHistory,
   getMostFrequentServices
 };
-
