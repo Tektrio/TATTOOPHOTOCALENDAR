@@ -144,3 +144,8 @@ psd_thumbnails_cache/
 
 # Screenshots e imagens de teste
 screenshots/
+
+# Google OAuth tokens e credenciais sensíveis
+**/google-tokens.json
+**/config/google-tokens.json
+agenda-hibrida-v2/config/google-tokens.json
