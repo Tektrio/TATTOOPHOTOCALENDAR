@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 1
+      "actualWorkers": 5
     },
     "preserveOutput": "always",
     "reporter": [
@@ -43,7 +43,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "chromium",
         "name": "chromium",
@@ -59,7 +59,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "firefox",
         "name": "firefox",
@@ -75,7 +75,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "webkit",
         "name": "webkit",
@@ -91,7 +91,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "Mobile Chrome",
         "name": "Mobile Chrome",
@@ -107,7 +107,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "Mobile Safari",
         "name": "Mobile Safari",
@@ -123,7 +123,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "Tablet",
         "name": "Tablet",
@@ -144,21 +144,21 @@
   },
   "suites": [
     {
-      "title": "08-complete-navigation-test.spec.js",
-      "file": "08-complete-navigation-test.spec.js",
+      "title": "07-drag-and-drop.spec.js",
+      "file": "07-drag-and-drop.spec.js",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Teste Completo de Navegação - Todas as Abas",
-          "file": "08-complete-navigation-test.spec.js",
+          "title": "Drag and Drop Calendar Tests",
+          "file": "07-drag-and-drop.spec.js",
           "line": 8,
           "column": 6,
           "specs": [
             {
-              "title": "11 - Responsividade - Teste Mobile",
-              "ok": true,
+              "title": "should load calendar view",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -171,34 +171,70 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 5623,
-                      "errors": [],
-                      "stdout": [
+                      "status": "failed",
+                      "duration": 11230,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                          "column": 80,
+                          "line": 21
+                        },
+                        "snippet": "  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {"
+                      },
+                      "errors": [
                         {
-                          "text": "📱 Testando Responsividade Mobile...\n"
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "column": 80,
+                            "line": 21
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n\n  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80"
                         },
                         {
-                          "text": "✅ Responsividade verificada\n"
+                          "message": "Error: apiRequestContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/.playwright-artifacts-0/traces/1b5c04b1d1d98ed06283-29c586bc22e1d4f86769.trace'"
                         }
                       ],
+                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-28T05:40:30.966Z",
+                      "startTime": "2025-10-28T05:58:15.531Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "column": 80,
+                        "line": 21
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "7d8e3ce58f1e3966a8a2-1b3d49ae29958dd44e5d",
-              "file": "08-complete-navigation-test.spec.js",
-              "line": 431,
+              "id": "1b5c04b1d1d98ed06283-29c586bc22e1d4f86769",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 14,
               "column": 3
             },
             {
-              "title": "12 - Teste de Performance - Tempo de Carregamento",
+              "title": "should show calendar navigation controls",
               "ok": true,
               "tags": [],
               "tests": [
@@ -210,37 +246,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 7,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 5041,
+                      "duration": 7035,
                       "errors": [],
-                      "stdout": [
-                        {
-                          "text": "⚡ Testando Performance...\n"
-                        },
-                        {
-                          "text": "⏱️ Tempo de carregamento: 1534ms\n"
-                        },
-                        {
-                          "text": "✅ Performance excelente! (< 3s)\n"
-                        },
-                        {
-                          "text": "📊 Estatísticas da página:\n"
-                        },
-                        {
-                          "text": "   - Imagens: 0\n"
-                        },
-                        {
-                          "text": "   - Links: 0\n"
-                        },
-                        {
-                          "text": "   - Botões: 15\n"
-                        }
-                      ],
+                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-28T05:40:36.758Z",
+                      "startTime": "2025-10-28T05:58:30.446Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -248,13 +262,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "7d8e3ce58f1e3966a8a2-15a609acc1067a11a82f",
-              "file": "08-complete-navigation-test.spec.js",
-              "line": 464,
+              "id": "1b5c04b1d1d98ed06283-75e28f957e3dc7cfa721",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 24,
               "column": 3
             },
             {
-              "title": "13 - Relatório Final - Resumo dos Testes",
+              "title": "should switch between calendar views",
               "ok": true,
               "tags": [],
               "tests": [
@@ -266,49 +280,28 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 7,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 5247,
+                      "duration": 7140,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "\n============================================================\n"
+                          "text": "Found visible Month view button\n"
                         },
                         {
-                          "text": "📋 RELATÓRIO FINAL - TESTE COMPLETO DE NAVEGAÇÃO\n"
+                          "text": "Found visible Week view button\n"
                         },
                         {
-                          "text": "============================================================\n"
+                          "text": "Found visible Day view button\n"
                         },
                         {
-                          "text": "\n✅ RESUMO:\n"
-                        },
-                        {
-                          "text": "   URL: http://localhost:5173/\n"
-                        },
-                        {
-                          "text": "   Título: Agenda Híbrida - Sistema Visual para Tatuadores\n"
-                        },
-                        {
-                          "text": "   Data/Hora: 2025-10-28T05:40:46.604Z\n"
-                        },
-                        {
-                          "text": "   Viewport: 1280x720\n"
-                        },
-                        {
-                          "text": "\n🎉 TESTE COMPLETO FINALIZADO!\n"
-                        },
-                        {
-                          "text": "📸 Screenshots salvos em: test-results/\n"
-                        },
-                        {
-                          "text": "============================================================\n\n"
+                          "text": "Found visible List view button\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-28T05:40:41.805Z",
+                      "startTime": "2025-10-28T05:58:40.185Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -316,9 +309,3121 @@
                   "status": "expected"
                 }
               ],
-              "id": "7d8e3ce58f1e3966a8a2-c902d1c386be930a18fc",
-              "file": "08-complete-navigation-test.spec.js",
-              "line": 493,
+              "id": "1b5c04b1d1d98ed06283-aea571e5f487fac4b8e0",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should display appointments in calendar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7107,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found 3 appointments in calendar\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:47.333Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-98ea2849cb688485e8dd",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "should show appointment details on click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7376,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Details modal not shown - different interaction pattern may be used\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:54.451Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-9b9886c596fd785e4fbf",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "should allow dragging appointments (visual feedback)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6993,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:01.835Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-4dfdcafacd41f1388e36",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "should perform drag and drop to new date",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8086,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Drag and drop performed - manual verification needed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:08.835Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-45d17aeeb1a24942551c",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 146,
+              "column": 3
+            },
+            {
+              "title": "should show visual feedback during drag",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7015,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Cursor style on draggable: move\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:16.927Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-3da7cbd443aabb8fdce3",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 206,
+              "column": 3
+            },
+            {
+              "title": "should update appointment time after drop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment update verification requires full drag and drop",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 254,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 6998,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:23.952Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment update verification requires full drag and drop",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 254,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-905934463804ac9d2b90",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should handle drop on invalid target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Invalid drop handling requires complex interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 268,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 7011,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:30.956Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Invalid drop handling requires complex interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 268,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-98e79ef3bd8e30f2c03f",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should support multi-day appointments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7159,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "No multi-day appointments visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:37.980Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-39062a99206ce5f715bd",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should resize appointments by dragging edges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment resize requires complex drag interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 299,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 7078,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:45.165Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment resize requires complex drag interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 299,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-32218d435adc15a2eceb",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 288,
+              "column": 3
+            },
+            {
+              "title": "should load calendar view",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 9243,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                          "column": 80,
+                          "line": 21
+                        },
+                        "snippet": "  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "column": 80,
+                            "line": 21
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n\n  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:15.531Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-firefox/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-firefox/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-firefox/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "column": 80,
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-51ba0dd56fef91b089cb",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show calendar navigation controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 7822,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:28.891Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-83decdbe8f773a557da9",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 24,
+              "column": 3
+            },
+            {
+              "title": "should switch between calendar views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 7129,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found visible Month view button\n"
+                        },
+                        {
+                          "text": "Found visible Week view button\n"
+                        },
+                        {
+                          "text": "Found visible Day view button\n"
+                        },
+                        {
+                          "text": "Found visible List view button\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:38.117Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-b3555a4de5d075d3b9af",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should display appointments in calendar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 7337,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found 3 appointments in calendar\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:45.255Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-b09dee74a44cc58f495d",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "should show appointment details on click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 7409,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Details modal not shown - different interaction pattern may be used\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:52.598Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-2a92a184b0f44b8f9216",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "should allow dragging appointments (visual feedback)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 6856,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:00.015Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-1b0ab0a6b2ea016ae50a",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "should perform drag and drop to new date",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 9072,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Drag and drop performed - manual verification needed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:06.878Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-4a2c692bba518c083b87",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 146,
+              "column": 3
+            },
+            {
+              "title": "should show visual feedback during drag",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 7140,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Cursor style on draggable: move\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:15.959Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-22e992802f90072a0b36",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 206,
+              "column": 3
+            },
+            {
+              "title": "should update appointment time after drop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment update verification requires full drag and drop",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 254,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "skipped",
+                      "duration": 6902,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:23.107Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment update verification requires full drag and drop",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 254,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-26412ade0d1c2c1d8364",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should handle drop on invalid target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Invalid drop handling requires complex interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 268,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "skipped",
+                      "duration": 7621,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:30.019Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Invalid drop handling requires complex interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 268,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-44e402e81c63be95fc0d",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should support multi-day appointments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 8074,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "No multi-day appointments visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:37.655Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-0c702cbc1fd652dd9591",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should resize appointments by dragging edges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment resize requires complex drag interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 299,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "skipped",
+                      "duration": 7709,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:45.756Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment resize requires complex drag interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 299,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-9b3cbc09c20fa81bfc1d",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 288,
+              "column": 3
+            },
+            {
+              "title": "should load calendar view",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 8165,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                          "column": 80,
+                          "line": 21
+                        },
+                        "snippet": "  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "column": 80,
+                            "line": 21
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n\n  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80"
+                        },
+                        {
+                          "message": "Error: apiRequestContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/.playwright-artifacts-2/traces/1b5c04b1d1d98ed06283-f5441f3f7f1bb33df24d.network' -> '/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/.playwright-artifacts-2/traces/1b5c04b1d1d98ed06283-f5441f3f7f1bb33df24d-pwnetcopy-1.network'"
+                        },
+                        {
+                          "message": "Error: ENOENT: no such file or directory, open '/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/.playwright-artifacts-2/eb13238935ce4773e5c3e6013ac610e6.zip'"
+                        },
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:15.527Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-webkit/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "column": 80,
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-f5441f3f7f1bb33df24d",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show calendar navigation controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 7544,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:29.200Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-1369b30392de6eaa8933",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 24,
+              "column": 3
+            },
+            {
+              "title": "should switch between calendar views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 8055,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found visible Month view button\n"
+                        },
+                        {
+                          "text": "Found visible Week view button\n"
+                        },
+                        {
+                          "text": "Found visible Day view button\n"
+                        },
+                        {
+                          "text": "Found visible List view button\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:37.084Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-01210cfd08985d94a799",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should display appointments in calendar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 7433,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found 3 appointments in calendar\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:45.154Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-d7915435ec3129d955da",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "should show appointment details on click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 7443,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Details modal not shown - different interaction pattern may be used\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:52.594Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-33b572653cdc6a80cca1",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "should allow dragging appointments (visual feedback)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 7095,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:00.044Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-0ec6e85d2f87b8cb0c92",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "should perform drag and drop to new date",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 8375,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Drag and drop performed - manual verification needed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:07.148Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-43956da4a18c5713e763",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 146,
+              "column": 3
+            },
+            {
+              "title": "should show visual feedback during drag",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 6980,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Cursor style on draggable: move\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:15.530Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-ac0de7d5238d485831dc",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 206,
+              "column": 3
+            },
+            {
+              "title": "should update appointment time after drop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment update verification requires full drag and drop",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 254,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "skipped",
+                      "duration": 7130,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:22.516Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment update verification requires full drag and drop",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 254,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-603092c1a549cb30cf00",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should handle drop on invalid target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Invalid drop handling requires complex interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 268,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "skipped",
+                      "duration": 7040,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:29.653Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Invalid drop handling requires complex interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 268,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-4c8d0a39e5083e6c0f6c",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should support multi-day appointments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 6686,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "No multi-day appointments visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:36.698Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-c3fb70bfe9d99f3ce0ea",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should resize appointments by dragging edges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment resize requires complex drag interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 299,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "skipped",
+                      "duration": 6965,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:43.391Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment resize requires complex drag interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 299,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-86b086f366d62f50f1b8",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 288,
+              "column": 3
+            },
+            {
+              "title": "should load calendar view",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 11510,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                          "column": 80,
+                          "line": 21
+                        },
+                        "snippet": "  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "column": 80,
+                            "line": 21
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n\n  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80"
+                        },
+                        {
+                          "message": "Error: apiRequestContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/.playwright-artifacts-3/traces/1b5c04b1d1d98ed06283-b98cda072778663f2c71.trace'"
+                        },
+                        {
+                          "message": "Error: ENOENT: no such file or directory, open '/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/.playwright-artifacts-3/cea81e4936d48085d758b1a9dd91f923.zip'"
+                        },
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:15.527Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Mobile-Chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Mobile-Chrome/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "column": 80,
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-b98cda072778663f2c71",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show calendar navigation controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 7211,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:30.445Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-eb5d6d4923d9882bc81b",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 24,
+              "column": 3
+            },
+            {
+              "title": "should switch between calendar views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 7571,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found visible Month view button\n"
+                        },
+                        {
+                          "text": "Found visible Week view button\n"
+                        },
+                        {
+                          "text": "Found visible Day view button\n"
+                        },
+                        {
+                          "text": "Found visible List view button\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:37.912Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-7acd824788978690aaf2",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should display appointments in calendar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 7142,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found 3 appointments in calendar\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:45.498Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-dc83df2a7e335f7a4853",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "should show appointment details on click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 7541,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Details modal not shown - different interaction pattern may be used\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:52.653Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-f5936ebbaac78e6f3000",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "should allow dragging appointments (visual feedback)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 7081,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:00.201Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-b16eb3f6765947a44df3",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "should perform drag and drop to new date",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 9372,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Drag and drop performed - manual verification needed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:07.291Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-4ef90aaa6df666288649",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 146,
+              "column": 3
+            },
+            {
+              "title": "should show visual feedback during drag",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 7261,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Cursor style on draggable: move\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:16.673Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-7b885bc4abe0d70d6618",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 206,
+              "column": 3
+            },
+            {
+              "title": "should update appointment time after drop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment update verification requires full drag and drop",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 254,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "skipped",
+                      "duration": 7157,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:23.941Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment update verification requires full drag and drop",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 254,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-2e7e051d2bb6c69870e2",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should handle drop on invalid target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Invalid drop handling requires complex interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 268,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "skipped",
+                      "duration": 7043,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:31.103Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Invalid drop handling requires complex interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 268,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-010ba0ce3871643af518",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should support multi-day appointments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 7043,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "No multi-day appointments visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:38.152Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-40c3d2d3357b2e1b2bf6",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should resize appointments by dragging edges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment resize requires complex drag interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 299,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "skipped",
+                      "duration": 7460,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:45.203Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment resize requires complex drag interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 299,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-c0bb64257c44b3c1e0b6",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 288,
+              "column": 3
+            },
+            {
+              "title": "should load calendar view",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 7708,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                          "column": 80,
+                          "line": 21
+                        },
+                        "snippet": "  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "column": 80,
+                            "line": 21
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n\n  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80"
+                        },
+                        {
+                          "message": "Error: apiRequestContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/.playwright-artifacts-4/traces/1b5c04b1d1d98ed06283-a42761aedfac3cffe015.network' -> '/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/.playwright-artifacts-4/traces/1b5c04b1d1d98ed06283-a42761aedfac3cffe015-pwnetcopy-1.network'"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:15.533Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Mobile-Safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Mobile-Safari/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Mobile-Safari/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "column": 80,
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-a42761aedfac3cffe015",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show calendar navigation controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 7432,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:29.199Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-3169868d3f0dbe2ea0ee",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 24,
+              "column": 3
+            },
+            {
+              "title": "should switch between calendar views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 6996,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found visible Month view button\n"
+                        },
+                        {
+                          "text": "Found visible Week view button\n"
+                        },
+                        {
+                          "text": "Found visible Day view button\n"
+                        },
+                        {
+                          "text": "Found visible List view button\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:37.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-fb7bab506c242aa84df1",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should display appointments in calendar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 7187,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found 3 appointments in calendar\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:44.046Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-219ec2bb19d64c928bb5",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "should show appointment details on click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 7505,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Details modal not shown - different interaction pattern may be used\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:51.242Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-c95ccdd7fc59815baebf",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "should allow dragging appointments (visual feedback)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 7051,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:58:58.757Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-264546bf1697e790cb99",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "should perform drag and drop to new date",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 7919,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Drag and drop performed - manual verification needed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:05.823Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-a2e4ffaebece21c25f5d",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 146,
+              "column": 3
+            },
+            {
+              "title": "should show visual feedback during drag",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 7532,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Cursor style on draggable: move\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:13.756Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-127f491f53c9e88d01fb",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 206,
+              "column": 3
+            },
+            {
+              "title": "should update appointment time after drop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment update verification requires full drag and drop",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 254,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "skipped",
+                      "duration": 7080,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:21.296Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment update verification requires full drag and drop",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 254,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-1b065059b3bdb3a20857",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should handle drop on invalid target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Invalid drop handling requires complex interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 268,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "skipped",
+                      "duration": 6843,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:28.385Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Invalid drop handling requires complex interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 268,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-91231d99d5f6f501b4f1",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should support multi-day appointments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 8398,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "No multi-day appointments visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:35.235Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-2cb7e07f12b02b768c69",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should resize appointments by dragging edges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment resize requires complex drag interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 299,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "skipped",
+                      "duration": 6999,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:43.655Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment resize requires complex drag interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 299,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-8b6b9e6ae9d7221d244a",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 288,
+              "column": 3
+            },
+            {
+              "title": "should load calendar view",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 7109,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80",
+                        "location": {
+                          "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                          "column": 80,
+                          "line": 21
+                        },
+                        "snippet": "  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "column": 80,
+                            "line": 21
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\nExpected: visible\nError: strict mode violation: locator('text=/Calendário|Outubro|Novembro|Dezembro/i') resolved to 2 elements:\n    1) <button role=\"tab\" tabindex=\"0\" type=\"button\" data-state=\"active\" aria-selected=\"true\" data-slot=\"tabs-trigger\" data-testid=\"tab-calendar\" data-orientation=\"horizontal\" data-radix-collection-item=\"\" id=\"radix-_r_0_-trigger-calendar\" aria-controls=\"radix-_r_0_-content-calendar\" class=\"dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:text-muted-foregroun…>…</button> aka getByTestId('tab-calendar')\n    2) <h2 class=\"text-2xl font-bold text-white capitalize flex items-center gap-2\">…</h2> aka getByRole('heading', { name: 'outubro de' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Calendário|Outubro|Novembro|Dezembro/i')\u001b[22m\n\n\n  19 |     \n  20 |     // Verify calendar is visible\n> 21 |     await expect(page.locator('text=/Calendário|Outubro|Novembro|Dezembro/i')).toBeVisible({ timeout: 5000 });\n     |                                                                                ^\n  22 |   });\n  23 |\n  24 |   test('should show calendar navigation controls', async ({ page }) => {\n    at /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js:21:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:51.495Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Tablet/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Tablet/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Tablet/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/test-results/07-drag-and-drop-Drag-and--7a5d3-s-should-load-calendar-view-Tablet/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "column": 80,
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-d80396ac178db3eee1c1",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show calendar navigation controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6866,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T05:59:59.519Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-d77672fe0c6d73adda51",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 24,
+              "column": 3
+            },
+            {
+              "title": "should switch between calendar views",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6877,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found visible Month view button\n"
+                        },
+                        {
+                          "text": "Found visible Week view button\n"
+                        },
+                        {
+                          "text": "Found visible Day view button\n"
+                        },
+                        {
+                          "text": "Found visible List view button\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:06.552Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-69f89ea0ffd2bdb34f43",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should display appointments in calendar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6834,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Found 3 appointments in calendar\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:13.436Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-b9d22d53efbf386d4f2b",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "should show appointment details on click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7660,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Details modal not shown - different interaction pattern may be used\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:20.277Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-a55866e988e5dfa99544",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "should allow dragging appointments (visual feedback)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6711,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:27.944Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-779469c2a6b4e7cf9017",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "should perform drag and drop to new date",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8182,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Drag and drop performed - manual verification needed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:34.660Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-38ca280273fabb967824",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 146,
+              "column": 3
+            },
+            {
+              "title": "should show visual feedback during drag",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7493,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Cursor style on draggable: move\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:42.849Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-00780239e2c766eabf0f",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 206,
+              "column": 3
+            },
+            {
+              "title": "should update appointment time after drop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment update verification requires full drag and drop",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 254,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 6699,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:50.351Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment update verification requires full drag and drop",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 254,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-a06e5a8ce75dc6ff2420",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should handle drop on invalid target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Invalid drop handling requires complex interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 268,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 6692,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:00:57.059Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Invalid drop handling requires complex interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 268,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-1c5d2c3a71cab5fdb74e",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should support multi-day appointments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6621,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "No multi-day appointments visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:01:03.759Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-9efc0b5b247e2ddcf2a0",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should resize appointments by dragging edges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Appointment resize requires complex drag interaction",
+                      "location": {
+                        "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                        "line": 299,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 6834,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-28T06:01:10.387Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Appointment resize requires complex drag interaction",
+                          "location": {
+                            "file": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/agenda-hibrida-frontend/tests/e2e/07-drag-and-drop.spec.js",
+                            "line": 299,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1b5c04b1d1d98ed06283-00ef9a7a4f3c48d38d82",
+              "file": "07-drag-and-drop.spec.js",
+              "line": 288,
               "column": 3
             }
           ]
@@ -328,11 +3433,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-10-28T05:40:29.701Z",
-    "duration": 17443.971999999998,
-    "expected": 3,
-    "skipped": 0,
-    "unexpected": 0,
+    "startTime": "2025-10-28T05:58:13.861Z",
+    "duration": 183490.88,
+    "expected": 48,
+    "skipped": 18,
+    "unexpected": 6,
     "flaky": 0
   }
 }
