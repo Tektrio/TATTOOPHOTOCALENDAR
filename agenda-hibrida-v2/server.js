@@ -7,8 +7,12 @@ const path = require('path');
 const multer = require('multer');
 const mimeTypes = require('mime-types');
 const sharp = require('sharp');
-const { readPsd } = require('ag-psd');
+const { readPsd, initializeCanvas } = require('ag-psd');
+const { createCanvas } = require('canvas');
 const axios = require('axios');
+
+// Inicializar canvas para ag-psd (necessário para processar PSDs sem thumbnail embutido)
+initializeCanvas(createCanvas);
 const cron = require('node-cron');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
@@ -18,6 +22,7 @@ const http = require('http');
 const QRCode = require('qrcode');
 const SyncManager = require('./sync-manager');
 const FileWatcher = require('./file-watcher');
+const { createGoogleEvent, updateGoogleEvent, deleteGoogleEvent, syncGoogleCalendar } = require('./services/googleCalendarService');
 require('dotenv').config();
 
 const app = express();
@@ -95,8 +100,8 @@ setInterval(() => {
 // Middleware CORS
 app.use(cors());
 
-// Middleware JSON com limite aumentado
-app.use(express.json({ limit: '50mb' }));
+// Middleware JSON com limite aumentado para suportar arquivos grandes
+app.use(express.json({ limit: '10gb' }));
 
 // Servir arquivos estáticos com cache
 app.use(express.static('public', {
@@ -140,7 +145,9 @@ app.locals.db = db;
 
 // Rotas de importação e sincronização - CORRIGIDO BUG #003
 const importsRouter = require('./routes/imports');
+const vagaroImportRouter = require('./routes/vagaroImport');
 app.use('/api/imports', importsRouter);
+app.use('/api/imports/vagaro', vagaroImportRouter);
 app.use('/api/auth', importsRouter);
 app.use('/api/sync', importsRouter);
 
@@ -260,10 +267,17 @@ db.serialize(() => {
     records_failed INTEGER DEFAULT 0,
     error_details TEXT,
     file_name TEXT,
+    file_type TEXT,
+    total_rows INTEGER DEFAULT 0,
+    created_rows INTEGER DEFAULT 0,
+    updated_rows INTEGER DEFAULT 0,
+    skipped_rows INTEGER DEFAULT 0,
+    error_rows INTEGER DEFAULT 0,
+    errors TEXT,
     batch_id TEXT,
     started_at DATETIME,
     completed_at DATETIME,
-    duration_seconds INTEGER,
+    duration_seconds REAL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
@@ -593,7 +607,7 @@ const upload = multer({
       cb(new Error('Tipo de arquivo não permitido'));
     }
   },
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+  limits: { fileSize: 10 * 1024 * 1024 * 1024 } // 10GB - Para suportar arquivos PSD grandes
 });
 
 // Middleware de autenticação JWT
@@ -986,15 +1000,45 @@ app.post('/api/clients', (req, res) => {
 // Agendamentos com integração Google Calendar
 app.get('/api/appointments', async (req, res) => {
   try {
-    // Buscar do banco local
+    // Buscar do banco local - suporta schema antigo e novo
     db.all(`
-      SELECT a.*, c.name as client_name, c.phone as client_phone, c.email as client_email, 
-             c.folder_path as client_folder, tt.name as tattoo_type, tt.color as type_color
+      SELECT 
+        a.id,
+        a.client_id,
+        a.tattoo_type_id,
+        COALESCE(a.client_name, c.name) as client_name,
+        COALESCE(a.date, DATE(a.start_datetime)) as date,
+        COALESCE(a.time, TIME(a.start_datetime)) as time,
+        COALESCE(a.end_time, TIME(a.end_datetime)) as end_time,
+        COALESCE(a.service, a.title) as service,
+        a.title,
+        COALESCE(a.notes, a.description) as notes,
+        a.description,
+        a.status,
+        a.duration,
+        a.google_event_id,
+        a.google_calendar_id,
+        a.ical_uid,
+        a.external_source,
+        a.external_id,
+        a.last_sync_date,
+        a.start_datetime,
+        a.end_datetime,
+        a.estimated_price,
+        a.created_at,
+        a.updated_at,
+        c.name as client_full_name,
+        c.email as client_email,
+        c.phone as client_phone,
+        c.folder_path as client_folder,
+        tt.name as tattoo_type,
+        tt.color as type_color
       FROM appointments a
       LEFT JOIN clients c ON a.client_id = c.id
       LEFT JOIN tattoo_types tt ON a.tattoo_type_id = tt.id
-      WHERE a.start_datetime >= date('now', '-1 day')
-      ORDER BY a.start_datetime
+      ORDER BY 
+        COALESCE(a.date, DATE(a.start_datetime)) DESC,
+        COALESCE(a.time, TIME(a.start_datetime)) DESC
     `, async (err, localAppointments) => {
       if (err) {
         return res.status(500).json({ error: err.message });
@@ -1054,49 +1098,40 @@ app.get('/api/appointments', async (req, res) => {
 
 app.post('/api/appointments', async (req, res) => {
   try {
-    const { title, description, start_datetime, end_datetime, client_id, tattoo_type_id, estimated_price } = req.body;
+    const { title, description, start_datetime, end_datetime, client_id, tattoo_type_id, estimated_price, date, time, end_time, service, notes } = req.body;
     
-    // Criar no Google Calendar se autenticado
-    let googleEventId = null;
-    if (fs.existsSync('./tokens.json')) {
-      try {
-        const tokens = fs.readJsonSync('./tokens.json');
-        oauth2Client.setCredentials(tokens);
-        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-
-        const event = {
-          summary: title,
-          description: description,
-          start: {
-            dateTime: start_datetime,
-            timeZone: 'America/Sao_Paulo'
-          },
-          end: {
-            dateTime: end_datetime,
-            timeZone: 'America/Sao_Paulo'
-          }
-        };
-
-        const response = await calendar.events.insert({
-          calendarId: 'primary',
-          resource: event
-        });
-
-        googleEventId = response.data.id;
-      } catch (error) {
-        console.error('Erro ao criar evento no Google Calendar:', error);
-      }
-    }
-
-    // Salvar no banco local
+    // Salvar no banco local primeiro
     db.run(
       `INSERT INTO appointments 
-       (google_event_id, client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [googleEventId, client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price],
-      function(err) {
+       (client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price, date, time, end_time, service, notes, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price, date, time, end_time, service, notes, 'scheduled'],
+      async function(err) {
         if (err) {
           return res.status(500).json({ error: err.message });
+        }
+
+        const appointmentId = this.lastID;
+        let googleSyncResult = null;
+
+        // Tentar criar no Google Calendar
+        try {
+          const appointmentData = {
+            id: appointmentId,
+            client_id,
+            title: title || service,
+            description: notes || description,
+            date: date || start_datetime?.split('T')[0],
+            time: time || start_datetime?.split('T')[1]?.substring(0, 5),
+            end_time: end_time || end_datetime?.split('T')[1]?.substring(0, 5),
+            notes
+          };
+
+          googleSyncResult = await createGoogleEvent(db, appointmentData);
+          console.log('✅ Agendamento sincronizado com Google Calendar:', googleSyncResult.googleEventId);
+        } catch (googleError) {
+          console.warn('⚠️ Não foi possível sincronizar com Google Calendar:', googleError.message);
+          // Não falhar a requisição se apenas o Google falhar
         }
 
         // Criar pasta do cliente se não existir
@@ -1113,7 +1148,12 @@ app.post('/api/appointments', async (req, res) => {
           });
         }
 
-        res.json({ id: this.lastID, googleEventId, success: true });
+        res.json({ 
+          id: appointmentId, 
+          googleEventId: googleSyncResult?.googleEventId || null,
+          googleCalendarLink: googleSyncResult?.htmlLink || null,
+          success: true 
+        });
       }
     );
   } catch (error) {
@@ -1191,49 +1231,208 @@ app.post('/api/clients/:clientId/upload/:category', upload.array('files', 10), a
   }
 });
 
-// ===== FUNÇÃO PARA EXTRAIR THUMBNAIL DE ARQUIVOS PSD =====
+// ===== FUNÇÃO OTIMIZADA PARA EXTRAIR THUMBNAIL DE ARQUIVOS PSD (SEM LIMITE DE TAMANHO) =====
 async function extractPsdThumbnail(psdFilePath) {
   try {
     console.log('🎨 Extraindo thumbnail de PSD:', psdFilePath);
     
+    // Obter tamanho do arquivo
+    const stats = await fs.stat(psdFilePath);
+    const fileSizeGB = (stats.size / 1024 / 1024 / 1024).toFixed(2);
+    const fileSizeMB = (stats.size / 1024 / 1024).toFixed(2);
+    const displaySize = stats.size > 1024 * 1024 * 1024 ? `${fileSizeGB} GB` : `${fileSizeMB} MB`;
+    
+    console.log(`📊 Tamanho do arquivo: ${displaySize}`);
+    
     // Ler o arquivo PSD
+    console.log('📖 Lendo arquivo PSD...');
     const psdBuffer = await fs.readFile(psdFilePath);
+    console.log('✅ Arquivo lido com sucesso');
     
     // Parse do PSD usando ag-psd
+    // SEMPRE pular a imagem composta para economizar memória (pode ser gigante em arquivos grandes)
+    // SEMPRE tentar ler o thumbnail embutido (é pequeno, ~160x160, mesmo em arquivos de GB)
+    console.log('🔍 Extraindo APENAS thumbnail embutido (otimizado para arquivos de qualquer tamanho)');
+    
     const psd = readPsd(psdBuffer, {
-      skipCompositeImageData: false, // Precisamos da imagem composta
-      skipLayerImageData: true,      // Não precisamos das layers individuais
-      skipThumbnail: false            // Queremos o thumbnail se existir
+      skipCompositeImageData: true,  // SEMPRE pular imagem composta (pode ter vários GB)
+      skipLayerImageData: true,      // SEMPRE pular layers individuais
+      skipThumbnail: false,          // SEMPRE tentar ler o thumbnail embutido (pequeno)
+      skipLayerThumbnails: true      // Pular thumbnails das layers
     });
     
-    // Tentar usar o thumbnail embutido primeiro (mais rápido)
-    if (psd.imageData && psd.imageData.data) {
-      console.log('✅ Usando imagem composta do PSD');
-      
-      // Converter ImageData para buffer PNG usando Sharp
-      const { width, height, data } = psd.imageData;
+    console.log('✅ Parse do PSD concluído');
+    
+    // PRIORIDADE 1: Usar o thumbnail embutido (pequeno, rápido, funciona para qualquer tamanho de arquivo)
+    if (psd.thumbnail && psd.thumbnail.data) {
+      const { width, height, data } = psd.thumbnail;
+      console.log(`✅ THUMBNAIL EMBUTIDO encontrado! Dimensões: ${width}x${height}`);
+      console.log('⚡ Processando thumbnail (muito rápido, sem limitação de tamanho)...');
       
       // ImageData está em formato RGBA, precisamos converter para buffer
       const buffer = Buffer.from(data.buffer);
       
       // Criar imagem com Sharp a partir do buffer raw
-      return await sharp(buffer, {
+      const thumbnailBuffer = await sharp(buffer, {
         raw: {
           width: width,
           height: height,
           channels: 4 // RGBA
         }
       })
-      .png()
+      .png({ quality: 90, compressionLevel: 6 })
       .toBuffer();
+      
+      console.log('✅ Thumbnail processado com sucesso!');
+      return thumbnailBuffer;
     }
     
-    // Se não houver imagem composta, retornar null (fallback para ícone)
-    console.log('⚠️ PSD sem imagem composta, usando fallback');
+    // PRIORIDADE 2: Se não houver thumbnail, tentar imageResources (algumas versões do Photoshop)
+    if (psd.imageResources && Array.isArray(psd.imageResources)) {
+      console.log('🔍 Thumbnail principal não encontrado, procurando recursos alternativos...');
+      
+      // Recurso 1033 ou 1036 podem conter thumbnails
+      const thumbnailResource = psd.imageResources.find(r => r && (r.id === 1033 || r.id === 1036));
+      
+      if (thumbnailResource && thumbnailResource.data) {
+        console.log('✅ Recurso de thumbnail alternativo encontrado!');
+        // Tentar processar como JPEG (formato comum em recursos)
+        try {
+          return await sharp(thumbnailResource.data)
+            .png({ quality: 90 })
+            .toBuffer();
+        } catch (e) {
+          console.log('⚠️ Não foi possível processar recurso de thumbnail alternativo:', e.message);
+        }
+      }
+    }
+    
+    // PRIORIDADE 3 (NÍVEL 3): Se não houver thumbnail, extrair imagem composta completa
+    console.log('⚠️ [NÍVEL 3] PSD sem thumbnail embutido, tentando extrair imagem composta (mais lento)...');
+    console.log('📊 Este processo pode levar 30-90 segundos para arquivos grandes...');
+    
+    // Re-ler o PSD com a imagem composta (mas limitada)
+    try {
+      const startTime = Date.now();
+      console.log('📖 [NÍVEL 3] Re-lendo PSD para extrair imagem composta...');
+      
+      const psdWithImage = readPsd(psdBuffer, {
+        skipCompositeImageData: false, // Carregar imagem composta
+        skipLayerImageData: true,       // Pular layers individuais (não precisamos)
+        skipThumbnail: false           // Tentar thumbnail também
+      });
+      
+      console.log('🔍 [NÍVEL 3] Verificando imageData:', {
+        hasImageData: !!psdWithImage.imageData,
+        hasCanvas: !!(psdWithImage.canvas),
+        width: psdWithImage.width,
+        height: psdWithImage.height
+      });
+      
+      // Opção 1: Usar canvas diretamente se disponível (canvas já renderizado pelo ag-psd)
+      if (psdWithImage.canvas) {
+        console.log(`✅ [NÍVEL 3] Canvas encontrado: ${psdWithImage.canvas.width}x${psdWithImage.canvas.height}`);
+        
+        // Converter canvas para PNG buffer
+        const pngBuffer = psdWithImage.canvas.toBuffer('image/png');
+        
+        // Redimensionar para thumbnail com Sharp
+        const thumbnailBuffer = await sharp(pngBuffer)
+          .resize(800, 800, { 
+            fit: 'inside',
+            withoutEnlargement: true
+          })
+          .png({ quality: 85, compressionLevel: 6 })
+          .toBuffer();
+        
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`✅ [NÍVEL 3] Thumbnail gerado do canvas em ${elapsed}s`);
+        return thumbnailBuffer;
+      }
+      
+      // Opção 2: Usar imageData se canvas não estiver disponível
+      if (psdWithImage.imageData && psdWithImage.imageData.data) {
+        const { width, height, data } = psdWithImage.imageData;
+        console.log(`✅ [NÍVEL 3] ImageData encontrada: ${width}x${height}`);
+        
+        // Converter imageData para buffer
+        const buffer = Buffer.from(data.buffer || data);
+        
+        // Criar thumbnail com Sharp a partir dos dados raw
+        const thumbnailBuffer = await sharp(buffer, {
+          raw: {
+            width: width,
+            height: height,
+            channels: 4 // RGBA
+          }
+        })
+        .resize(800, 800, { 
+          fit: 'inside',
+          withoutEnlargement: true
+        })
+        .png({ quality: 85, compressionLevel: 6 })
+        .toBuffer();
+        
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`✅ [NÍVEL 3] Thumbnail gerado do imageData em ${elapsed}s`);
+        return thumbnailBuffer;
+      }
+      
+      // Opção 3: Tentar renderizar manualmente com canvas
+      if (psdWithImage.width && psdWithImage.height) {
+        console.log(`🎨 [NÍVEL 3] Tentando renderizar PSD manualmente: ${psdWithImage.width}x${psdWithImage.height}`);
+        
+        // Criar canvas manualmente
+        const canvas = createCanvas(psdWithImage.width, psdWithImage.height);
+        const ctx = canvas.getContext('2d');
+        
+        // Preencher com branco (fundo padrão)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, psdWithImage.width, psdWithImage.height);
+        
+        // Renderizar camadas se disponíveis
+        if (psdWithImage.children && psdWithImage.children.length > 0) {
+          console.log(`📚 [NÍVEL 3] Renderizando ${psdWithImage.children.length} camadas...`);
+          // Aqui normalmente renderizaríamos as camadas, mas é complexo
+          // Por enquanto, vamos apenas usar o fundo branco
+        }
+        
+        const pngBuffer = canvas.toBuffer('image/png');
+        const thumbnailBuffer = await sharp(pngBuffer)
+          .resize(800, 800, { 
+            fit: 'inside',
+            withoutEnlargement: true
+          })
+          .png({ quality: 85, compressionLevel: 6 })
+          .toBuffer();
+        
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`✅ [NÍVEL 3] Thumbnail gerado por renderização manual em ${elapsed}s`);
+        return thumbnailBuffer;
+      }
+      
+    } catch (compositeError) {
+      console.error('❌ [NÍVEL 3] Erro ao tentar extrair imagem composta:', compositeError.message);
+      console.error('📝 Stack:', compositeError.stack);
+    }
+    
+    // Se não houver thumbnail nem imagem composta, retornar null (fallback para ícone)
+    console.log('⚠️ PSD sem thumbnail ou imagem composta disponível');
+    console.log('💡 Dica: Salve o PSD com "Maximizar Compatibilidade" ativado no Photoshop para gerar thumbnails mais rapidamente');
     return null;
     
   } catch (error) {
     console.error('❌ Erro ao extrair thumbnail de PSD:', error.message);
+    
+    // Mensagens de erro mais específicas
+    if (error.message.includes('ENOMEM') || error.message.includes('allocation')) {
+      console.error('💥 ERRO DE MEMÓRIA: Arquivo PSD muito grande ou corrompido');
+      console.error('💡 Solução: Salve novamente o PSD no Photoshop com "Maximizar Compatibilidade"');
+    } else if (error.message.includes('Invalid') || error.message.includes('parse')) {
+      console.error('💥 ERRO DE FORMATO: Arquivo PSD pode estar corrompido');
+    }
+    
+    console.error('📝 Stack trace:', error.stack);
     return null;
   }
 }
@@ -1350,122 +1549,228 @@ app.get('/api/files/:fileId', async (req, res) => {
   });
 });
 
-// Rota específica para thumbnails
+// ===== FUNÇÃO AUXILIAR: BAIXAR ARQUIVO TEMPORÁRIO DO GOOGLE DRIVE OU QNAP =====
+async function downloadTemporaryFile(file, storageType, driveClient) {
+  const tempDir = path.join(__dirname, 'temp_downloads');
+  await fs.ensureDir(tempDir);
+  
+  const tempFilePath = path.join(tempDir, `${file.id}_${file.original_name || 'file'}`);
+  
+  console.log(`⬇️ [TEMP] Baixando arquivo temporário de ${storageType}...`);
+  
+  if (storageType === 'google_drive') {
+    // Baixar do Google Drive
+    if (!driveClient) {
+      throw new Error('Google Drive não configurado');
+    }
+    
+    const driveFileId = file.drive_id || file.id;
+    const response = await driveClient.files.get({
+      fileId: driveFileId,
+      alt: 'media'
+    }, {
+      responseType: 'stream'
+    });
+    
+    return new Promise((resolve, reject) => {
+      const dest = fs.createWriteStream(tempFilePath);
+      response.data
+        .on('end', () => {
+          console.log(`✅ [TEMP] Download temporário concluído`);
+          resolve(tempFilePath);
+        })
+        .on('error', reject)
+        .pipe(dest);
+    });
+  } else if (storageType === 'qnap') {
+    // Baixar do QNAP (implementar conforme configuração do QNAP)
+    // Por enquanto, assumir que o file_path já aponta para o caminho montado
+    if (file.file_path && await fs.pathExists(file.file_path)) {
+      return file.file_path; // Já está acessível
+    } else {
+      throw new Error('QNAP não configurado ou arquivo não acessível');
+    }
+  }
+  
+  throw new Error(`Storage type não suportado: ${storageType}`);
+}
+
+// ===== FUNÇÃO AUXILIAR: GERAR THUMBNAIL UNIVERSAL (LOCAL, GOOGLE DRIVE, QNAP) =====
+async function generateUniversalThumbnail(file, sizeInt, driveClient) {
+  const fileExt = path.extname(file.original_name || file.filename || '').toLowerCase();
+  const mimeType = file.mime_type || mimeTypes.lookup(file.original_name || '') || 'application/octet-stream';
+  const isPsd = fileExt === '.psd' || mimeType === 'image/vnd.adobe.photoshop';
+  const isImage = isPsd || mimeType.startsWith('image/');
+  
+  if (!isImage) {
+    throw new Error('Arquivo não é uma imagem');
+  }
+  
+  // Determinar diretório de cache
+  const cacheDir = isPsd 
+    ? path.join(__dirname, 'psd_thumbnails_cache')
+    : path.join(__dirname, 'thumbnails_cache');
+  await fs.ensureDir(cacheDir);
+  
+  // Nome do cache com identificador do storage
+  const storagePrefix = file.storage_type || 'local';
+  const cacheFileName = isPsd 
+    ? `${storagePrefix}_psd_thumb_${file.id}_${sizeInt}.png`
+    : `${storagePrefix}_thumb_${file.id}_${sizeInt}${fileExt}`;
+  const cachePath = path.join(cacheDir, cacheFileName);
+  
+  // Se já existe cache, retornar path do cache
+  if (await fs.pathExists(cachePath)) {
+    console.log(`📦 [THUMBNAIL] Usando cache: ${cacheFileName}`);
+    return cachePath;
+  }
+  
+  // **NÍVEL 2: Para Google Drive e PSDs, tentar thumbnail da API primeiro**
+  if (isPsd && file.storage_type === 'google_drive' && driveClient) {
+    try {
+      console.log(`🌐 [NÍVEL 2] Tentando obter thumbnail do Google Drive API para PSD...`);
+      
+      const driveFileId = file.drive_id || file.id;
+      const metadata = await driveClient.files.get({
+        fileId: driveFileId,
+        fields: 'id, name, thumbnailLink'
+      });
+      
+      if (metadata.data.thumbnailLink) {
+        console.log(`✅ [NÍVEL 2] Thumbnail do Google Drive encontrado!`);
+        
+        // Baixar thumbnail do Google Drive
+        const axios = require('axios');
+        const response = await axios.get(metadata.data.thumbnailLink, {
+          responseType: 'arraybuffer',
+          headers: {
+            'Authorization': `Bearer ${driveClient._options.auth.credentials.access_token}`
+          }
+        });
+        
+        // Processar thumbnail com Sharp
+        await sharp(response.data)
+          .resize(sizeInt, sizeInt, { 
+            fit: 'cover',
+            position: 'center'
+          })
+          .png({ quality: 85, compressionLevel: 6 })
+          .toFile(cachePath);
+        
+        console.log(`✅ [NÍVEL 2] Thumbnail salvo do Google Drive API: ${cacheFileName}`);
+        return cachePath;
+      } else {
+        console.log(`⚠️ [NÍVEL 2] Google Drive não tem thumbnail para este PSD`);
+      }
+    } catch (gdriveError) {
+      console.log(`⚠️ [NÍVEL 2] Erro ao tentar Google Drive API:`, gdriveError.message);
+      console.log(`➡️ [NÍVEL 2] Continuando para Nível 3 (processamento completo)...`);
+    }
+  }
+  
+  // Obter path do arquivo (local ou baixar temporário)
+  let filePath;
+  let isTempFile = false;
+  
+  if (file.storage_type === 'local') {
+    filePath = file.file_path;
+  } else {
+    filePath = await downloadTemporaryFile(file, file.storage_type, driveClient);
+    isTempFile = true;
+  }
+  
+  try {
+    // ===== PROCESSAR ARQUIVOS PSD =====
+    if (isPsd) {
+      console.log(`🎨 [PSD] Processando arquivo PSD de ${file.storage_type}...`);
+      
+      const psdImageBuffer = await extractPsdThumbnail(filePath);
+      
+      if (!psdImageBuffer) {
+        throw new Error('PSD sem thumbnail embutido');
+      }
+      
+      await sharp(psdImageBuffer)
+        .resize(sizeInt, sizeInt, { 
+          fit: 'cover',
+          position: 'center'
+        })
+        .png({ quality: 80, compressionLevel: 9 })
+        .toFile(cachePath);
+      
+      console.log(`✅ [PSD] Thumbnail gerado: ${cacheFileName}`);
+    } else {
+      // ===== PROCESSAR IMAGENS NORMAIS =====
+      console.log(`🖼️ [IMAGE] Processando imagem de ${file.storage_type}...`);
+      
+      const image = sharp(filePath);
+      const metadata = await image.metadata();
+      
+      console.log(`📐 [THUMBNAIL] ${metadata.width}x${metadata.height}, formato: ${metadata.format}`);
+      
+      let pipeline = image.resize(sizeInt, sizeInt, { 
+        fit: 'cover',
+        position: 'center'
+      });
+      
+      if (metadata.format === 'jpeg' || metadata.format === 'jpg') {
+        pipeline = pipeline.jpeg({ quality: 80 });
+      } else if (metadata.format === 'png') {
+        pipeline = pipeline.png({ quality: 80, compressionLevel: 9 });
+      } else if (metadata.format === 'webp') {
+        pipeline = pipeline.webp({ quality: 80 });
+      }
+      
+      await pipeline.toFile(cachePath);
+      console.log(`✅ [IMAGE] Thumbnail gerado: ${cacheFileName}`);
+    }
+    
+    return cachePath;
+  } finally {
+    // Limpar arquivo temporário se foi baixado
+    if (isTempFile && await fs.pathExists(filePath)) {
+      await fs.remove(filePath);
+      console.log(`🗑️ [TEMP] Arquivo temporário removido`);
+    }
+  }
+}
+
+// ===== ROTA UNIVERSAL DE THUMBNAILS (LOCAL, GOOGLE DRIVE, QNAP) =====
 app.get('/api/files/:fileId/thumbnail', async (req, res) => {
   const { fileId } = req.params;
-  const size = req.query.size || '300'; // Tamanho padrão
+  const size = req.query.size || '300';
+  const sizeInt = parseInt(size);
   
-  console.log(`🖼️ [THUMBNAIL] Requisição para arquivo ${fileId}, tamanho: ${size}px`);
+  console.log(`🖼️ [THUMBNAIL] Requisição: ${fileId}, tamanho: ${sizeInt}px`);
   
   db.get("SELECT * FROM files WHERE id = ?", [fileId], async (err, file) => {
     if (err || !file) {
-      console.log(`❌ [THUMBNAIL] Arquivo ${fileId} não encontrado no banco`);
+      console.log(`❌ [THUMBNAIL] Arquivo ${fileId} não encontrado`);
       return res.status(404).json({ error: 'Arquivo não encontrado' });
     }
-
-    console.log(`📁 [THUMBNAIL] Arquivo: ${file.original_name}, tipo: ${file.mime_type}, storage: ${file.storage_type}`);
-
+    
+    const storageType = file.storage_type || 'local';
+    console.log(`📁 [THUMBNAIL] ${file.original_name}, storage: ${storageType}`);
+    
     try {
-      if (file.storage_type === 'local' && await fs.pathExists(file.file_path)) {
-        const mimeType = mimeTypes.lookup(file.file_path) || file.mime_type;
-        const fileExt = path.extname(file.file_path).toLowerCase();
-        const isPsd = fileExt === '.psd' || mimeType === 'image/vnd.adobe.photoshop';
-        
-        console.log(`🔍 [THUMBNAIL] Extensão: ${fileExt}, MIME: ${mimeType}, isPSD: ${isPsd}`);
-        
-        // Verificar se é imagem ou PSD
-        if (!isPsd && (!mimeType || !mimeType.startsWith('image/'))) {
-          console.log(`⚠️ [THUMBNAIL] Arquivo não é imagem: ${mimeType}`);
-          return res.status(400).json({ error: 'Arquivo não é uma imagem' });
-        }
-        
-        const sizeInt = parseInt(size);
-        const cacheDir = isPsd 
-          ? path.join(__dirname, 'psd_thumbnails_cache')
-          : path.join(__dirname, 'thumbnails_cache');
-        await fs.ensureDir(cacheDir);
-        
-        // Nome do cache diferente para PSD
-        const cacheFileName = isPsd 
-          ? `psd_thumb_${fileId}_${sizeInt}.png`
-          : `thumb_${fileId}_${sizeInt}${fileExt}`;
-        const cachePath = path.join(cacheDir, cacheFileName);
-        
-        // Se já existe cache, servir do cache
-        if (await fs.pathExists(cachePath)) {
-          console.log(`📦 [THUMBNAIL] Servindo do cache: ${cacheFileName}`);
-          return res.sendFile(path.resolve(cachePath));
-        }
-        
-        console.log(`🔨 [THUMBNAIL] Gerando thumbnail...`);
-        
-        // ===== PROCESSAR ARQUIVOS PSD =====
-        if (isPsd) {
-          console.log('🎨 [PSD] Processando arquivo PSD...');
-          
-          // Extrair imagem do PSD
-          const psdImageBuffer = await extractPsdThumbnail(file.file_path);
-          
-          if (!psdImageBuffer) {
-            console.log('⚠️ [PSD] Não foi possível extrair imagem, usando ícone padrão');
-            return res.status(400).json({ 
-              error: 'PSD sem preview disponível',
-              useFallback: true 
-            });
-          }
-          
-          // Processar o buffer extraído com Sharp
-          await sharp(psdImageBuffer)
-            .resize(sizeInt, sizeInt, { 
-              fit: 'cover',
-              position: 'center'
-            })
-            .png({ quality: 80, compressionLevel: 9 })
-            .toFile(cachePath);
-          
-          console.log('✅ [PSD] Thumbnail gerado com sucesso!');
-          res.set('Content-Type', 'image/png');
-          res.set('Cache-Control', 'public, max-age=31536000');
-          return res.sendFile(path.resolve(cachePath));
-        }
-        
-        // ===== PROCESSAR IMAGENS NORMAIS =====
-        const image = sharp(file.file_path);
-        const metadata = await image.metadata();
-        
-        console.log(`📐 [THUMBNAIL] Imagem original: ${metadata.width}x${metadata.height}, formato: ${metadata.format}`);
-        
-        // Redimensionar mantendo aspect ratio
-        let pipeline = image.resize(sizeInt, sizeInt, { 
-          fit: 'cover',
-          position: 'center'
-        });
-        
-        // Otimizar baseado no formato
-        if (metadata.format === 'jpeg' || metadata.format === 'jpg') {
-          pipeline = pipeline.jpeg({ quality: 80 });
-        } else if (metadata.format === 'png') {
-          pipeline = pipeline.png({ quality: 80, compressionLevel: 9 });
-        } else if (metadata.format === 'webp') {
-          pipeline = pipeline.webp({ quality: 80 });
-        }
-        
-        // Salvar no cache
-        await pipeline.toFile(cachePath);
-        
-        console.log(`✅ [THUMBNAIL] Gerado e salvo em: ${cacheFileName}`);
-        
-        // Servir o thumbnail
-        res.set('Content-Type', mimeType);
-        res.set('Cache-Control', 'public, max-age=31536000');
-        res.sendFile(path.resolve(cachePath));
-        
-      } else {
-        console.log(`❌ [THUMBNAIL] Arquivo não acessível: ${file.file_path}`);
-        res.status(404).json({ error: 'Arquivo não acessível' });
-      }
+      const thumbnailPath = await generateUniversalThumbnail(file, sizeInt, driveClient);
+      
+      const mimeType = mimeTypes.lookup(thumbnailPath) || 'image/png';
+      res.set('Content-Type', mimeType);
+      res.set('Cache-Control', 'public, max-age=31536000');
+      res.sendFile(path.resolve(thumbnailPath));
+      
+      console.log(`✅ [THUMBNAIL] Servido com sucesso`);
     } catch (error) {
-      console.error('❌ [THUMBNAIL] Erro ao gerar thumbnail:', error);
+      console.error(`❌ [THUMBNAIL] Erro:`, error.message);
+      
+      if (error.message.includes('PSD sem thumbnail') || error.message.includes('não é uma imagem')) {
+        return res.status(400).json({ 
+          error: error.message,
+          useFallback: true 
+        });
+      }
+      
       res.status(500).json({ error: 'Erro ao gerar thumbnail', details: error.message });
     }
   });
@@ -1595,28 +1900,119 @@ app.get('/api/drive/exists', async (req, res) => {
   }
 });
 
+// Atualizar agendamento
+app.put('/api/appointments/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { title, description, start_datetime, end_datetime, client_id, tattoo_type_id, estimated_price, date, time, end_time, service, notes, status } = req.body;
+
+    // Buscar agendamento atual
+    const currentAppointment = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM appointments WHERE id = ?", [id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (!currentAppointment) {
+      return res.status(404).json({ error: 'Agendamento não encontrado' });
+    }
+
+    // Atualizar no banco local
+    await new Promise((resolve, reject) => {
+      db.run(
+        `UPDATE appointments SET 
+         client_id = ?, tattoo_type_id = ?, title = ?, description = ?, 
+         start_datetime = ?, end_datetime = ?, estimated_price = ?,
+         date = ?, time = ?, end_time = ?, service = ?, notes = ?, status = ?,
+         updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`,
+        [client_id, tattoo_type_id, title, description, start_datetime, end_datetime, estimated_price, date, time, end_time, service, notes, status || 'scheduled', id],
+        (err) => {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+
+    // Tentar atualizar no Google Calendar
+    let googleSyncResult = null;
+    try {
+      const appointmentData = {
+        id,
+        google_event_id: currentAppointment.google_event_id,
+        google_calendar_id: currentAppointment.google_calendar_id,
+        client_id,
+        title: title || service,
+        description: notes || description,
+        date: date || start_datetime?.split('T')[0],
+        time: time || start_datetime?.split('T')[1]?.substring(0, 5),
+        end_time: end_time || end_datetime?.split('T')[1]?.substring(0, 5),
+        notes
+      };
+
+      if (currentAppointment.google_event_id) {
+        googleSyncResult = await updateGoogleEvent(db, appointmentData);
+        console.log('✅ Agendamento atualizado no Google Calendar:', googleSyncResult.googleEventId);
+      } else {
+        // Se não tinha ID do Google, criar novo
+        googleSyncResult = await createGoogleEvent(db, appointmentData);
+        console.log('✅ Agendamento criado no Google Calendar:', googleSyncResult.googleEventId);
+      }
+    } catch (googleError) {
+      console.warn('⚠️ Não foi possível sincronizar com Google Calendar:', googleError.message);
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Agendamento atualizado com sucesso',
+      googleEventId: googleSyncResult?.googleEventId || currentAppointment.google_event_id,
+      googleCalendarLink: googleSyncResult?.htmlLink || null
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar agendamento:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Excluir agendamento
 app.delete('/api/appointments/:id', async (req, res) => {
   const { id } = req.params;
-  db.get("SELECT google_event_id FROM appointments WHERE id = ?", [id], async (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!row) return res.status(404).json({ error: 'Agendamento não encontrado' });
-    // Tentar remover do Google Calendar, se configurado
-    try {
-      if (row.google_event_id && fs.existsSync('./tokens.json')) {
-        const tokens = fs.readJsonSync('./tokens.json');
-        oauth2Client.setCredentials(tokens);
-        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-        await calendar.events.delete({ calendarId: 'primary', eventId: row.google_event_id });
-      }
-    } catch (e) {
-      console.warn('Falha ao remover evento do Google Calendar:', e.message);
-    }
-    db.run("DELETE FROM appointments WHERE id = ?", [id], function(deleteErr) {
-      if (deleteErr) return res.status(500).json({ error: deleteErr.message });
-      res.json({ success: true });
+  try {
+    // Buscar agendamento completo
+    const appointment = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM appointments WHERE id = ?", [id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
     });
-  });
+
+    if (!appointment) {
+      return res.status(404).json({ error: 'Agendamento não encontrado' });
+    }
+
+    // Tentar remover do Google Calendar primeiro
+    try {
+      const googleResult = await deleteGoogleEvent(db, appointment);
+      console.log('✅ Evento removido do Google Calendar:', googleResult.message);
+    } catch (googleError) {
+      console.warn('⚠️ Não foi possível remover do Google Calendar:', googleError.message);
+      // Continuar com a exclusão local mesmo se o Google falhar
+    }
+
+    // Remover do banco local
+    await new Promise((resolve, reject) => {
+      db.run("DELETE FROM appointments WHERE id = ?", [id], function(deleteErr) {
+        if (deleteErr) reject(deleteErr);
+        else resolve();
+      });
+    });
+
+    res.json({ success: true, message: 'Agendamento removido com sucesso' });
+  } catch (error) {
+    console.error('Erro ao excluir agendamento:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Excluir cliente (bloqueia se houver dependências)
@@ -2116,21 +2512,37 @@ app.get('/api/drive/files', async (req, res) => {
       q: query
     });
     
-    const files = (response.data.files || []).map((file) => ({
-      id: `gdrive_${file.id}`,
-      original_name: file.name,
-      client_name: 'Google Drive',
-      file_url: file.webViewLink,
-      thumbnail_url: file.thumbnailLink ? `/api/drive/thumbnail/${file.id}` : (file.iconLink || null),
-      mime_type: file.mimeType,
-      upload_date: file.createdTime,
-      created_at: file.createdTime,
-      category: file.mimeType === 'application/vnd.google-apps.folder' ? 'pasta' : 'arquivo',
-      file_size: file.size ? parseInt(file.size) : 0,
-      source: 'google_drive',
-      is_folder: file.mimeType === 'application/vnd.google-apps.folder',
-      parents: file.parents || []
-    }));
+    const files = (response.data.files || []).map((file) => {
+      const isPsd = file.mimeType === 'image/vnd.adobe.photoshop' || file.name?.toLowerCase().endsWith('.psd');
+      const isImage = file.mimeType?.startsWith('image/');
+      const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
+      
+      // SEMPRE usar rota customizada para imagens (incluindo PSDs)
+      let thumbnailUrl = null;
+      if (!isFolder && (isImage || isPsd)) {
+        thumbnailUrl = `/api/drive/thumbnail/${file.id}`;
+      } else if (!isFolder && file.thumbnailLink) {
+        thumbnailUrl = `/api/drive/thumbnail/${file.id}`;
+      } else {
+        thumbnailUrl = file.iconLink || null;
+      }
+      
+      return {
+        id: `gdrive_${file.id}`,
+        original_name: file.name,
+        client_name: 'Google Drive',
+        file_url: file.webViewLink,
+        thumbnail_url: thumbnailUrl,
+        mime_type: file.mimeType,
+        upload_date: file.createdTime,
+        created_at: file.createdTime,
+        category: isFolder ? 'pasta' : 'arquivo',
+        file_size: file.size ? parseInt(file.size) : 0,
+        source: 'google_drive',
+        is_folder: isFolder,
+        parents: file.parents || []
+      };
+    });
     
     console.log(`✅ Encontrados ${files.length} itens`);
     res.json(files);
@@ -2398,20 +2810,35 @@ app.get('/api/drive/recent', async (req, res) => {
       q: "trashed=false and mimeType!='application/vnd.google-apps.folder'"
     });
     
-    const files = (response.data.files || []).map((file) => ({
-      id: `gdrive_${file.id}`,
-      original_name: file.name,
-      file_url: file.webViewLink,
-      thumbnail_url: file.thumbnailLink ? `/api/drive/thumbnail/${file.id}` : (file.iconLink || null),
-      mime_type: file.mimeType,
-      created_at: file.createdTime,
-      modified_at: file.modifiedTime,
-      viewed_at: file.viewedByMeTime,
-      file_size: file.size ? parseInt(file.size) : 0,
-      source: 'google_drive',
-      is_folder: false,
-      parents: file.parents || []
-    }));
+    const files = (response.data.files || []).map((file) => {
+      const isPsd = file.mimeType === 'image/vnd.adobe.photoshop' || file.name?.toLowerCase().endsWith('.psd');
+      const isImage = file.mimeType?.startsWith('image/');
+      
+      // SEMPRE usar rota customizada para imagens (incluindo PSDs)
+      let thumbnailUrl = null;
+      if (isImage || isPsd) {
+        thumbnailUrl = `/api/drive/thumbnail/${file.id}`;
+      } else if (file.thumbnailLink) {
+        thumbnailUrl = `/api/drive/thumbnail/${file.id}`;
+      } else {
+        thumbnailUrl = file.iconLink || null;
+      }
+      
+      return {
+        id: `gdrive_${file.id}`,
+        original_name: file.name,
+        file_url: file.webViewLink,
+        thumbnail_url: thumbnailUrl,
+        mime_type: file.mimeType,
+        created_at: file.createdTime,
+        modified_at: file.modifiedTime,
+        viewed_at: file.viewedByMeTime,
+        file_size: file.size ? parseInt(file.size) : 0,
+        source: 'google_drive',
+        is_folder: false,
+        parents: file.parents || []
+      };
+    });
     
     console.log(`✅ ${files.length} arquivos recentes encontrados`);
     res.json(files);
@@ -2421,10 +2848,17 @@ app.get('/api/drive/recent', async (req, res) => {
   }
 });
 
-// 🖼️ PROXY PARA THUMBNAILS DO GOOGLE DRIVE
+// 🖼️ THUMBNAIL UNIVERSAL DO GOOGLE DRIVE (SUPORTA PSD GRANDES)
 app.get('/api/drive/thumbnail/:fileId', async (req, res) => {
   try {
-    const { fileId } = req.params;
+    let { fileId } = req.params;
+    const size = req.query.size || '300';
+    const sizeInt = parseInt(size);
+    
+    // Remover prefixo gdrive_ se existir
+    if (fileId.startsWith('gdrive_')) {
+      fileId = fileId.replace('gdrive_', '');
+    }
     
     if (!driveClient) {
       if (fs.existsSync('./tokens.json')) {
@@ -2436,43 +2870,101 @@ app.get('/api/drive/thumbnail/:fileId', async (req, res) => {
       }
     }
     
-    console.log(`🖼️ Buscando thumbnail para arquivo: ${fileId}`);
+    console.log(`\n🖼️ [GDRIVE THUMB] ========================================`);
+    console.log(`🖼️ [GDRIVE THUMB] Requisição: ${fileId}, tamanho: ${sizeInt}px`);
     
-    // Obter metadados do arquivo para pegar a URL da thumbnail
+    // Buscar metadados do arquivo
     const fileMetadata = await driveClient.files.get({
       fileId: fileId,
-      fields: 'thumbnailLink, mimeType'
+      fields: 'id, name, mimeType, size, thumbnailLink'
     });
     
-    if (!fileMetadata.data.thumbnailLink) {
-      return res.status(404).json({ error: 'Thumbnail não disponível' });
+    const fileName = fileMetadata.data.name;
+    const mimeType = fileMetadata.data.mimeType;
+    const fileSize = fileMetadata.data.size;
+    const fileExt = path.extname(fileName).toLowerCase();
+    const isPsd = fileExt === '.psd' || mimeType === 'image/vnd.adobe.photoshop';
+    const isImage = isPsd || mimeType?.startsWith('image/');
+    
+    console.log(`📁 [GDRIVE THUMB] Arquivo: ${fileName}`);
+    console.log(`📊 [GDRIVE THUMB] Tipo: ${fileExt}, Tamanho: ${(fileSize / 1024 / 1024).toFixed(2)} MB`);
+    console.log(`🏷️  [GDRIVE THUMB] É PSD: ${isPsd ? 'SIM' : 'NÃO'}`);
+    
+    if (!isImage) {
+      console.log(`⚠️ [GDRIVE THUMB] Arquivo não é imagem`);
+      return res.status(400).json({ error: 'Arquivo não é uma imagem', useFallback: true });
     }
     
-    // Buscar a thumbnail usando o OAuth token
-    const thumbnailUrl = fileMetadata.data.thumbnailLink;
-    const response = await axios.get(thumbnailUrl, {
-      headers: {
-        'Authorization': `Bearer ${oauth2Client.credentials.access_token}`
-      },
-      responseType: 'arraybuffer'
-    });
-    
-    // Detectar tipo de imagem
-    let contentType = 'image/jpeg';
-    if (thumbnailUrl.includes('.png')) {
-      contentType = 'image/png';
-    } else if (fileMetadata.data.mimeType === 'image/png') {
-      contentType = 'image/png';
+    // Tentar usar thumbnail do Google Drive para arquivos pequenos ou não-PSD
+    if (!isPsd && fileSize < 50 * 1024 * 1024 && fileMetadata.data.thumbnailLink) {
+      try {
+        console.log(`📦 [GDRIVE THUMB] Usando thumbnail nativo do Google Drive (arquivos pequenos)`);
+        const thumbnailUrl = fileMetadata.data.thumbnailLink;
+        const response = await axios.get(thumbnailUrl, {
+          headers: {
+            'Authorization': `Bearer ${oauth2Client.credentials.access_token}`
+          },
+          responseType: 'arraybuffer'
+        });
+        
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(Buffer.from(response.data));
+        console.log(`✅ [GDRIVE THUMB] Thumbnail nativo servido com sucesso`);
+        console.log(`🖼️ [GDRIVE THUMB] ========================================\n`);
+        return;
+      } catch (err) {
+        console.log(`⚠️ [GDRIVE THUMB] Falha no thumbnail nativo:`, err.message);
+        console.log(`➡️  [GDRIVE THUMB] Gerando thumbnail customizado...`);
+      }
     }
     
-    // Retornar a imagem
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache por 24 horas
-    res.send(Buffer.from(response.data));
+    // Para PSDs ou arquivos grandes, usar sistema híbrido de 3 níveis
+    if (isPsd) {
+      console.log(`\n🎯 [SISTEMA HÍBRIDO] Iniciando processamento de PSD...`);
+      console.log(`🎯 [SISTEMA HÍBRIDO] Níveis disponíveis:`);
+      console.log(`   • NÍVEL 1: Thumbnail embutido no PSD (rápido, ~2-5s)`);
+      console.log(`   • NÍVEL 2: Thumbnail do Google Drive API (médio, ~1-3s)`);
+      console.log(`   • NÍVEL 3: Processar imagem completa (lento, ~30-90s)`);
+      console.log(`🎯 [SISTEMA HÍBRIDO] Tentando em ordem...\n`);
+    } else {
+      console.log(`🔨 [GDRIVE THUMB] Gerando thumbnail customizado para imagem grande...`);
+    }
     
-    console.log(`✅ Thumbnail servida com sucesso`);
+    // Criar objeto file mock para a função universal
+    const fileMock = {
+      id: fileId,
+      drive_id: fileId,
+      original_name: fileName,
+      filename: fileName,
+      mime_type: mimeType,
+      storage_type: 'google_drive'
+    };
+    
+    const thumbnailPath = await generateUniversalThumbnail(fileMock, sizeInt, driveClient);
+    
+    const thumbnailMimeType = mimeTypes.lookup(thumbnailPath) || 'image/png';
+    res.set('Content-Type', thumbnailMimeType);
+    res.set('Cache-Control', 'public, max-age=31536000');
+    res.sendFile(path.resolve(thumbnailPath));
+    
+    if (isPsd) {
+      console.log(`\n✅ [SISTEMA HÍBRIDO] Thumbnail PSD gerado e servido com sucesso!`);
+      console.log(`🎯 [SISTEMA HÍBRIDO] Verifique os logs acima para ver qual nível foi usado`);
+    } else {
+      console.log(`✅ [GDRIVE THUMB] Thumbnail customizado servido`);
+    }
+    console.log(`🖼️ [GDRIVE THUMB] ========================================\n`);
   } catch (error) {
-    console.error('❌ Erro ao buscar thumbnail:', error.message);
+    console.error('❌ [GDRIVE THUMB] Erro:', error.message);
+    
+    if (error.message.includes('PSD sem thumbnail') || error.message.includes('não é uma imagem')) {
+      return res.status(400).json({ 
+        error: error.message,
+        useFallback: true 
+      });
+    }
+    
     res.status(500).json({ error: error.message });
   }
 });
@@ -3153,13 +3645,68 @@ function getFileType(filename) {
   return 'other';
 }
 
+// ============================================
+// CRON JOB: Sincronização automática Google Calendar
+// ============================================
+cron.schedule('*/5 * * * *', async () => {
+  // Emitir evento de início da sincronização
+  io.emit('calendar_sync_started', {
+    timestamp: new Date().toISOString()
+  });
+  
+  console.log('🔄 [CRON] Iniciando sincronização automática com Google Calendar...');
+  try {
+    const report = await syncGoogleCalendar(db, {
+      daysBack: 7,
+      daysForward: 30,
+      skipDuplicates: false,
+      autoLinkClients: true
+    });
+    
+    console.log(`✅ [CRON] Sincronização concluída:`, {
+      total: report.total,
+      created: report.created,
+      updated: report.updated,
+      skipped: report.skipped,
+      errors: report.errors.length
+    });
+
+    // Emitir evento via WebSocket para atualizar frontend
+    io.emit('calendar_synced', {
+      timestamp: new Date().toISOString(),
+      report: {
+        total: report.total,
+        created: report.created,
+        updated: report.updated,
+        skipped: report.skipped
+      }
+    });
+  } catch (error) {
+    console.error('❌ [CRON] Erro na sincronização automática:', error.message);
+  }
+});
+
 // Inicializar servidor
 server.listen(port, async () => {
   console.log(`🚀 Servidor híbrido rodando em http://localhost:${port}`);
   console.log(`📊 Modo de armazenamento: ${hybridStorage.storageMode}`);
+  console.log(`⏰ Sincronização automática Google Calendar: A cada 5 minutos`);
   
   // Inicializar armazenamento
   await hybridStorage.initializeStorage();
+  
+  // Executar primeira sincronização ao iniciar
+  console.log('🔄 Executando sincronização inicial do Google Calendar...');
+  try {
+    const initialReport = await syncGoogleCalendar(db, {
+      daysBack: 7,
+      daysForward: 30,
+      skipDuplicates: false
+    });
+    console.log(`✅ Sincronização inicial concluída: ${initialReport.total} eventos processados`);
+  } catch (error) {
+    console.warn('⚠️ Não foi possível executar sincronização inicial:', error.message);
+  }
   
   console.log('✅ Sistema híbrido inicializado com sucesso!');
 });

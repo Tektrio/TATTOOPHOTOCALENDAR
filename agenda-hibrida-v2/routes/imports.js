@@ -17,6 +17,7 @@ const vagaroService = require('../services/vagaroExcelImportService');
 const icsService = require('../services/icsImportService');
 const googleAuthService = require('../services/googleAuthService');
 const googleCalendarService = require('../services/googleCalendarService');
+const importValidation = require('../services/importValidation');
 
 // Configurar multer para upload de arquivos
 const upload = multer({
@@ -118,6 +119,57 @@ router.post('/vagaro/excel/preview', upload.single('file'), async (req, res) => 
 
     res.status(500).json({
       error: 'Erro ao fazer preview do arquivo',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/imports/validate
+ * Valida lote de dados com validações avançadas
+ */
+router.post('/validate', async (req, res) => {
+  const startTime = Date.now();
+  const db = req.app.locals.db;
+
+  try {
+    const { rows, type, mapping } = req.body;
+
+    if (!rows || !Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({ error: 'Array de linhas é obrigatório' });
+    }
+
+    if (!type || !['clients', 'appointments'].includes(type)) {
+      return res.status(400).json({ error: 'Tipo inválido. Use: clients ou appointments' });
+    }
+
+    if (!mapping || Object.keys(mapping).length === 0) {
+      return res.status(400).json({ error: 'Mapeamento de colunas é obrigatório' });
+    }
+
+    // Validar lote
+    const validatedRows = await importValidation.validateBatch(rows, type, mapping, db);
+
+    // Calcular estatísticas
+    const stats = {
+      total: validatedRows.length,
+      valid: validatedRows.filter(r => r.valid && r.warnings.length === 0).length,
+      warnings: validatedRows.filter(r => r.valid && r.warnings.length > 0).length,
+      errors: validatedRows.filter(r => !r.valid).length,
+      duplicates: validatedRows.filter(r => r.warnings.some(w => w.duplicateId)).length
+    };
+
+    res.json({
+      success: true,
+      validatedRows,
+      stats,
+      processingTime: Date.now() - startTime
+    });
+
+  } catch (error) {
+    console.error('Erro ao validar dados:', error);
+    res.status(500).json({
+      error: 'Erro ao validar dados',
       message: error.message
     });
   }

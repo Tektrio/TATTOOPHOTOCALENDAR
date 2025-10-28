@@ -1,0 +1,47 @@
+EXTRAÇÃO COMPLETA ANO A ANO - PROGRESSO ATUAL
+
+Tempo de trabalho: 1h 20min
+Arquivos extraídos: 16
+Arquivos restantes: ~45
+
+CONCLUÍDOS:
+✅ Payment Distribution: 2023, 2024, 2025 (3)
+✅ Deposits: 2023 (Daily + Each Trans), 2024 (Daily) (3)
+✅ Employee Sales: 2023 (1)
+✅ Sales Summary: 2023, 2024 (2)
+✅ Transaction List: 2023, 2024 (2)
+✅ Appointments Summary: 2024 (1)
+✅ Services: 2025 (1)
+✅ Customers List: completo (1)
+✅ Gift Cards: completo (1)
+✅ Packages/Memberships/IOUs: verificados (0 - vazios)
+
+FALTAM (~45 relatórios):
+[ ] Services 2023, 2024
+[ ] Employee Sales 2024, 2025
+[ ] Transaction List 2025
+[ ] Sales Summary 2025
+[ ] Appointments Summary 2023, 2025
+[ ] Deposits 2024 (Each Trans), 2025 (Daily + Each)
+[ ] Combined Report 2023, 2024, 2025
+[ ] Trends 2023, 2024, 2025
+[ ] Product Sales 2023, 2024, 2025 (se aplicável)
+[ ] Source 2023, 2024, 2025
+[ ] Missed Checkouts 2023, 2024, 2025
+[ ] Booking % 2023, 2024, 2025
+[ ] Cancellations 2023, 2024, 2025
+[ ] Customer Retention 2023, 2024, 2025
+[ ] Rebooking 2023, 2024, 2025
+[ ] Time Card 2023, 2024, 2025
+[ ] Payroll 2023, 2024, 2025
+[ ] New vs Returning 2023, 2024, 2025
+[ ] Inventory (se aplicável)
+[ ] SMS/Email/Billing (se aplicável)
+
+PRÓXIMOS PASSOS:
+1. Continuar Services (2023, 2024)
+2. Transaction List/Sales Summary 2025
+3. Appointments 2023, 2025
+4. Employee Sales 2024, 2025
+5. Outros relatórios críticos
+

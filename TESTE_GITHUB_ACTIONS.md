@@ -11,4 +11,3 @@ Este arquivo foi criado para testar os workflows do GitHub Actions.
 2. ✅ Security Checks
 
 Se você está vendo este arquivo em um PR, significa que os workflows foram acionados!
-

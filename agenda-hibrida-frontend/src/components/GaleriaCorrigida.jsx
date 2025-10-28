@@ -45,6 +45,7 @@ const GaleriaCorrigida = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClient, setFilterClient] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [filterSource, setFilterSource] = useState('all'); // Novo filtro por fonte
   const [fileToDelete, setFileToDelete] = useState(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -54,6 +55,13 @@ const GaleriaCorrigida = () => {
     { value: 'referencias', label: '📋 Referências', color: 'blue' },
     { value: 'desenhos_aprovados', label: '✏️ Desenhos Aprovados', color: 'green' },
     { value: 'fotos_finais', label: '📸 Fotos Finais', color: 'purple' }
+  ];
+
+  // Fontes disponíveis
+  const sources = [
+    { value: 'local', label: '💾 Local', icon: '💾' },
+    { value: 'drive', label: '☁️ Google Drive', icon: '☁️' },
+    { value: 'qnap', label: '🗄️ QNAP', icon: '🗄️' }
   ];
 
   // Carregar dados iniciais
@@ -269,8 +277,9 @@ const GaleriaCorrigida = () => {
                          file.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesClient = filterClient === 'all' || file.client_id === parseInt(filterClient);
     const matchesCategory = filterCategory === 'all' || file.category === filterCategory;
+    const matchesSource = filterSource === 'all' || file.source === filterSource;
     
-    return matchesSearch && matchesClient && matchesCategory;
+    return matchesSearch && matchesClient && matchesCategory && matchesSource;
   });
 
   // Obter cor da categoria
@@ -433,7 +442,7 @@ const GaleriaCorrigida = () => {
       {/* Filtros */}
       <Card className="border-purple-500/20">
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
                 <Search className="w-4 h-4" />
@@ -443,6 +452,7 @@ const GaleriaCorrigida = () => {
                 placeholder="Nome do arquivo ou cliente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                data-testid="input-search-gallery"
               />
             </div>
 
@@ -452,7 +462,7 @@ const GaleriaCorrigida = () => {
                 Cliente
               </label>
               <Select value={filterClient} onValueChange={setFilterClient}>
-                <SelectTrigger>
+                <SelectTrigger data-testid="select-filter-client">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -472,7 +482,7 @@ const GaleriaCorrigida = () => {
                 Categoria
               </label>
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger>
+                <SelectTrigger data-testid="select-filter-category">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -480,6 +490,26 @@ const GaleriaCorrigida = () => {
                   {categories.map(cat => (
                     <SelectItem key={cat.value} value={cat.value}>
                       {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Fonte
+              </label>
+              <Select value={filterSource} onValueChange={setFilterSource}>
+                <SelectTrigger data-testid="select-filter-source">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as fontes</SelectItem>
+                  {sources.map(source => (
+                    <SelectItem key={source.value} value={source.value}>
+                      {source.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

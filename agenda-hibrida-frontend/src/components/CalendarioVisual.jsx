@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Phone, User, FileText, Folder, Grid, List, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Phone, User, FileText, Folder, Grid, List, Clock, Users } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { toast } from 'sonner';
 import ConflictResolver from './ConflictResolver';
 import SyncStatusIndicator from './SyncStatusIndicator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import {
   Tooltip,
   TooltipContent,
@@ -37,10 +38,36 @@ const CalendarioVisual = () => {
   const [showConflictModal, setShowConflictModal] = useState(false); // Modal de conflitos
   const [draggedAppointment, setDraggedAppointment] = useState(null); // Appointment sendo arrastado
   const [dropTarget, setDropTarget] = useState(null); // Alvo do drop
+  
+  // Novos estados para Multi-Conta Google
+  const [googleAccounts, setGoogleAccounts] = useState([]);
+  const [activeAccount, setActiveAccount] = useState('all'); // 'all' ou ID da conta
+  const [accountsLoading, setAccountsLoading] = useState(false);
 
   useEffect(() => {
+    loadGoogleAccounts();
     loadData();
   }, [currentDate]);
+
+  useEffect(() => {
+    loadData(); // Recarregar dados quando mudar a conta ativa
+  }, [activeAccount]);
+
+  // Carregar contas Google cadastradas
+  const loadGoogleAccounts = async () => {
+    try {
+      setAccountsLoading(true);
+      const response = await fetch(`${API_URL}/api/google/accounts`);
+      if (response.ok) {
+        const data = await response.json();
+        setGoogleAccounts(data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar contas Google:', error);
+    } finally {
+      setAccountsLoading(false);
+    }
+  };
 
   // Extrair telefone do título se vier do Google Calendar
   const extractPhoneFromTitle = (title) => {
@@ -138,12 +165,27 @@ const CalendarioVisual = () => {
   const getAppointmentsForDay = (date) => {
     if (!date) return [];
     
-    return appointments.filter(apt => {
+    let filtered = appointments.filter(apt => {
       const aptDate = new Date(apt.start_datetime);
       return aptDate.getDate() === date.getDate() &&
              aptDate.getMonth() === date.getMonth() &&
              aptDate.getFullYear() === date.getFullYear();
     });
+
+    // Filtrar por conta Google ativa
+    if (activeAccount !== 'all') {
+      filtered = filtered.filter(apt => apt.account_id === parseInt(activeAccount));
+    }
+
+    return filtered;
+  };
+
+  // Obter todos os agendamentos filtrados pela conta ativa
+  const getFilteredAppointments = () => {
+    if (activeAccount === 'all') {
+      return appointments;
+    }
+    return appointments.filter(apt => apt.account_id === parseInt(activeAccount));
   };
 
   // Obter imagens para um agendamento pelo telefone
@@ -446,7 +488,7 @@ const CalendarioVisual = () => {
     });
 
     return (
-      <div className="space-y-6">
+      <div className="calendar-view space-y-6" data-testid="calendar-view">
         {/* Header do Dia Expandido */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardContent className="p-6">
@@ -651,7 +693,7 @@ const CalendarioVisual = () => {
 
   return (
     <TooltipProvider>
-      <div className="space-y-6">
+      <div className="calendar-view space-y-6" data-testid="calendar-view">
         {/* Header do Calendário */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardContent className="p-6">
@@ -674,6 +716,7 @@ const CalendarioVisual = () => {
                         variant={viewMode === 'month' ? 'default' : 'ghost'}
                         size="sm"
                         className={viewMode === 'month' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                        data-testid="btn-calendar-month"
                       >
                         <Grid className="w-4 h-4" />
                       </Button>
@@ -688,6 +731,7 @@ const CalendarioVisual = () => {
                         variant={viewMode === 'week' ? 'default' : 'ghost'}
                         size="sm"
                         className={viewMode === 'week' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                        data-testid="btn-calendar-week"
                       >
                         <CalendarIcon className="w-4 h-4" />
                       </Button>
@@ -702,6 +746,7 @@ const CalendarioVisual = () => {
                         variant={viewMode === 'day' ? 'default' : 'ghost'}
                         size="sm"
                         className={viewMode === 'day' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                        data-testid="btn-calendar-day"
                       >
                         <Clock className="w-4 h-4" />
                       </Button>
@@ -716,6 +761,7 @@ const CalendarioVisual = () => {
                         variant={viewMode === 'list' ? 'default' : 'ghost'}
                         size="sm"
                         className={viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-white hover:bg-white/10'}
+                        data-testid="btn-calendar-list"
                       >
                         <List className="w-4 h-4" />
                       </Button>
@@ -732,6 +778,7 @@ const CalendarioVisual = () => {
                       onClick={goToPrevious}
                       variant="outline"
                       size="sm"
+                      data-testid="btn-calendar-prev"
                       className="border-white/20 text-white hover:bg-white/10"
                     >
                       <ChevronLeft className="w-4 h-4" />
@@ -749,6 +796,7 @@ const CalendarioVisual = () => {
                       variant="outline"
                       size="sm"
                       className="border-white/20 text-white hover:bg-white/10"
+                      data-testid="btn-calendar-next"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
@@ -756,6 +804,40 @@ const CalendarioVisual = () => {
                 )}
               </div>
             </div>
+
+            {/* Tabs de Contas Google (Multi-Account) */}
+            {googleAccounts.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm font-medium text-white">Contas Google:</span>
+                </div>
+                <Tabs value={activeAccount} onValueChange={setActiveAccount} className="w-full">
+                  <TabsList className="bg-white/5 p-1" data-testid="tabs-google-accounts">
+                    <TabsTrigger
+                      value="all"
+                      className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/70"
+                      data-testid="tab-account-all"
+                    >
+                      Todas as Contas
+                    </TabsTrigger>
+                    {googleAccounts.map(account => (
+                      <TabsTrigger
+                        key={account.id}
+                        value={String(account.id)}
+                        className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/70"
+                        data-testid={`tab-account-${account.id}`}
+                      >
+                        {account.account_name || account.account_email}
+                        {account.is_primary && (
+                          <Badge className="ml-2 bg-yellow-500 text-black text-xs">Principal</Badge>
+                        )}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+            )}
 
             {/* VISTA DE MÊS */}
             {viewMode === 'month' && (
@@ -778,6 +860,8 @@ const CalendarioVisual = () => {
               return (
                 <Card
                   key={index}
+                  data-testid={date ? `calendar-cell-${date.toISOString().split('T')[0]}` : undefined}
+                  data-date={date ? date.toISOString().split('T')[0] : undefined}
                   onClick={() => handleDayClick(date)}
                   onDragOver={handleDragOver}
                   onDragEnter={(e) => handleDragEnter(e, { id: date?.toDateString(), type: 'day' })}
@@ -817,6 +901,9 @@ const CalendarioVisual = () => {
                               <Tooltip key={appointment.id}>
                                 <TooltipTrigger asChild>
                                   <div
+                                    data-testid={`appointment-${appointment.id}`}
+                                    data-appointment-id={appointment.id}
+                                    data-date={appointment.date || (appointment.start_datetime ? appointment.start_datetime.split('T')[0] : '')}
                                     draggable={true}
                                     onDragStart={(e) => handleDragStart(e, appointment)}
                                     onDragEnd={handleDragEnd}
@@ -982,7 +1069,10 @@ const CalendarioVisual = () => {
                         return (
                           <Tooltip key={dayIdx}>
                             <TooltipTrigger asChild>
-                              <div 
+                              <div
+                                data-testid={`calendar-cell-week-${day.toISOString().split('T')[0]}-${hour}`}
+                                data-date={day.toISOString().split('T')[0]}
+                                data-hour={hour}
                                 onDragOver={handleDragOver}
                                 onDragEnter={(e) => handleDragEnter(e, { id: cellId, type: 'hour', day, hour })}
                                 onDragLeave={handleDragLeave}
@@ -994,7 +1084,10 @@ const CalendarioVisual = () => {
                                 `}>
                                 {hourAppointments.map((apt, aptIdx) => (
                                   <div 
-                                    key={aptIdx} 
+                                    key={aptIdx}
+                                    data-testid={`appointment-${apt.id}`}
+                                    data-appointment-id={apt.id}
+                                    data-date={apt.date || (apt.start_datetime ? apt.start_datetime.split('T')[0] : '')}
                                     draggable={true}
                                     onDragStart={(e) => handleDragStart(e, apt)}
                                     onDragEnd={handleDragEnd}
@@ -1040,7 +1133,10 @@ const CalendarioVisual = () => {
                       </div>
 
                       {/* Coluna de agendamentos */}
-                      <div 
+                      <div
+                        data-testid={`calendar-cell-day-${currentDate.toISOString().split('T')[0]}-${hour}`}
+                        data-date={currentDate.toISOString().split('T')[0]}
+                        data-hour={hour}
                         className={`col-span-10 min-h-[100px] p-4 border rounded transition-all
                           ${dropTarget && dropTarget.id === `day-${hour}` 
                             ? 'border-purple-400 border-2 bg-purple-400/20' 
@@ -1059,7 +1155,10 @@ const CalendarioVisual = () => {
                               return (
                                 <Tooltip key={apt.id}>
                                   <TooltipTrigger asChild>
-                                    <Card 
+                                    <Card
+                                      data-testid={`appointment-${apt.id}`}
+                                      data-appointment-id={apt.id}
+                                      data-date={apt.date || (apt.start_datetime ? apt.start_datetime.split('T')[0] : '')}
                                       draggable={true}
                                       onDragStart={(e) => handleDragStart(e, apt)}
                                       onDragEnd={handleDragEnd}

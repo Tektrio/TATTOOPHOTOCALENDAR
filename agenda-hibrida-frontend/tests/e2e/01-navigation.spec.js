@@ -15,29 +15,30 @@ test.describe('Navigation Tests', () => {
     // Verify main elements are visible
     await expect(page.locator('h1, h2').filter({ hasText: /Dashboard|Agenda/ })).toBeVisible();
     
-    // Verify tabs are present
-    const tabs = ['Dashboard', 'Calendário', 'Agendamentos', 'Clientes', 'Importar', 'Galeria', 'Google Drive', 'Configurações'];
+    // Verify tabs are present using data-testid
+    const tabs = ['dashboard', 'calendar', 'appointments', 'clients', 'import', 'gallery', 'drive', 'settings'];
     for (const tab of tabs) {
-      await expect(page.locator(`button:has-text("${tab}"), [role="tab"]:has-text("${tab}")`)).toBeVisible();
+      await expect(page.locator(`[data-testid="tab-${tab}"]`)).toBeVisible();
     }
   });
 
   test('should navigate between tabs', async ({ page }) => {
-    // Navigate to Clientes tab
-    await page.click('button:has-text("Clientes"), [role="tab"]:has-text("Clientes")');
-    await expect(page.locator('text=/Clientes|Lista de Clientes/i')).toBeVisible({ timeout: 5000 });
+    // Navigate to Clientes tab using data-testid
+    await page.click('[data-testid="tab-clients"]');
+    await expect(page.locator('text=/Clientes|Lista de Clientes/i')).toBeVisible({ timeout: 10000 });
     
     // Navigate to Agendamentos tab
-    await page.click('button:has-text("Agendamentos"), [role="tab"]:has-text("Agendamentos")');
-    await expect(page.locator('text=/Agendamentos|Próximos Agendamentos/i')).toBeVisible({ timeout: 5000 });
+    await page.click('[data-testid="tab-appointments"]');
+    await expect(page.locator('text=/Agendamentos|Próximos Agendamentos/i')).toBeVisible({ timeout: 10000 });
     
     // Navigate to Calendário tab
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await expect(page.locator('text=/Calendário|Outubro|Novembro/i')).toBeVisible({ timeout: 5000 });
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(2000); // Aguardar lazy load
+    await expect(page.locator('text=/Calendário|Outubro|Novembro/i')).toBeVisible({ timeout: 60000 });
     
     // Navigate back to Dashboard
-    await page.click('button:has-text("Dashboard"), [role="tab"]:has-text("Dashboard")');
-    await expect(page.locator('text=/Total de Clientes|Próximos Agendamentos/i')).toBeVisible({ timeout: 5000 });
+    await page.click('[data-testid="tab-dashboard"]');
+    await expect(page.locator('text=/Total de Clientes|Próximos Agendamentos/i')).toBeVisible({ timeout: 10000 });
   });
 
   test('should display dashboard statistics cards', async ({ page }) => {

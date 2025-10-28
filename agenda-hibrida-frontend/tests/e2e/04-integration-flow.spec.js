@@ -26,19 +26,22 @@ test.describe('End-to-End Integration Flow', () => {
     await page.waitForLoadState('networkidle');
     
     // Step 2: Create a new client
-    await page.click('button:has-text("Clientes"), [role="tab"]:has-text("Clientes")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-clients"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
-    await page.click('button:has-text("Novo Cliente"), button:has-text("Novo")');
+    await page.click('[data-testid="btn-new-client"]');
     await page.waitForTimeout(500);
     
     // Fill client form
-    await page.fill('input[name="name"], input[placeholder*="Nome"]', testData.client.name);
-    await page.fill('input[name="email"], input[placeholder*="Email"], input[type="email"]', testData.client.email);
-    await page.fill('input[name="phone"], input[placeholder*="Telefone"]', testData.client.phone);
+    await page.fill('[data-testid="input-client-name"]', testData.client.name);
+    await page.fill('[data-testid="input-client-email"]', testData.client.email);
+    await page.fill('[data-testid="input-client-phone"]', testData.client.phone);
+    
+    // Wait for validation
+    await page.waitForTimeout(1000);
     
     // Submit client form
-    await page.click('button:has-text("Salvar"), button:has-text("Criar"), button[type="submit"]');
+    await page.click('[data-testid="btn-save-client"]');
     await page.waitForTimeout(2000);
     
     // Verify client was created
@@ -46,60 +49,50 @@ test.describe('End-to-End Integration Flow', () => {
     expect(clientCreated).toBeTruthy();
     
     // Step 3: Create appointment for the new client
-    await page.click('button:has-text("Agendamentos"), [role="tab"]:has-text("Agendamentos")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-appointments"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
-    await page.click('button:has-text("Novo Agendamento"), button:has-text("Novo")');
+    await page.click('[data-testid="btn-new-appointment"]');
     await page.waitForTimeout(1000);
     
     // Fill appointment form
-    await page.fill('input[name="title"], input[placeholder*="Título"]', testData.appointment.title);
+    await page.fill('[data-testid="input-appointment-title"]', testData.appointment.title);
     
     // Try to select the client we just created
-    const clientSelectButton = page.locator('button:has-text("Selecione um cliente"), [role="combobox"]');
-    if (await clientSelectButton.count() > 0) {
-      await clientSelectButton.click();
-      await page.waitForTimeout(500);
+    const clientSelect = page.locator('[data-testid="select-appointment-client"]');
+    if (await clientSelect.count() > 0) {
+      // Get the options and find ours
+      const options = await clientSelect.locator('option').allTextContents();
+      const optionIndex = options.findIndex(opt => opt.includes(testData.client.name));
       
-      // Look for our client in the list
-      const ourClient = page.locator(`text=${testData.client.name}`);
-      if (await ourClient.count() > 0) {
-        await ourClient.first().click();
-      }
-    } else {
-      // Try select element
-      const clientSelect = page.locator('select[name="client_id"]');
-      if (await clientSelect.count() > 0) {
-        // Get the options and find ours
-        const options = await clientSelect.locator('option').allTextContents();
-        const optionIndex = options.findIndex(opt => opt.includes(testData.client.name));
-        
-        if (optionIndex >= 0) {
-          await clientSelect.selectOption({ index: optionIndex });
-        } else {
-          // Just select first available client
-          await clientSelect.selectOption({ index: 1 });
-        }
+      if (optionIndex >= 0) {
+        await clientSelect.selectOption({ index: optionIndex });
+      } else {
+        // Just select first available client
+        await clientSelect.selectOption({ index: 1 });
       }
     }
     
     // Fill description
-    const descField = page.locator('textarea[name="description"]');
+    const descField = page.locator('[data-testid="input-appointment-description"]');
     if (await descField.count() > 0) {
       await descField.fill(testData.appointment.description);
     }
     
     // Set date to tomorrow
-    const dateInput = page.locator('input[name="start_time"], input[name="date"]');
+    const dateInput = page.locator('[data-testid="input-appointment-date"]');
     if (await dateInput.count() > 0) {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateString = tomorrow.toISOString().split('T')[0] + 'T14:00';
+      const dateString = tomorrow.toISOString().split('T')[0];
       await dateInput.fill(dateString);
     }
     
+    // Wait for validation
+    await page.waitForTimeout(1000);
+    
     // Submit appointment
-    await page.click('button:has-text("Salvar"), button:has-text("Criar"), button[type="submit"]');
+    await page.click('[data-testid="btn-save-appointment"]');
     await page.waitForTimeout(2000);
     
     // Verify appointment was created
@@ -107,8 +100,9 @@ test.describe('End-to-End Integration Flow', () => {
     expect(appointmentCreated).toBeTruthy();
     
     // Step 4: Verify appointment appears in calendar
-    await page.click('button:has-text("Calendário"), [role="tab"]:has-text("Calendário")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-calendar"]');
+    await page.waitForTimeout(2000); // Lazy loading
+    await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Navigate to next month if we created appointment for tomorrow
     const today = new Date();
@@ -116,7 +110,7 @@ test.describe('End-to-End Integration Flow', () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     
     if (tomorrow.getMonth() !== today.getMonth()) {
-      await page.click('button:has-text("→"), button[aria-label*="próximo"]');
+      await page.click('[data-testid="btn-calendar-next"]');
       await page.waitForTimeout(500);
     }
     
@@ -130,8 +124,8 @@ test.describe('End-to-End Integration Flow', () => {
     }
     
     // Step 5: Verify dashboard stats updated
-    await page.click('button:has-text("Dashboard"), [role="tab"]:has-text("Dashboard")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-dashboard"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
     // Check if client count increased
     const clientCountCard = page.locator('text=Total de Clientes').locator('..');
@@ -149,22 +143,25 @@ test.describe('End-to-End Integration Flow', () => {
     await page.waitForLoadState('networkidle');
     
     // Try to create appointment without client
-    await page.click('button:has-text("Agendamentos"), [role="tab"]:has-text("Agendamentos")');
-    await page.waitForTimeout(1000);
+    await page.click('[data-testid="tab-appointments"]');
+    await page.waitForTimeout(2000); // Lazy loading
     
-    await page.click('button:has-text("Novo Agendamento"), button:has-text("Novo")');
+    await page.click('[data-testid="btn-new-appointment"]');
     await page.waitForTimeout(500);
     
     // Fill only title
-    await page.fill('input[name="title"], input[placeholder*="Título"]', 'Teste Sem Cliente');
+    await page.fill('[data-testid="input-appointment-title"]', 'Teste Sem Cliente');
+    
+    // Wait for validation
+    await page.waitForTimeout(1000);
     
     // Try to submit
-    await page.click('button:has-text("Salvar"), button:has-text("Criar"), button[type="submit"]');
+    await page.click('[data-testid="btn-save-appointment"]');
     await page.waitForTimeout(1000);
     
     // Verify error handling (either validation message or stays on modal)
     const errorMessage = page.locator('text=/obrigatório|required|erro|error/i');
-    const modalStillOpen = page.locator('text=/Novo Agendamento|Criar Agendamento/i');
+    const modalStillOpen = page.locator('[data-testid="modal-new-appointment"]');
     
     const hasError = await errorMessage.isVisible().catch(() => false);
     const stayedOnModal = await modalStillOpen.isVisible().catch(() => false);
