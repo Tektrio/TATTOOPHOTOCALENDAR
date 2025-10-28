@@ -1,0 +1,29 @@
+# Gitleaks Ignore File
+# Ignorar falsos positivos em arquivos de documentação e exemplos
+# Estes arquivos contêm exemplos e placeholders, não segredos reais
+
+# Arquivos de documentação com exemplos de configuração
+1-configuracao_total_novo_gmail.md
+1OPLANO_TOTAL.md
+TESTE_GALERIA_COMPLETO.md
+TESTE_IMPORTACAO_EXCEL_ICS.md
+[INICIO]_RESUMO_FINAL_COMPLETO.md
+[LISTA]_RESUMO_FINAL_COMPLETO.md
+[CHAVES]_CHAVES_API_REFERENCIA.md
+[OK]_CORRECOES_FINAIS_MCP.md
+[RAPIDO]_INICIO_RAPIDO_GOOGLE_API.md
+[STATUS]_RELATORIO_TESTES_COMPLETO.md
+[SUCESSO]_CREDENCIAIS_GOOGLE_COMPLETAS.md
+[URGENTE]_COMANDOS_FINAIS_GOOGLE.sh
+
+# Arquivos de teste e exemplo (contêm exemplos, não credenciais reais)
+agenda-hibrida-v2/test-create-gdrive-folder.js
+agenda-hibrida-v2/test-gdrive-connection.js
+agenda-hibrida-v2/test-gdrive-psd-thumbnail.js
+agenda-hibrida-v2/.env.example
+agenda-hibrida-v2/google-credentials.json
+agenda-hibrida-v2/ONDE_ENCONTRAR_CLIENT_SECRET.md
+
+# Pasta de lixeira/documentação antiga
+lixeira/**
+
