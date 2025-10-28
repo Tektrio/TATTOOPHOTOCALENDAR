@@ -14,6 +14,8 @@ import {
   Target
 } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const OverviewTab = ({ clientId, client }) => {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState(null);
@@ -21,46 +23,62 @@ const OverviewTab = ({ clientId, client }) => {
   const [frequentServices, setFrequentServices] = useState([]);
 
   useEffect(() => {
-    fetchMetrics();
-    fetchFinancialHistory();
-    fetchFrequentServices();
+    const loadAllData = async () => {
+      try {
+        setLoading(true);
+        // Executa todas as chamadas em paralelo e aguarda todas terminarem
+        await Promise.all([
+          fetchMetrics(),
+          fetchFinancialHistory(),
+          fetchFrequentServices()
+        ]);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      } finally {
+        // Define loading como false apenas quando TODAS as chamadas terminarem
+        setLoading(false);
+      }
+    };
+
+    loadAllData();
   }, [clientId]);
 
   const fetchMetrics = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/clients/${clientId}/metrics`);
+      const response = await fetch(`${API_BASE}/api/clients/${clientId}/metrics`);
       const result = await response.json();
       if (result.success) {
         setMetrics(result.data);
       }
     } catch (error) {
       console.error('Erro ao buscar métricas:', error);
-    } finally {
-      setLoading(false);
+      throw error; // Re-throw para que Promise.all detecte o erro
     }
   };
 
   const fetchFinancialHistory = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/clients/${clientId}/financial-history?period=12months`);
+      const response = await fetch(`${API_BASE}/api/clients/${clientId}/financial-history?period=12months`);
       const result = await response.json();
       if (result.success) {
         setFinancialHistory(result.data);
       }
     } catch (error) {
       console.error('Erro ao buscar histórico financeiro:', error);
+      throw error; // Re-throw para que Promise.all detecte o erro
     }
   };
 
   const fetchFrequentServices = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/clients/${clientId}/frequent-services?limit=5`);
+      const response = await fetch(`${API_BASE}/api/clients/${clientId}/frequent-services?limit=5`);
       const result = await response.json();
       if (result.success) {
         setFrequentServices(result.data);
       }
     } catch (error) {
       console.error('Erro ao buscar serviços frequentes:', error);
+      throw error; // Re-throw para que Promise.all detecte o erro
     }
   };
 
