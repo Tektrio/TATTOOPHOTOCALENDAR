@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 // Import all tab components
+import OverviewTab from '../components/client/OverviewTab';
 import WaitingListTab from '../components/client/WaitingListTab';
 import ProjectsTab from '../components/client/ProjectsTab';
 import PhotoGalleryTab from '../components/client/PhotoGalleryTab';
@@ -64,67 +65,7 @@ function ClientProfile() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Visão Geral do Cliente</h2>
-            
-            {client && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-                  <h3 className="font-bold text-gray-900 mb-4">Informações Básicas</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm text-gray-600">Nome</label>
-                      <p className="font-medium">{client.name}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-gray-600">Email</label>
-                      <p className="font-medium">{client.email}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-gray-600">Telefone</label>
-                      <p className="font-medium">{client.phone}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-                  <h3 className="font-bold text-gray-900 mb-4">Estatísticas Rápidas</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total de Sessões</span>
-                      <span className="font-bold">0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Projetos Ativos</span>
-                      <span className="font-bold">0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Investido</span>
-                      <span className="font-bold">$0.00</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg shadow border border-gray-200 md:col-span-2">
-                  <h3 className="font-bold text-gray-900 mb-4">Acesso Rápido</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    {tabs.slice(1).map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className="p-4 text-center rounded-lg bg-gray-50 hover:bg-blue-50 hover:border-blue-300 border-2 border-gray-200 transition"
-                      >
-                        <div className="text-3xl mb-2">{tab.icon}</div>
-                        <div className="text-sm font-medium text-gray-700">{tab.label}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        );
+        return <OverviewTab clientId={clientId} client={client} />;
 
       case 'waiting-list':
         return <WaitingListTab clientId={clientId} />;

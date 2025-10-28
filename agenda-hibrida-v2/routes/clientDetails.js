@@ -43,11 +43,13 @@ router.use((req, res, next) => {
   const DocumentService = require('../services/documentService');
   const HealthService = require('../services/healthService');
   const CommunicationService = require('../services/communicationService');
+  const analyticsService = require('../services/analyticsService');
 
   req.services = {
     waitingList: new WaitingListService(req.app.get('db')),
     project: new ProjectService(req.app.get('db')),
     photo: new PhotoService(req.app.get('db')),
+    analytics: analyticsService,
     document: new DocumentService(req.app.get('db')),
     health: new HealthService(req.app.get('db')),
     communication: new CommunicationService(req.app.get('db'))
@@ -694,6 +696,45 @@ router.get('/:clientId/communications/search', async (req, res) => {
     res.json({ success: true, data: results });
   } catch (error) {
     console.error('Error searching communications:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ======================
+// ANALYTICS ROUTES
+// ======================
+
+// GET /api/clients/:clientId/metrics
+router.get('/:clientId/metrics', async (req, res) => {
+  try {
+    const metrics = await req.services.analytics.getClientMetrics(req.params.clientId);
+    res.json({ success: true, data: metrics });
+  } catch (error) {
+    console.error('Error fetching client metrics:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/clients/:clientId/financial-history
+router.get('/:clientId/financial-history', async (req, res) => {
+  try {
+    const { period = '12months' } = req.query;
+    const history = await req.services.analytics.getFinancialHistory(req.params.clientId, period);
+    res.json({ success: true, data: history });
+  } catch (error) {
+    console.error('Error fetching financial history:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/clients/:clientId/frequent-services
+router.get('/:clientId/frequent-services', async (req, res) => {
+  try {
+    const { limit = 5 } = req.query;
+    const services = await req.services.analytics.getMostFrequentServices(req.params.clientId, parseInt(limit));
+    res.json({ success: true, data: services });
+  } catch (error) {
+    console.error('Error fetching frequent services:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
