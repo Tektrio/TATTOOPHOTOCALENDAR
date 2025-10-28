@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-10-28T15:23:01.033Z",
+  "duration": "0.01",
+  "issues": {
+    "clients": [
+      {
+        "severity": "warning",
+        "type": "no_contact",
+        "count": 18
+      },
+      {
+        "severity": "warning",
+        "type": "duplicate_email",
+        "count": 1
+      }
+    ],
+    "transactions": [],
+    "services": [],
+    "giftcards": [],
+    "forms": [],
+    "integrity": []
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 2,
+    "info": 0
+  }
+}

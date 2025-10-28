@@ -14,6 +14,7 @@ const importsRouter = require('./imports');
 const googleAccountsRouter = require('./google-accounts');
 const servicesRouter = require('./services');
 const clientDetailsRouter = require('./clientDetails');
+const vagaroImportRouter = require('./vagaroImport');
 
 /**
  * Registrar todas as rotas no app Express
@@ -56,11 +57,15 @@ function registerRoutes(app) {
   // Rotas de Detalhes de Clientes (12 Abas)
   app.use('/api/clients', clientDetailsRouter);
   
+  // Rotas de Importação Vagaro Universal
+  app.use('/api/imports/vagaro', vagaroImportRouter);
+  
   console.log('✅ Rotas de gestão de clientes registradas');
   console.log('✅ Rotas de importação e sincronização registradas');
   console.log('✅ Rotas de Google multi-conta registradas');
   console.log('✅ Rotas de serviços registradas');
   console.log('✅ Rotas de detalhes de clientes registradas (40+ endpoints)');
+  console.log('✅ Rotas de importação Vagaro universal registradas (/upload, /batch, /stats, /logs, /preview)');
 }
 
 module.exports = { registerRoutes };
