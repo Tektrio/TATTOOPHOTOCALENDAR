@@ -244,7 +244,6 @@ export const apiPut = async (endpoint, body, options = {}) => {
     }
 
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  // eslint-disable-next-line no-unused-vars
   } catch (error) {
     throw new Error(`PUT falhou: ${error?.message || 'Erro desconhecido'}`);
   }

@@ -283,7 +283,6 @@ export default function VagaroImport() {
                 )}
               </div>
             </Card>
-          )}
 
           {/* Resultado */}
           {result && (
