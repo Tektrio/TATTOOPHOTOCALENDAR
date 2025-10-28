@@ -123,15 +123,6 @@ jobs:
           cd agenda-hibrida-frontend
           pnpm exec playwright install --with-deps chromium
       
-      - name: Start backend server
-        run: |
-          cd agenda-hibrida-v2
-          npm start &
-          echo "Waiting for backend to be ready..."
-          npx wait-on http://localhost:3001/health -t 30000 || true
-        env:
-          NODE_ENV: test
-      
       - name: Run E2E tests
         run: |
           cd agenda-hibrida-frontend
