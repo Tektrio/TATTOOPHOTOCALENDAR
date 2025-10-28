@@ -39,8 +39,8 @@ export default [
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       'no-unused-vars': ['error', { 
-        varsIgnorePattern: '^[A-Z_]|^validate|^format|^set[A-Z]|^show[A-Z]|^upload|^selected|^tattoo|^client',
-        argsIgnorePattern: '^_'
+        varsIgnorePattern: '^[A-Z_]|^validate|^format|^set[A-Z]|^show[A-Z]|^upload|^selected|^tattoo|^client|^accounts|^categories|^delete|^create|^data$|^is[A-Z]|^handle',
+        argsIgnorePattern: '^_|^index$'
       }],
       'react-refresh/only-export-components': [
         'warn',
