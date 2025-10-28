@@ -90,6 +90,7 @@ const Customers = () => {
       try {
         const parsed = JSON.parse(tags);
         return Array.isArray(parsed) ? parsed : [];
+      // eslint-disable-next-line no-unused-vars
       } catch (_e) {
         console.warn('Erro ao fazer parse de tags:', tags);
         return [];

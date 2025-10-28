@@ -754,6 +754,7 @@ export default function GoogleDriveExplorer() {
         } else {
           errorCount++
         }
+      // eslint-disable-next-line no-unused-vars
       } catch (_error) {
         errorCount++
       }
