@@ -54,30 +54,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.4.1
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: agenda-hibrida-frontend/package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: agenda-hibrida-frontend/pnpm-lock.yaml
       
       - name: Install frontend dependencies
         run: |
           cd agenda-hibrida-frontend
-          npm ci
+          pnpm install --frozen-lockfile
       
       - name: Lint frontend code
         run: |
           cd agenda-hibrida-frontend
-          npm run lint
+          pnpm run lint
       
       - name: Build frontend
         run: |
           cd agenda-hibrida-frontend
-          npm run build
+          pnpm run build
       
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-build
           path: agenda-hibrida-frontend/dist
@@ -93,6 +98,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.4.1
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -106,12 +116,12 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd agenda-hibrida-frontend
-          npm ci
+          pnpm install --frozen-lockfile
       
       - name: Install Playwright browsers
         run: |
           cd agenda-hibrida-frontend
-          npx playwright install --with-deps chromium
+          pnpm exec playwright install --with-deps chromium
       
       - name: Start backend server
         run: |
@@ -125,13 +135,13 @@ jobs:
       - name: Run E2E tests
         run: |
           cd agenda-hibrida-frontend
-          npm run test:e2e
+          pnpm run test:e2e
         env:
           CI: true
       
       - name: Upload E2E test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: agenda-hibrida-frontend/playwright-report
@@ -139,7 +149,7 @@ jobs:
       
       - name: Upload E2E screenshots
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-screenshots
           path: agenda-hibrida-frontend/test-results
@@ -154,6 +164,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.4.1
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -167,7 +182,7 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd agenda-hibrida-frontend
-          npm ci
+          pnpm install --frozen-lockfile
       
       - name: Run ESLint on backend
         run: |
@@ -177,14 +192,14 @@ jobs:
       - name: Run ESLint on frontend
         run: |
           cd agenda-hibrida-frontend
-          npm run lint
+          pnpm run lint
       
       - name: Check for security vulnerabilities
         run: |
           cd agenda-hibrida-v2
-          npm audit --audit-level=moderate || true
+          npm audit --audit-level=high || true
           cd ../agenda-hibrida-frontend
-          npm audit --audit-level=moderate || true
+          pnpm audit --audit-level=high || true
 
   # Build Status Summary
   build-summary:

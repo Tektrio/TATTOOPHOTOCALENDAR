@@ -19,6 +19,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.4.1
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -32,18 +37,18 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd agenda-hibrida-frontend
-          npm ci
+          pnpm install --frozen-lockfile
       
       - name: Run npm audit on backend
         run: |
           cd agenda-hibrida-v2
-          npm audit --audit-level=moderate
+          npm audit --audit-level=high
         continue-on-error: true
       
-      - name: Run npm audit on frontend
+      - name: Run pnpm audit on frontend
         run: |
           cd agenda-hibrida-frontend
-          npm audit --audit-level=moderate
+          pnpm audit --audit-level=high
         continue-on-error: true
       
       - name: Check for outdated packages
@@ -53,7 +58,7 @@ jobs:
           npm outdated || true
           echo "Frontend outdated packages:"
           cd ../agenda-hibrida-frontend
-          npm outdated || true
+          pnpm outdated || true
 
   # Secret scanning
   secret-scan:
@@ -83,21 +88,25 @@ jobs:
   code-security:
     name: Code Security Analysis
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: javascript
       
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@v3
       
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
   # Security summary
   security-summary:
