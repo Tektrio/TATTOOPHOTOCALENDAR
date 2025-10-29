@@ -939,50 +939,8 @@ function App() {
                     </Badge>
                   </div>
                   
-                  <div className={`flex items-center justify-between p-4 rounded-lg transition-colors border ${
-                    isDark 
-                      ? 'bg-gray-900/50 hover:bg-gray-900/70 border-gray-700/50' 
-                      : 'bg-white/5 hover:bg-white/10 border-white/10'
-                  }`}>
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-orange-500/20 rounded-lg">
-                        <Server className="w-5 h-5 text-orange-400" />
-                      </div>
-                      <span className="text-white font-medium">QNAP NAS</span>
-                    </div>
-                    <Badge className={systemConfig?.qnapEnabled ? "bg-green-500/20 text-green-400 font-semibold" : "bg-yellow-500/20 text-yellow-400 font-semibold"}>
-                      {systemConfig?.qnapEnabled ? '✓ Configurado' : '⚠ Pendente'}
-                    </Badge>
-                  </div>
+                  {/* QNAP NAS removido - feature não utilizada */}
                 </div>
-                
-                {/* Botão de ajuda para QNAP */}
-                {!systemConfig?.qnapEnabled && (
-                  <div className={`p-4 border rounded-lg ${
-                    isDark 
-                      ? 'bg-yellow-500/5 border-yellow-500/30' 
-                      : 'bg-yellow-500/10 border-yellow-500/20'
-                  }`}>
-                    <div className="flex items-start space-x-3">
-                      <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-white font-medium mb-1">QNAP NAS não configurado</p>
-                        <p className={`text-sm mb-3 ${isDark ? 'text-yellow-300' : 'text-yellow-200'}`}>
-                          Configure o QNAP NAS para sincronização automática de arquivos e backup em tempo real.
-                        </p>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/20"
-                          onClick={() => setActiveTab('settings')}
-                        >
-                          <Settings className="w-4 h-4 mr-2" />
-                          Configurar agora
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
 

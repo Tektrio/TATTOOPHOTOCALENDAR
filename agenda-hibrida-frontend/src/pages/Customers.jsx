@@ -85,15 +85,21 @@ const Customers = () => {
       return tags;
     }
     
-    // Se tags é uma string JSON, fazer parse
+    // Se tags é uma string, tentar parsear
     if (typeof tags === 'string' && tags.trim().length > 0) {
       try {
+        // Tentar como JSON primeiro
         const parsed = JSON.parse(tags);
         return Array.isArray(parsed) ? parsed : [];
       // eslint-disable-next-line no-unused-vars
       } catch (_e) {
-        console.warn('Erro ao fazer parse de tags:', tags);
-        return [];
+        // Se falhar, tratar como string separada por vírgula
+        // Aceita formatos como: "NONE of the options,Diabetes", "Latex,Auto-immunity"
+        const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        return tagsArray.map((tag, index) => ({
+          id: index,
+          name: tag
+        }));
       }
     }
     

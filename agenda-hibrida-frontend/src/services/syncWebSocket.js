@@ -3,37 +3,67 @@ import io from 'socket.io-client';
 /**
  * Cliente WebSocket para sincronização em tempo real
  * Gerencia eventos de sincronização, fila e arquivos
+ * Implementa padrão Singleton com reconexão automática
  */
 class SyncWebSocketClient {
   constructor() {
     this.socket = null;
     this.listeners = new Map();
     this.connected = false;
+    this.connectionState = 'DISCONNECTED'; // DISCONNECTED, CONNECTING, CONNECTED
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 10;
+    this.reconnectDelayBase = 1000; // 1 segundo
+    this.reconnectDelayMax = 30000; // 30 segundos
+    this.socketUrl = null;
   }
 
   /**
-   * Conecta ao servidor WebSocket
+   * Conecta ao servidor WebSocket (Singleton)
    * @param {string} [url] - URL do servidor (opcional)
    */
   connect(url = null) {
-    if (this.socket) {
-      console.log('⚠️ WebSocket já conectado');
+    // Singleton: prevenir múltiplas conexões
+    if (this.socket && (this.connected || this.connectionState === 'CONNECTING')) {
+      console.log('⚠️ WebSocket já conectado ou conectando');
       return;
     }
 
-    const socketUrl = url || import.meta.env.VITE_API_URL || 'http://localhost:3001';
-    
-    console.log('🔌 Conectando ao WebSocket:', socketUrl);
+    // Se socket existe mas está desconectado, limpar antes de reconectar
+    if (this.socket && !this.connected) {
+      this.socket.removeAllListeners();
+      this.socket.disconnect();
+      this.socket = null;
+    }
 
-    this.socket = io(socketUrl, {
+    this.connectionState = 'CONNECTING';
+    this.socketUrl = url || this.socketUrl || import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    
+    console.log('🔌 Conectando ao WebSocket:', this.socketUrl);
+
+    this.socket = io(this.socketUrl, {
       transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5
+      reconnectionDelay: this._calculateReconnectDelay(),
+      reconnectionDelayMax: this.reconnectDelayMax,
+      reconnectionAttempts: this.maxReconnectAttempts
     });
 
     this._setupEventHandlers();
+  }
+
+  /**
+   * Calcula delay de reconexão com exponential backoff
+   * @private
+   * @returns {number} Delay em ms
+   */
+  _calculateReconnectDelay() {
+    // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s (max)
+    const delay = Math.min(
+      this.reconnectDelayBase * Math.pow(2, this.reconnectAttempts),
+      this.reconnectDelayMax
+    );
+    return delay;
   }
 
   /**
@@ -43,19 +73,39 @@ class SyncWebSocketClient {
   _setupEventHandlers() {
     this.socket.on('connect', () => {
       this.connected = true;
+      this.connectionState = 'CONNECTED';
+      this.reconnectAttempts = 0; // Reset contador ao conectar com sucesso
       console.log('✅ WebSocket conectado:', this.socket.id);
       this._emit('connected', { socketId: this.socket.id });
     });
 
-    this.socket.on('disconnect', () => {
+    this.socket.on('disconnect', (reason) => {
       this.connected = false;
-      console.log('🔌 WebSocket desconectado');
-      this._emit('disconnected', {});
+      this.connectionState = 'DISCONNECTED';
+      console.log('🔌 WebSocket desconectado:', reason);
+      this._emit('disconnected', { reason });
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('❌ Erro de conexão WebSocket:', error.message);
-      this._emit('error', { error: error.message });
+      this.reconnectAttempts++;
+      const delay = this._calculateReconnectDelay();
+      console.error(`❌ Erro de conexão WebSocket (tentativa ${this.reconnectAttempts}/${this.maxReconnectAttempts}):`, error.message);
+      console.log(`🔄 Próxima tentativa em ${delay/1000}s`);
+      this._emit('error', { error: error.message, attempts: this.reconnectAttempts, nextDelay: delay });
+    });
+
+    this.socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log(`🔄 Tentando reconectar... (${attemptNumber})`);
+    });
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log(`✅ Reconectado após ${attemptNumber} tentativa(s)`);
+      this.reconnectAttempts = 0;
+    });
+
+    this.socket.on('reconnect_failed', () => {
+      console.error('❌ Falha ao reconectar após múltiplas tentativas');
+      this._emit('reconnect_failed', {});
     });
 
     // ============================================
@@ -201,9 +251,12 @@ class SyncWebSocketClient {
    */
   disconnect() {
     if (this.socket) {
+      this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;
       this.connected = false;
+      this.connectionState = 'DISCONNECTED';
+      this.reconnectAttempts = 0;
       this.listeners.clear();
       console.log('🔌 WebSocket desconectado manualmente');
     }
@@ -214,16 +267,28 @@ class SyncWebSocketClient {
    * @returns {boolean}
    */
   isConnected() {
-    return this.connected && this.socket !== null;
+    return this.connected && this.socket !== null && this.connectionState === 'CONNECTED';
+  }
+
+  /**
+   * Retorna estado atual da conexão
+   * @returns {string} 'DISCONNECTED', 'CONNECTING', ou 'CONNECTED'
+   */
+  getConnectionState() {
+    return this.connectionState;
   }
 
   /**
    * Reconecta ao servidor
    */
   reconnect() {
+    console.log('🔄 Iniciando reconexão manual...');
+    
     if (this.socket) {
       // Socket existe mas está desconectado
-      this.socket.connect();
+      if (!this.connected && this.connectionState !== 'CONNECTING') {
+        this.socket.connect();
+      }
     } else {
       // Socket foi destruído (após disconnect()), criar nova conexão
       this.connect();
