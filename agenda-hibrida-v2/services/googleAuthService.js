@@ -266,6 +266,75 @@ async function getTokenInfo(db, userId = 'system') {
   };
 }
 
+/**
+ * Inicia monitoramento automático de tokens
+ * Verifica a cada 10 minutos se tokens estão próximos de expirar
+ * e renova automaticamente se necessário
+ * @param {object} db - Instância do banco de dados
+ * @param {number} checkIntervalMs - Intervalo de verificação em ms (padrão: 10 min)
+ */
+function startTokenMonitoring(db, checkIntervalMs = 10 * 60 * 1000) {
+  const CHECK_THRESHOLD_MS = 15 * 60 * 1000; // Renovar se faltar menos de 15 min
+
+  console.log('🔄 Iniciando monitoramento automático de tokens OAuth');
+  console.log(`   - Verificação a cada ${checkIntervalMs / 60000} minutos`);
+  console.log(`   - Renovação automática se faltar menos de ${CHECK_THRESHOLD_MS / 60000} minutos`);
+
+  const checkAndRenewTokens = async () => {
+    try {
+      const tokenInfo = await getTokenInfo(db);
+      
+      if (!tokenInfo) {
+        return; // Sem tokens, nada a fazer
+      }
+
+      if (!tokenInfo.hasRefreshToken) {
+        console.warn('⚠️  Sem refresh_token, não é possível renovar automaticamente');
+        return;
+      }
+
+      const expiresInMs = tokenInfo.expiresIn * 1000;
+      
+      // Se token expirou ou vai expirar em menos de 15 minutos
+      if (expiresInMs < CHECK_THRESHOLD_MS) {
+        console.log(`🔄 Token expira em ${Math.floor(expiresInMs / 60000)} minutos, renovando...`);
+        
+        try {
+          const oauth2Client = await getAuthenticatedClient(db);
+          const { credentials } = await oauth2Client.refreshAccessToken();
+          
+          // Carregar tokens atuais para preservar refresh_token
+          const currentTokens = await loadTokensFromDb(db);
+          const updatedTokens = { ...currentTokens, ...credentials };
+          
+          await saveTokensToDb(db, updatedTokens);
+          await saveTokensToFile(updatedTokens);
+          
+          console.log('✅ Tokens renovados automaticamente com sucesso');
+        } catch (error) {
+          console.error('❌ Erro ao renovar tokens automaticamente:', error.message);
+        }
+      } else {
+        console.log(`✓ Token válido por mais ${Math.floor(expiresInMs / 60000)} minutos`);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao verificar tokens:', error.message);
+    }
+  };
+
+  // Verificar imediatamente
+  checkAndRenewTokens();
+
+  // Agendar verificações periódicas
+  const intervalId = setInterval(checkAndRenewTokens, checkIntervalMs);
+
+  // Retornar função para parar o monitoramento
+  return () => {
+    clearInterval(intervalId);
+    console.log('🔌 Monitoramento de tokens parado');
+  };
+}
+
 module.exports = {
   createOAuth2Client,
   getAuthUrl,
@@ -277,5 +346,6 @@ module.exports = {
   getAuthenticatedClient,
   revokeTokens,
   isAuthenticated,
-  getTokenInfo
+  getTokenInfo,
+  startTokenMonitoring
 };
