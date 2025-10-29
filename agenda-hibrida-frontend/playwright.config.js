@@ -90,7 +90,7 @@ export default defineConfig({
     {
       command: 'npm run dev',
       url: 'http://localhost:5173', // Health check frontend
-      timeout: 120 * 1000,
+      timeout: 180 * 1000, // 3 minutos para o Vite dev server iniciar no CI
       reuseExistingServer: !process.env.CI,
       stdout: 'pipe',
       stderr: 'pipe'
