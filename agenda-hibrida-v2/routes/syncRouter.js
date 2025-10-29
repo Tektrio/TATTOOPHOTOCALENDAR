@@ -92,15 +92,44 @@ router.post('/bulk', async (req, res) => {
 router.get('/status/:fileId', async (req, res) => {
   try {
     const fileId = parseInt(req.params.fileId);
+    
+    // Validar fileId
+    if (isNaN(fileId)) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'fileId deve ser um número válido',
+        fileId: req.params.fileId
+      });
+    }
+
+    // Garantir que o serviço está inicializado
+    if (!multiSyncService) {
+      return res.status(503).json({ 
+        success: false,
+        error: 'Serviço de sincronização não inicializado',
+        fileId
+      });
+    }
+    
     const statuses = await multiSyncService.getSyncStatus(fileId);
     
+    // Garantir que statuses é um array válido
+    const validStatuses = Array.isArray(statuses) ? statuses : [];
+    
     res.json({ 
+      success: true,
       fileId, 
-      statuses, 
-      count: statuses.length 
+      statuses: validStatuses, 
+      count: validStatuses.length 
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Erro ao buscar status de sincronização:', error);
+    // Sempre retornar JSON válido, mesmo em erro
+    res.status(500).json({ 
+      success: false,
+      error: error.message || 'Erro ao buscar status de sincronização',
+      fileId: parseInt(req.params.fileId) || null
+    });
   }
 });
 

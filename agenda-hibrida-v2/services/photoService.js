@@ -54,7 +54,7 @@ class PhotoService {
         SELECT 
           p.*,
           pr.project_name,
-          a.start_time as session_date
+          a.start_datetime as session_date
         FROM client_photos p
         LEFT JOIN client_projects pr ON p.project_id = pr.id
         LEFT JOIN appointments a ON p.session_id = a.id

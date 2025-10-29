@@ -23,6 +23,7 @@ const QRCode = require('qrcode');
 const SyncManager = require('./sync-manager');
 const FileWatcher = require('./file-watcher');
 const { createGoogleEvent, updateGoogleEvent, deleteGoogleEvent, syncGoogleCalendar } = require('./services/googleCalendarService');
+const { startTokenMonitoring } = require('./services/googleAuthService');
 require('dotenv').config();
 
 const app = express();
@@ -174,10 +175,14 @@ app.locals.db = db;
 // Rotas de importação e sincronização - CORRIGIDO BUG #003
 const importsRouter = require('./routes/imports');
 const vagaroImportRouter = require('./routes/vagaroImport');
+const financialRouter = require('./routes/financial');
+const employeesRouter = require('./routes/employees');
 app.use('/api/imports', importsRouter);
 app.use('/api/imports/vagaro', vagaroImportRouter);
 app.use('/api/auth', importsRouter);
 app.use('/api/sync', importsRouter);
+app.use('/api', financialRouter);
+app.use('/api', employeesRouter);
 
 // ============================================
 // ROTAS DE SINCRONIZAÇÃO MULTI-DESTINO
@@ -1162,6 +1167,21 @@ app.post('/api/appointments', async (req, res) => {
   try {
     const { title, description, start_datetime, end_datetime, client_id, tattoo_type_id, estimated_price, date, time, end_time, service, notes } = req.body;
     
+    // Validação: start_datetime é obrigatório
+    if (!start_datetime || start_datetime.trim() === '') {
+      return res.status(400).json({ 
+        error: 'start_datetime é obrigatório e deve ser uma data válida' 
+      });
+    }
+
+    // Validar formato de data
+    const dateObj = new Date(start_datetime);
+    if (isNaN(dateObj.getTime())) {
+      return res.status(400).json({ 
+        error: 'start_datetime deve ser uma data válida no formato ISO 8601' 
+      });
+    }
+    
     // Salvar no banco local primeiro
     db.run(
       `INSERT INTO appointments 
@@ -1967,6 +1987,23 @@ app.put('/api/appointments/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const { title, description, start_datetime, end_datetime, client_id, tattoo_type_id, estimated_price, date, time, end_time, service, notes, status } = req.body;
+
+    // Validação: Se start_datetime for fornecido, deve ser válido
+    if (start_datetime !== undefined) {
+      if (!start_datetime || start_datetime.trim() === '') {
+        return res.status(400).json({ 
+          error: 'start_datetime não pode ser vazio' 
+        });
+      }
+
+      // Validar formato de data
+      const dateObj = new Date(start_datetime);
+      if (isNaN(dateObj.getTime())) {
+        return res.status(400).json({ 
+          error: 'start_datetime deve ser uma data válida no formato ISO 8601' 
+        });
+      }
+    }
 
     // Buscar agendamento atual
     const currentAppointment = await new Promise((resolve, reject) => {
@@ -3756,6 +3793,9 @@ server.listen(port, async () => {
   
   // Inicializar armazenamento
   await hybridStorage.initializeStorage();
+  
+  // Iniciar monitoramento automático de tokens OAuth
+  startTokenMonitoring(db);
   
   // Executar primeira sincronização ao iniciar
   console.log('🔄 Executando sincronização inicial do Google Calendar...');
