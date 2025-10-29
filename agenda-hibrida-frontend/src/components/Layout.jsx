@@ -258,8 +258,9 @@ const Layout = ({ children, statusBar }) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-purple-200 hover:text-white hover:bg-white/10"
-                onClick={() => navigate('/settings')}
+                className="text-purple-200/50 cursor-not-allowed"
+                disabled
+                title="Em breve"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Configurações
