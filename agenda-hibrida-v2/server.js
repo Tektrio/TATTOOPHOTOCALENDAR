@@ -38,10 +38,38 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('🔌 Cliente conectado via WebSocket:', socket.id);
   
+  // ▼ EVENTOS DE SINCRONIZAÇÃO MULTI-DESTINO
+  socket.on('subscribe:sync', (data) => {
+    if (data.fileId) {
+      socket.join(`sync:file:${data.fileId}`);
+      console.log(`📡 Cliente ${socket.id} inscrito em sync:file:${data.fileId}`);
+    }
+  });
+
+  socket.on('unsubscribe:sync', (data) => {
+    if (data.fileId) {
+      socket.leave(`sync:file:${data.fileId}`);
+      console.log(`📡 Cliente ${socket.id} desinscrito de sync:file:${data.fileId}`);
+    }
+  });
+
+  socket.on('subscribe:queue', () => {
+    socket.join('sync:queue');
+    console.log(`📡 Cliente ${socket.id} inscrito em sync:queue`);
+  });
+
+  socket.on('unsubscribe:queue', () => {
+    socket.leave('sync:queue');
+    console.log(`📡 Cliente ${socket.id} desinscrito de sync:queue`);
+  });
+  
   socket.on('disconnect', () => {
     console.log('🔌 Cliente desconectado:', socket.id);
   });
 });
+
+// Tornar io disponível globalmente para serviços
+global.io = io;
 
 const port = process.env.PORT || 3001;
 
@@ -150,6 +178,35 @@ app.use('/api/imports', importsRouter);
 app.use('/api/imports/vagaro', vagaroImportRouter);
 app.use('/api/auth', importsRouter);
 app.use('/api/sync', importsRouter);
+
+// ============================================
+// ROTAS DE SINCRONIZAÇÃO MULTI-DESTINO
+// ============================================
+const localStorageRouter = require('./routes/localStorageRouter');
+const syncDestinationsRouter = require('./routes/syncDestinationsRouter');
+const googleAccountsRouter = require('./routes/googleAccountsRouter');
+const qnapRouter = require('./routes/qnapRouter');
+const syncMultiRouter = require('./routes/syncRouter');
+
+// Inicializa serviços com dependências
+const GoogleDriveMultiAccountService = require('./services/googleDriveMultiAccountService');
+const QnapService = require('./services/qnapService');
+
+const googleMultiService = new GoogleDriveMultiAccountService(db);
+const qnapService = new QnapService(db);
+
+localStorageRouter.initService(db);
+syncDestinationsRouter.initService(db);
+googleAccountsRouter.initService(db);
+qnapRouter.initService(db);
+syncMultiRouter.initService(db, io, googleMultiService, qnapService);
+
+// Registra rotas
+app.use('/api/local-storage', localStorageRouter);
+app.use('/api/sync-destinations', syncDestinationsRouter);
+app.use('/api/google-accounts', googleAccountsRouter);
+app.use('/api/qnap', qnapRouter);
+app.use('/api/sync-multi', syncMultiRouter);
 
 // Inicializar tabelas do banco
 db.serialize(() => {

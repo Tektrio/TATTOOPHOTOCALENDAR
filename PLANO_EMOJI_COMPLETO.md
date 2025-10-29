@@ -182,3 +182,5 @@ Compatibilidade: ✅ Windows + Linux + macOS
 
 Todos os objetivos foram alcançados. O repositório está agora completamente compatível com todos os sistemas operacionais.
 
+
+

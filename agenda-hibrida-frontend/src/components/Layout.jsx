@@ -21,11 +21,13 @@ import {
   Cloud
 } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Layout = ({ children, statusBar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isDark } = useTheme();
 
   // Função para voltar
   const goBack = () => {
@@ -63,9 +65,17 @@ const Layout = ({ children, statusBar }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDark 
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
+        : 'bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900'
+    }`}>
       {/* Header Único Compacto - Tudo em uma linha */}
-      <header className="bg-black/30 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+      <header className={`backdrop-blur-lg border-b sticky top-0 z-50 ${
+        isDark 
+          ? 'bg-gray-900/80 border-gray-700/50' 
+          : 'bg-black/30 border-white/10'
+      }`}>
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between gap-3">
             {/* Lado Esquerdo: Navegação + Logo + Breadcrumb */}
@@ -239,10 +249,14 @@ const Layout = ({ children, statusBar }) => {
       </main>
 
       {/* Footer (Opcional) */}
-      <footer className="bg-black/20 backdrop-blur-md border-t border-white/10 mt-12">
+      <footer className={`backdrop-blur-md border-t mt-12 ${
+        isDark 
+          ? 'bg-gray-900/80 border-gray-700/50' 
+          : 'bg-black/20 border-white/10'
+      }`}>
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between">
-            <p className="text-purple-200 text-sm">
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-purple-200'}`}>
               © 2025 Agenda Híbrida - Sistema Visual para Tatuadores
             </p>
             <div className="flex items-center space-x-4 mt-4 md:mt-0">

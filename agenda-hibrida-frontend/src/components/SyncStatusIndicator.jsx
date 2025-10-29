@@ -1,272 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { Cloud, CloudOff, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
-import { Badge } from './ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import io from 'socket.io-client';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { getColorConfig, getStatusConfig } from '../utils/storageConfig';
+import { formatTimestamp } from '../utils/syncHelpers';
+import { useSyncStatus } from '../hooks/useSyncStatus';
 
 /**
- * 🔄 SYNC STATUS INDICATOR - Indicador de Status de Sincronização
- * 
- * Mostra status em tempo real da sincronização via WebSocket
+ * Indicador visual de status multi-destino
+ * Mostra emojis coloridos por destino com tooltips detalhados
  */
-export default function SyncStatusIndicator() {
-  const [syncStatus, setSyncStatus] = useState('idle'); // idle, syncing, synced, error, reconnecting
-  const [lastSync, setLastSync] = useState(null);
-  const [recentActivity, setRecentActivity] = useState('');
-  const [retryCount, setRetryCount] = useState(0);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+export default function SyncStatusIndicator({ fileId, compact = false }) {
+  const { statuses, loading } = useSyncStatus(fileId);
 
-  useEffect(() => {
-    let socket = null;
-    let reconnectTimeout = null;
-    let heartbeatInterval = null;
-    let eventBuffer = [];
+  if (loading) {
+    return (
+      <div className="flex gap-1">
+        <span className="animate-pulse">⏳</span>
+      </div>
+    );
+  }
 
-    // Configurar socket com reconexão automática e backoff exponencial
-    const connectSocket = () => {
-      // Evitar reconexão se offline
-      if (!navigator.onLine) {
-        console.log('🔌 Sistema offline, aguardando conexão...');
-        setSyncStatus('error');
-        return;
-      }
+  if (!statuses || statuses.length === 0) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <span className="text-lg">📁</span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Apenas local - não sincronizado</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
-      socket = io(API_URL, {
-        reconnection: true,
-        reconnectionDelay: Math.min(1000 * Math.pow(2, retryCount), 30000), // Backoff: 1s, 2s, 4s... max 30s
-        reconnectionAttempts: Infinity,
-        timeout: 10000,
-        transports: ['websocket', 'polling'] // Fallback para polling se WS falhar
-      });
+  return (
+    <div className="flex items-center gap-1">
+      {statuses.map((status, index) => (
+        <SyncStatusBadge key={index} status={status} compact={compact} />
+      ))}
+    </div>
+  );
+}
 
-      // ✅ Conectado com sucesso
-      socket.on('connect', () => {
-        console.log('🔌 WebSocket conectado:', socket.id);
-        setSyncStatus('synced');
-        setRetryCount(0); // Reset backoff
+/**
+ * Badge individual de status de sincronização
+ */
+function SyncStatusBadge({ status, compact }) {
+  const colorConfig = getColorConfig(status.color, status.type);
+  const statusConfig = getStatusConfig(status.status);
 
-        // Processar buffer de eventos pendentes
-        if (eventBuffer.length > 0) {
-          console.log(`📦 Processando ${eventBuffer.length} eventos pendentes...`);
-          eventBuffer.forEach(event => socket.emit(event.name, event.data));
-          eventBuffer = [];
-        }
-
-        // Heartbeat: ping a cada 30s
-        heartbeatInterval = setInterval(() => {
-          if (socket.connected) {
-            socket.emit('ping');
-          }
-        }, 30000);
-      });
-
-      // 🔌 Desconectado
-      socket.on('disconnect', (reason) => {
-        console.log('🔌 WebSocket desconectado:', reason);
-        setSyncStatus('error');
-        clearInterval(heartbeatInterval);
-
-        // Se foi desconexão manual pelo servidor, não reconectar
-        if (reason === 'io server disconnect') {
-          socket.connect(); // Reconectar manualmente
-        }
-      });
-
-      // 🔄 Tentando reconectar
-      socket.on('reconnect_attempt', (attempt) => {
-        console.log(`🔄 Tentativa de reconexão #${attempt}...`);
-        setSyncStatus('reconnecting');
-        setRetryCount(attempt);
-      });
-
-      // ✅ Reconectado com sucesso
-      socket.on('reconnect', (attempt) => {
-        console.log(`✅ Reconectado após ${attempt} tentativas`);
-        setSyncStatus('synced');
-        setRetryCount(0);
-      });
-
-      // ❌ Erro de reconexão
-      socket.on('reconnect_error', (error) => {
-        console.error('❌ Erro ao reconectar:', error.message);
-      });
-
-      // ❌ Falha ao reconectar
-      socket.on('reconnect_failed', () => {
-        console.error('❌ Falha total ao reconectar. Tentando novamente em 30s...');
-        setSyncStatus('error');
-        
-        // Retry manual após 30s
-        reconnectTimeout = setTimeout(() => {
-          connectSocket();
-        }, 30000);
-      });
-
-      // 🏓 Pong (resposta do servidor ao ping)
-      socket.on('pong', () => {
-        // Conexão está viva
-      });
-
-      // 📁 Eventos de sincronização
-      socket.on('file_synced', (data) => {
-        console.log('📁 Arquivo sincronizado:', data);
-        setSyncStatus('syncing');
-        setLastSync(new Date());
-        
-        const action = data.action === 'added' ? 'adicionado' : 
-                       data.action === 'updated' ? 'atualizado' : 'removido';
-        setRecentActivity(`${data.file?.name || data.fileName} ${action}`);
-
-        // Voltar para "synced" após 2 segundos
-        setTimeout(() => {
-          setSyncStatus('synced');
-        }, 2000);
-      });
-
-      return socket;
-    };
-
-    // Detectar quando ficar online/offline
-    const handleOnline = () => {
-      console.log('🌐 Sistema online');
-      setIsOnline(true);
-      setSyncStatus('reconnecting');
-      
-      // Reconectar automaticamente
-      if (!socket || !socket.connected) {
-        connectSocket();
-      }
-    };
-
-    const handleOffline = () => {
-      console.log('🌐 Sistema offline');
-      setIsOnline(false);
-      setSyncStatus('error');
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Iniciar conexão
-    socket = connectSocket();
-
-    return () => {
-      clearInterval(heartbeatInterval);
-      clearTimeout(reconnectTimeout);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      
-      if (socket) {
-        socket.disconnect();
-      }
-    };
-  }, []);
-
-  /**
-   * Renderizar ícone baseado no status
-   */
-  const renderIcon = () => {
-    switch (syncStatus) {
-      case 'syncing':
-        return <RefreshCw className="w-4 h-4 animate-spin" />;
+  const getStatusIcon = () => {
+    switch (status.status) {
       case 'synced':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'reconnecting':
-        return <RefreshCw className="w-4 h-4 animate-spin" />;
-      case 'error':
-        return isOnline ? <AlertCircle className="w-4 h-4" /> : <CloudOff className="w-4 h-4" />;
+        return '✓';
+      case 'syncing':
+        return '⏳';
+      case 'failed':
+        return '❌';
+      case 'conflict':
+        return '⚠️';
+      case 'pending':
+        return '⏸️';
       default:
-        return <Cloud className="w-4 h-4" />;
+        return '○';
     }
   };
 
-  /**
-   * Cor baseada no status
-   */
-  const getStatusColor = () => {
-    switch (syncStatus) {
-      case 'syncing':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'synced':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'reconnecting':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'error':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-    }
-  };
-
-  /**
-   * Mensagem baseada no status
-   */
-  const getStatusMessage = () => {
-    switch (syncStatus) {
-      case 'syncing':
-        return 'Sincronizando...';
-      case 'synced':
-        return lastSync 
-          ? `Sincronizado ${formatTimeAgo(lastSync)}`
-          : 'Conectado';
-      case 'reconnecting':
-        return retryCount > 0 
-          ? `Reconectando... (tentativa ${retryCount})`
-          : 'Reconectando...';
-      case 'error':
-        return isOnline ? 'Desconectado' : 'Sem internet';
-      default:
-        return 'Aguardando conexão';
-    }
-  };
-
-  /**
-   * Formatar tempo relativo
-   */
-  const formatTimeAgo = (date) => {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    
-    if (seconds < 60) return 'agora';
-    if (seconds < 3600) return `há ${Math.floor(seconds / 60)}min`;
-    if (seconds < 86400) return `há ${Math.floor(seconds / 3600)}h`;
-    return `há ${Math.floor(seconds / 86400)}d`;
-  };
+  const content = (
+    <span className={`inline-flex items-center gap-0.5 ${compact ? 'text-base' : 'text-lg'}`}>
+      <span>{colorConfig.emoji}</span>
+      <span className="text-xs">{getStatusIcon()}</span>
+    </span>
+  );
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge
-            variant="outline"
-            className={`${getStatusColor()} backdrop-blur-md transition-all duration-300 cursor-pointer`}
-          >
-            <div className="flex items-center gap-2">
-              {renderIcon()}
-              <span className="text-xs font-medium hidden md:inline">
-                {getStatusMessage()}
-              </span>
-            </div>
-          </Badge>
+          <div className={compact ? '' : 'cursor-pointer'}>
+            {content}
+          </div>
         </TooltipTrigger>
-        <TooltipContent className="bg-gray-900 text-white border-gray-700">
+        <TooltipContent className="max-w-xs">
           <div className="space-y-1">
-            <p className="font-semibold">{getStatusMessage()}</p>
-            {recentActivity && (
-              <p className="text-xs text-gray-400">
-                Última atividade: {recentActivity}
+            <p className="font-semibold flex items-center gap-2">
+              <span>{colorConfig.emoji}</span>
+              {status.destination_name}
+            </p>
+            <p className="text-xs text-gray-400">
+              Tipo: {status.type === 'gdrive' ? 'Google Drive' : 'QNAP NAS'}
+            </p>
+            <div className="pt-2 border-t border-gray-600">
+              <p className="text-sm">
+                Status: <span className={statusConfig.textClass}>{statusConfig.label}</span>
               </p>
-            )}
-            {lastSync && (
-              <p className="text-xs text-gray-400">
-                {lastSync.toLocaleString('pt-BR')}
-              </p>
-            )}
+              {status.last_sync && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Última sync: {formatTimestamp(status.last_sync)}
+                </p>
+              )}
+              {status.error_message && (
+                <p className="text-xs text-red-400 mt-1">
+                  Erro: {status.error_message}
+                </p>
+              )}
+              {status.remote_file_id && (
+                <p className="text-xs text-gray-500 mt-1">
+                  ID remoto: {status.remote_file_id.substring(0, 12)}...
+                </p>
+              )}
+            </div>
           </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 }
-

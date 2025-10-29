@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Alert, AlertDescription } from '../ui/alert';
+import SyncStatusIndicator from '../SyncStatusIndicator';
 import {
   Select,
   SelectContent,
@@ -440,6 +441,10 @@ const FilesTab = ({ customerId }) => {
                           {formatFileSize(file.file_size)}
                         </span>
                       </div>
+                      {/* Status de sincronização multi-destino */}
+                      <div className="mt-2 flex items-center gap-1">
+                        <SyncStatusIndicator fileId={file.id} compact />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -476,6 +481,8 @@ const FilesTab = ({ customerId }) => {
                           <span className="text-xs text-gray-400">
                             {new Date(file.uploaded_at).toLocaleDateString('pt-BR')}
                           </span>
+                          {/* Status de sincronização multi-destino */}
+                          <SyncStatusIndicator fileId={file.id} compact />
                         </div>
                       </div>
                     </div>

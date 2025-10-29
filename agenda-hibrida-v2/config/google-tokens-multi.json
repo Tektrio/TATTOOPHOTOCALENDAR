@@ -1,0 +1,7 @@
+{
+  "_comment": "Arquivo de tokens OAuth para múltiplas contas Google Drive",
+  "_instructions": "Os tokens serão salvos automaticamente aqui pelo sistema",
+  "_note": "Este arquivo NÃO deve ser commitado no Git - adicione ao .gitignore",
+  "accounts": {}
+}
+

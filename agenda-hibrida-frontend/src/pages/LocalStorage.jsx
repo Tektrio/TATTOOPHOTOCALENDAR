@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { HardDrive, FolderOpen, RefreshCw, Plus, Cloud, Server, CheckCircle, AlertCircle } from 'lucide-react';
 import DestinationManager from '../components/DestinationManager';
 import LocalFileTable from '../components/LocalFileTable';
+import LocalFileExplorer from '../components/LocalFileExplorer';
 import AddGoogleAccountModal from '../components/AddGoogleAccountModal';
 import SyncSelectionModal from '../components/SyncSelectionModal';
 import QnapConfigModal from '../components/QnapConfigModal';
@@ -29,6 +30,7 @@ export default function LocalStorage() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [qnapToEdit, setQnapToEdit] = useState(null);
+  const [viewMode, setViewMode] = useState('explorer'); // 'explorer' ou 'table'
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -44,14 +46,18 @@ export default function LocalStorage() {
 
   const loadConfig = async () => {
     try {
+      console.log('📋 [FRONTEND] Carregando configuração...');
       const response = await fetch(`${API_URL}/api/local-storage/config`);
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ [FRONTEND] Configuração carregada:', data);
         setConfig(data);
         setBasePath(data.base_path);
+      } else {
+        console.log('⚠️ [FRONTEND] Sem configuração ainda (normal na primeira vez)');
       }
     } catch (error) {
-      console.error('Erro ao carregar config:', error);
+      console.error('❌ [FRONTEND] Erro ao carregar config:', error);
     }
   };
 
@@ -71,13 +77,19 @@ export default function LocalStorage() {
 
   const loadFiles = async () => {
     try {
+      console.log('📂 [FRONTEND] Carregando arquivos...');
       const response = await fetch(`${API_URL}/api/local-storage/files`);
       if (response.ok) {
         const data = await response.json();
+        console.log(`✅ [FRONTEND] ${data.files.length} arquivo(s) carregado(s)`);
         setFiles(data.files || []);
+      } else {
+        console.log('⚠️ [FRONTEND] Nenhum arquivo encontrado');
+        setFiles([]);
       }
     } catch (error) {
-      console.error('Erro ao carregar arquivos:', error);
+      console.error('❌ [FRONTEND] Erro ao carregar arquivos:', error);
+      setFiles([]);
     }
   };
 
@@ -178,7 +190,40 @@ export default function LocalStorage() {
       return;
     }
 
+    console.log('🔧 [FRONTEND] Configurando pasta:', basePath);
+    
+    // Primeiro valida o caminho
     try {
+      console.log('🔍 [FRONTEND] Validando caminho...');
+      const validateResponse = await fetch(`${API_URL}/api/local-storage/validate-path`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: basePath.trim() })
+      });
+
+      if (validateResponse.ok) {
+        const validation = await validateResponse.json();
+        console.log('✅ [FRONTEND] Validação resultado:', validation);
+        
+        if (!validation.valid) {
+          toast.error(`Caminho inválido: ${validation.message}`);
+          return;
+        }
+        
+        if (validation.fileCount === 0) {
+          toast.warning('⚠️ Pasta está vazia. Adicione arquivos antes de escanear.');
+        } else {
+          toast.info(`📊 ${validation.fileCount} item(ns) encontrado(s) na pasta`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ [FRONTEND] Erro na validação:', error);
+      toast.warning('Não foi possível validar o caminho, tentando configurar mesmo assim...');
+    }
+
+    // Agora configura
+    try {
+      console.log('⚙️ [FRONTEND] Enviando configuração...');
       const response = await fetch(`${API_URL}/api/local-storage/configure`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -187,13 +232,17 @@ export default function LocalStorage() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ [FRONTEND] Configuração salva:', data);
         setConfig(data);
-        toast.success('Pasta local configurada com sucesso!');
+        toast.success('✅ Pasta local configurada com sucesso!');
+        loadConfig();
       } else {
         const error = await response.json();
+        console.error('❌ [FRONTEND] Erro ao configurar:', error);
         toast.error(error.error || 'Erro ao configurar');
       }
     } catch (error) {
+      console.error('❌ [FRONTEND] Erro na requisição:', error);
       toast.error('Erro ao configurar: ' + error.message);
     }
   };
@@ -204,6 +253,7 @@ export default function LocalStorage() {
       return;
     }
 
+    console.log('🔍 [FRONTEND] Iniciando escaneamento...');
     setScanning(true);
 
     try {
@@ -213,12 +263,22 @@ export default function LocalStorage() {
 
       if (response.ok) {
         const data = await response.json();
-        toast.success(`${data.indexed} arquivos indexados com sucesso!`);
-        loadFiles();
+        console.log('✅ [FRONTEND] Escaneamento concluído:', data);
+        toast.success(`✅ ${data.indexed} arquivo(s) indexado(s) com sucesso!`);
+        
+        if (data.errors > 0) {
+          toast.warning(`⚠️ ${data.errors} erro(s) durante indexação`);
+        }
+        
+        // Recarrega a lista de arquivos
+        await loadFiles();
       } else {
-        toast.error('Erro ao escanear pasta');
+        const error = await response.json();
+        console.error('❌ [FRONTEND] Erro ao escanear:', error);
+        toast.error(error.error || 'Erro ao escanear pasta');
       }
     } catch (error) {
+      console.error('❌ [FRONTEND] Erro na requisição:', error);
       toast.error('Erro ao escanear: ' + error.message);
     } finally {
       setScanning(false);
@@ -349,7 +409,11 @@ export default function LocalStorage() {
               <FolderOpen className="w-4 h-4 mr-2" />
               Selecionar
             </Button>
-            <Button onClick={handleConfigure}>
+            <Button 
+              onClick={handleConfigure}
+              disabled={!basePath.trim()}
+              title={!basePath.trim() ? 'Digite um caminho primeiro' : 'Configurar pasta'}
+            >
               <HardDrive className="w-4 h-4 mr-2" />
               Configurar
             </Button>
@@ -440,14 +504,46 @@ export default function LocalStorage() {
       </Card>
 
       {/* ============================================ */}
-      {/* SEÇÃO 3: LISTA DE ARQUIVOS */}
+      {/* SEÇÃO 3: EXPLORADOR DE ARQUIVOS */}
       {/* ============================================ */}
-      <LocalFileTable
-        files={files}
-        destinations={destinations}
-        onSync={handleSyncFiles}
-        onRefresh={loadFiles}
-      />
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-white">Arquivos e Pastas</h3>
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === 'explorer' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('explorer')}
+          >
+            <HardDrive className="w-4 h-4 mr-2" />
+            Explorador
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+          >
+            <Server className="w-4 h-4 mr-2" />
+            Tabela
+          </Button>
+        </div>
+      </div>
+
+      {viewMode === 'explorer' ? (
+        <LocalFileExplorer
+          files={files}
+          basePath={config?.base_path || ''}
+          onSync={handleSyncFiles}
+          onRefresh={loadFiles}
+          loading={loading.files}
+        />
+      ) : (
+        <LocalFileTable
+          files={files}
+          destinations={destinations}
+          onSync={handleSyncFiles}
+          onRefresh={loadFiles}
+        />
+      )}
 
       {/* ============================================ */}
       {/* MODAIS */}

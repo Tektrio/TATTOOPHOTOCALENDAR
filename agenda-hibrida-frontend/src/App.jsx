@@ -36,6 +36,7 @@ const FinancialDashboard = lazy(() => import('./pages/FinancialDashboard.jsx'))
 const Employees = lazy(() => import('./pages/Employees.jsx'))
 const VagaroImport = lazy(() => import('./pages/VagaroImport.jsx'))
 const SettingsPanel = lazy(() => import('./components/SettingsPanel.jsx'))
+const LocalStorage = lazy(() => import('./pages/LocalStorage.jsx'))
 
 // Componentes menores mantêm import normal
 import SeletorHorarioMelhorado from './components/SeletorHorarioMelhorado.jsx'
@@ -86,10 +87,15 @@ import {
   ArrowRight
 } from 'lucide-react'
 import './App.css'
+import ThemeToggle from './components/ThemeToggle.jsx'
+import { useTheme } from './contexts/ThemeContext.jsx'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 function App() {
+  // Hook de tema
+  const { isDark } = useTheme();
+  
   // Estados principais
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -589,11 +595,19 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${
+        isDark 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
+          : 'bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900'
+      }`}>
         <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
+          <div className={`animate-spin rounded-full h-32 w-32 border-b-2 mx-auto mb-4 ${
+            isDark ? 'border-purple-400' : 'border-white'
+          }`}></div>
           <h2 className="text-2xl font-bold mb-2">Carregando Sistema Híbrido</h2>
-          <p className="text-purple-200">Inicializando armazenamento e sincronização...</p>
+          <p className={isDark ? 'text-gray-400' : 'text-purple-200'}>
+            Inicializando armazenamento e sincronização...
+          </p>
         </div>
       </div>
     )
@@ -602,7 +616,11 @@ function App() {
   // Se estiver visualizando um cliente, mostrar o CustomerManagement
   if (viewingCustomerId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
+      <div className={`min-h-screen p-6 transition-colors duration-300 ${
+        isDark 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
+          : 'bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900'
+      }`}>
         <Suspense fallback={<div className="text-white text-center py-8">Carregando gerenciamento de cliente...</div>}>
           <CustomerManagement 
             customerId={viewingCustomerId} 
@@ -618,9 +636,14 @@ function App() {
       {/* Status Bar Compacto - Integrado */}
       <div className="container mx-auto px-4 mb-3">
         <div className="flex items-center justify-end gap-2">
+          {/* Toggle de Tema */}
+          <ThemeToggle />
+          
           {/* Status do armazenamento */}
           {systemConfig && (
-            <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded text-xs">
+            <div className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs ${
+              isDark ? 'bg-gray-800/80' : 'bg-white/5'
+            }`}>
               {getStorageIcon(systemConfig.storageMode, 'w-3 h-3')}
               <span className="text-white/70 capitalize">{systemConfig.storageMode}</span>
             </div>
@@ -645,7 +668,9 @@ function App() {
               </Button>
             </div>
           ) : (
-            <Button onClick={handleGoogleAuth} variant="outline" size="sm" disabled={loading} className="bg-white/5 hover:bg-white/10 text-white border-white/10 h-6 px-2 text-xs">
+            <Button onClick={handleGoogleAuth} variant="outline" size="sm" disabled={loading} className={`border-white/10 h-6 px-2 text-xs ${
+              isDark ? 'bg-gray-800/80 hover:bg-gray-700/80' : 'bg-white/5 hover:bg-white/10'
+            } text-white`}>
               {loading ? (
                 <>
                   <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5" />
@@ -665,7 +690,11 @@ function App() {
       {/* Navigation Tabs - Compactas */}
       <div className="container mx-auto px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 overflow-x-auto">
+          <div className={`backdrop-blur-md rounded-lg border overflow-x-auto ${
+            isDark 
+              ? 'bg-gray-800/50 border-gray-700/50' 
+              : 'bg-white/5 border-white/10'
+          }`}>
             <TabsList className="flex items-center gap-1 bg-transparent p-1.5 w-max min-w-full">
               <TabsTrigger 
                 value="dashboard" 
@@ -731,6 +760,15 @@ function App() {
               </TabsTrigger>
               
               <TabsTrigger 
+                value="localstorage" 
+                data-testid="tab-localstorage" 
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-teal-600 data-[state=active]:text-white transition-all"
+              >
+                <HardDrive className="w-3.5 h-3.5" />
+                Dados Local
+              </TabsTrigger>
+              
+              <TabsTrigger 
                 value="financial" 
                 data-testid="tab-financial" 
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-emerald-600 data-[state=active]:text-white transition-all"
@@ -764,7 +802,11 @@ function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Cards de estatísticas - Melhorados com mais destaque */}
               <Card 
-                className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer"
+                className={`backdrop-blur-md transition-all hover:scale-105 cursor-pointer ${
+                  isDark 
+                    ? 'bg-gray-800/80 border-gray-700/50 hover:bg-gray-700/80' 
+                    : 'bg-white/10 border-white/20 hover:bg-white/15'
+                }`}
                 onClick={() => setActiveTab('clients')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -782,7 +824,11 @@ function App() {
               </Card>
 
               <Card 
-                className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer"
+                className={`backdrop-blur-md transition-all hover:scale-105 cursor-pointer ${
+                  isDark 
+                    ? 'bg-gray-800/80 border-gray-700/50 hover:bg-gray-700/80' 
+                    : 'bg-white/10 border-white/20 hover:bg-white/15'
+                }`}
                 onClick={() => setActiveTab('appointments')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -800,7 +846,11 @@ function App() {
               </Card>
 
               <Card 
-                className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer"
+                className={`backdrop-blur-md transition-all hover:scale-105 cursor-pointer ${
+                  isDark 
+                    ? 'bg-gray-800/80 border-gray-700/50 hover:bg-gray-700/80' 
+                    : 'bg-white/10 border-white/20 hover:bg-white/15'
+                }`}
                 onClick={() => setActiveTab('gallery')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -818,7 +868,11 @@ function App() {
               </Card>
 
               <Card 
-                className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer"
+                className={`backdrop-blur-md transition-all hover:scale-105 cursor-pointer ${
+                  isDark 
+                    ? 'bg-gray-800/80 border-gray-700/50 hover:bg-gray-700/80' 
+                    : 'bg-white/10 border-white/20 hover:bg-white/15'
+                }`}
                 onClick={() => setActiveTab('drive')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -839,19 +893,27 @@ function App() {
             </div>
 
             {/* Status do sistema híbrido */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className={`backdrop-blur-md ${
+              isDark 
+                ? 'bg-gray-800/80 border-gray-700/50' 
+                : 'bg-white/10 border-white/20'
+            }`}>
               <CardHeader>
                 <CardTitle className="text-white flex items-center text-xl">
                   <Server className="w-6 h-6 mr-3" />
                   Status do Sistema Híbrido
                 </CardTitle>
-                <CardDescription className="text-purple-200 mt-2">
+                <CardDescription className={isDark ? 'text-gray-400 mt-2' : 'text-purple-200 mt-2'}>
                   Monitore as integrações de armazenamento em tempo real
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors border border-white/10">
+                  <div className={`flex items-center justify-between p-4 rounded-lg transition-colors border ${
+                    isDark 
+                      ? 'bg-gray-900/50 hover:bg-gray-900/70 border-gray-700/50' 
+                      : 'bg-white/5 hover:bg-white/10 border-white/10'
+                  }`}>
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-blue-500/20 rounded-lg">
                         <HardDrive className="w-5 h-5 text-blue-400" />
@@ -861,7 +923,11 @@ function App() {
                     <Badge className="bg-green-500/20 text-green-400 font-semibold">✓ Ativo</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors border border-white/10">
+                  <div className={`flex items-center justify-between p-4 rounded-lg transition-colors border ${
+                    isDark 
+                      ? 'bg-gray-900/50 hover:bg-gray-900/70 border-gray-700/50' 
+                      : 'bg-white/5 hover:bg-white/10 border-white/10'
+                  }`}>
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-purple-500/20 rounded-lg">
                         <Cloud className="w-5 h-5 text-purple-400" />
@@ -873,7 +939,11 @@ function App() {
                     </Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors border border-white/10">
+                  <div className={`flex items-center justify-between p-4 rounded-lg transition-colors border ${
+                    isDark 
+                      ? 'bg-gray-900/50 hover:bg-gray-900/70 border-gray-700/50' 
+                      : 'bg-white/5 hover:bg-white/10 border-white/10'
+                  }`}>
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-orange-500/20 rounded-lg">
                         <Server className="w-5 h-5 text-orange-400" />
@@ -888,12 +958,16 @@ function App() {
                 
                 {/* Botão de ajuda para QNAP */}
                 {!systemConfig?.qnapEnabled && (
-                  <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <div className={`p-4 border rounded-lg ${
+                    isDark 
+                      ? 'bg-yellow-500/5 border-yellow-500/30' 
+                      : 'bg-yellow-500/10 border-yellow-500/20'
+                  }`}>
                     <div className="flex items-start space-x-3">
                       <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
                       <div className="flex-1">
                         <p className="text-white font-medium mb-1">QNAP NAS não configurado</p>
-                        <p className="text-yellow-200 text-sm mb-3">
+                        <p className={`text-sm mb-3 ${isDark ? 'text-yellow-300' : 'text-yellow-200'}`}>
                           Configure o QNAP NAS para sincronização automática de arquivos e backup em tempo real.
                         </p>
                         <Button 
@@ -913,7 +987,11 @@ function App() {
             </Card>
 
             {/* Próximos agendamentos */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className={`backdrop-blur-md ${
+              isDark 
+                ? 'bg-gray-800/80 border-gray-700/50' 
+                : 'bg-white/10 border-white/20'
+            }`}>
               <CardHeader>
                 <CardTitle className="text-white flex items-center justify-between text-xl">
                   <span className="flex items-center">
@@ -1051,7 +1129,7 @@ function App() {
                     </DialogContent>
                   </Dialog>
                 </CardTitle>
-                <CardDescription className="text-purple-200 mt-2">
+                <CardDescription className={`mt-2 ${isDark ? 'text-gray-400' : 'text-purple-200'}`}>
                   {appointments.length > 0 
                     ? `${appointments.length} agendamento(s) no total` 
                     : 'Adicione seu primeiro agendamento'}
@@ -1060,7 +1138,11 @@ function App() {
               <CardContent>
                 <div className="space-y-3">
                   {appointments.slice(0, 5).map((appointment) => (
-                    <div key={appointment.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors border border-white/10">
+                    <div key={appointment.id} className={`flex items-center justify-between p-4 rounded-lg transition-colors border ${
+                      isDark 
+                        ? 'bg-gray-900/50 hover:bg-gray-900/70 border-gray-700/50' 
+                        : 'bg-white/5 hover:bg-white/10 border-white/10'
+                    }`}>
                       <div className="flex items-center space-x-4">
                         <div className="p-2 bg-white/10 rounded-lg">
                           {getStatusIcon(appointment.status)}
@@ -1234,7 +1316,11 @@ function App() {
                 </div>
               ) : (
                 appointments.map((appointment) => (
-                <Card key={appointment.id} className="bg-white/10 backdrop-blur-md border-white/20">
+                <Card key={appointment.id} className={`backdrop-blur-md ${
+                  isDark 
+                    ? 'bg-gray-800/80 border-gray-700/50' 
+                    : 'bg-white/10 border-white/20'
+                }`}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
@@ -1305,13 +1391,17 @@ function App() {
 
           {/* Import Tab - Unificada com sub-abas */}
           <TabsContent value="import" className="mt-6">
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className={`backdrop-blur-md ${
+              isDark 
+                ? 'bg-gray-800/80 border-gray-700/50' 
+                : 'bg-white/10 border-white/20'
+            }`}>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
                   <Upload className="w-6 h-6" />
                   Central de Importação
                 </CardTitle>
-                <CardDescription className="text-gray-300">
+                <CardDescription className={isDark ? 'text-gray-400' : 'text-gray-300'}>
                   Importe dados de diferentes fontes para o sistema
                 </CardDescription>
               </CardHeader>
@@ -1362,6 +1452,13 @@ function App() {
           <TabsContent value="drive" className="space-y-6 mt-6">
             <Suspense fallback={<div className="text-white text-center py-8">Carregando Google Drive...</div>}>
               <GoogleDriveExplorer />
+            </Suspense>
+          </TabsContent>
+
+          {/* Local Storage Tab */}
+          <TabsContent value="localstorage" className="space-y-6 mt-6">
+            <Suspense fallback={<LoadingSpinner />}>
+              <LocalStorage />
             </Suspense>
           </TabsContent>
 
