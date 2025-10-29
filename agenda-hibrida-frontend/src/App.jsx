@@ -577,13 +577,13 @@ function App() {
     }
   }
 
-  const getStorageIcon = (mode) => {
+  const getStorageIcon = (mode, className = "w-4 h-4") => {
     switch (mode) {
-      case 'local': return <HardDrive className="w-4 h-4" />
-      case 'qnap': return <Server className="w-4 h-4" />
-      case 'gdrive': return <Cloud className="w-4 h-4" />
-      case 'hybrid': return <Wifi className="w-4 h-4" />
-      default: return <HardDrive className="w-4 h-4" />
+      case 'local': return <HardDrive className={className} />
+      case 'qnap': return <Server className={className} />
+      case 'gdrive': return <Cloud className={className} />
+      case 'hybrid': return <Wifi className={className} />
+      default: return <HardDrive className={className} />
     }
   }
 
@@ -614,175 +614,147 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      {/* Header */}
-      <header className="bg-black/20 backdrop-blur-md border-b border-white/10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
-                <Palette className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">Agenda Híbrida</h1>
-                <p className="text-purple-200 text-sm">Sistema Visual para Tatuadores</p>
-              </div>
+    <div className="py-4">
+      {/* Status Bar Compacto - Integrado */}
+      <div className="container mx-auto px-4 mb-3">
+        <div className="flex items-center justify-end gap-2">
+          {/* Status do armazenamento */}
+          {systemConfig && (
+            <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded text-xs">
+              {getStorageIcon(systemConfig.storageMode, 'w-3 h-3')}
+              <span className="text-white/70 capitalize">{systemConfig.storageMode}</span>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              {/* Status do armazenamento */}
-              {systemConfig && (
-                <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg">
-                  {getStorageIcon(systemConfig.storageMode)}
-                  <span className="text-white text-sm capitalize">{systemConfig.storageMode}</span>
+          )}
+          
+          {/* Status da autenticação */}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 bg-green-500/10 px-2 py-1 rounded">
+                <Wifi className="w-3 h-3 text-green-400" />
+                <span className="text-green-400 text-xs font-medium">Conectado</span>
+              </div>
+              {isLoading && (
+                <div className="flex items-center gap-1.5 text-purple-300 bg-purple-500/10 px-2 py-1 rounded">
+                  <div className="w-3 h-3 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs">{loadingMessage}</span>
                 </div>
               )}
-              
-              {/* Status da autenticação */}
-              <div className="flex items-center space-x-2">
-                {isAuthenticated ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="flex flex-col space-y-1">
-                      <div className="flex items-center space-x-2 bg-green-500/20 px-3 py-2 rounded-lg">
-                        <Wifi className="w-4 h-4 text-green-400 animate-pulse" />
-                        <span className="text-green-400 text-sm font-medium">Google Conectado</span>
-                      </div>
-                      <div className="flex items-center space-x-2 px-2">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3 text-green-400" />
-                          <span className="text-green-300 text-xs">Calendar</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Cloud className="w-3 h-3 text-green-400" />
-                          <span className="text-green-300 text-xs">Drive</span>
-                        </div>
-                      </div>
-                    </div>
-                    {isLoading && (
-                      <div className="flex items-center space-x-2 text-purple-300 bg-purple-500/20 px-3 py-2 rounded-lg">
-                        <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm">{loadingMessage}</span>
-                      </div>
-                    )}
-                    <SyncStatusBadge googleStatus={googleStatus} />
-                    <Button onClick={handleGoogleDisconnect} variant="destructive" size="sm" disabled={loading}>
-                      {loading ? '...' : 'Desconectar Google'}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button onClick={handleGoogleAuth} variant="outline" size="sm" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        Conectando...
-                      </>
-                    ) : (
-                      <>
-                        <WifiOff className="w-4 h-4 mr-2" />
-                        Conectar Google
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
+              <SyncStatusBadge googleStatus={googleStatus} />
+              <Button onClick={handleGoogleDisconnect} variant="destructive" size="sm" disabled={loading} className="h-6 px-2 text-xs">
+                {loading ? '...' : 'Desconectar'}
+              </Button>
             </div>
-          </div>
+          ) : (
+            <Button onClick={handleGoogleAuth} variant="outline" size="sm" disabled={loading} className="bg-white/5 hover:bg-white/10 text-white border-white/10 h-6 px-2 text-xs">
+              {loading ? (
+                <>
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5" />
+                  Conectando...
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3 mr-1.5" />
+                  Conectar
+                </>
+              )}
+            </Button>
+          )}
         </div>
-      </header>
+      </div>
 
-      {/* Navigation Tabs - Visual Melhorado com Nomes Completos */}
-      <div className="container mx-auto px-4 py-4">
+      {/* Navigation Tabs - Compactas */}
+      <div className="container mx-auto px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="bg-gradient-to-r from-purple-900/30 via-blue-900/30 to-purple-900/30 backdrop-blur-xl rounded-2xl p-3 border border-white/10 shadow-2xl">
-            <TabsList className="flex flex-wrap justify-center gap-2 bg-transparent p-0">
+          <div className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 overflow-x-auto">
+            <TabsList className="flex items-center gap-1 bg-transparent p-1.5 w-max min-w-full">
               <TabsTrigger 
                 value="dashboard" 
                 data-testid="tab-dashboard" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
               >
-                <Monitor className="w-4 h-4" />
+                <Monitor className="w-3.5 h-3.5" />
                 Dashboard
               </TabsTrigger>
               
               <TabsTrigger 
                 value="calendar" 
                 data-testid="tab-calendar" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all"
               >
-                <Calendar className="w-4 h-4" />
-                Calendário Visual
+                <Calendar className="w-3.5 h-3.5" />
+                Calendário
               </TabsTrigger>
               
               <TabsTrigger 
                 value="appointments" 
                 data-testid="tab-appointments" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-green-600 data-[state=active]:text-white transition-all"
               >
-                <Clock className="w-4 h-4" />
+                <Clock className="w-3.5 h-3.5" />
                 Agendamentos
               </TabsTrigger>
               
               <TabsTrigger 
                 value="clients" 
                 data-testid="tab-clients" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all"
               >
-                <Users className="w-4 h-4" />
+                <Users className="w-3.5 h-3.5" />
                 Clientes
               </TabsTrigger>
               
               <TabsTrigger 
                 value="import" 
                 data-testid="tab-import" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all"
               >
-                <Upload className="w-4 h-4" />
-                Importação
+                <Upload className="w-3.5 h-3.5" />
+                Importar
               </TabsTrigger>
               
               <TabsTrigger 
                 value="gallery" 
                 data-testid="tab-gallery" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-pink-600 data-[state=active]:text-white transition-all"
               >
-                <Image className="w-4 h-4" />
+                <Image className="w-3.5 h-3.5" />
                 Galeria
               </TabsTrigger>
               
               <TabsTrigger 
                 value="drive" 
                 data-testid="tab-drive" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-sky-600 data-[state=active]:text-white transition-all"
               >
-                <Cloud className="w-4 h-4" />
-                Google Drive
+                <Cloud className="w-3.5 h-3.5" />
+                Drive
               </TabsTrigger>
               
               <TabsTrigger 
                 value="financial" 
                 data-testid="tab-financial" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-emerald-600 data-[state=active]:text-white transition-all"
               >
-                <DollarSign className="w-4 h-4" />
+                <DollarSign className="w-3.5 h-3.5" />
                 Financeiro
               </TabsTrigger>
               
               <TabsTrigger 
                 value="employees" 
                 data-testid="tab-employees" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-all"
               >
-                <Users className="w-4 h-4" />
+                <Users className="w-3.5 h-3.5" />
                 Funcionários
               </TabsTrigger>
               
               <TabsTrigger 
                 value="settings" 
                 data-testid="tab-settings" 
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white/80 hover:text-white hover:bg-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-500 data-[state=active]:to-gray-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 data-[state=active]:bg-slate-600 data-[state=active]:text-white transition-all"
               >
-                <Settings className="w-4 h-4" />
-                Configurações
+                <Settings className="w-3.5 h-3.5" />
+                Config
               </TabsTrigger>
             </TabsList>
           </div>

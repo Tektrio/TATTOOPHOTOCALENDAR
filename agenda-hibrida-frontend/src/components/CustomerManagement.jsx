@@ -82,191 +82,234 @@ const CustomerManagement = ({ customerId, onClose }) => {
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">
-      {/* Header com informações básicas do cliente */}
-      <Card className="mb-6">
-        <div className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="mb-2"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
-            </Button>
-            
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  if (customer.email) {
-                    window.location.href = `mailto:${customer.email}`;
-                  } else if (customer.phone) {
-                    // Remover caracteres especiais do telefone para WhatsApp
-                    const cleanPhone = customer.phone.replace(/\D/g, '');
-                    window.open(`https://wa.me/${cleanPhone}`, '_blank');
-                  } else {
-                    alert('Cliente não possui email ou telefone cadastrado');
-                  }
-                }}
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                Mensagem
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  setActiveTab('profile');
-                  setShouldEditProfile(true);
-                }}
-              >
-                Editar Perfil
-              </Button>
-            </div>
-          </div>
+      {/* Banner Horizontal Compacto com Informações do Cliente */}
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 mb-4">
+        <div className="flex items-center gap-4 p-4">
+          {/* Botão Voltar */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-gray-600 hover:text-gray-900 h-8 w-8 p-0 flex-shrink-0"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
 
-          <div className="flex items-start gap-6">
-            {/* Avatar */}
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={customer.avatar_url} alt={customer.name} />
-              <AvatarFallback className="text-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                {getInitials(customer.name)}
-              </AvatarFallback>
-            </Avatar>
+          {/* Avatar Compacto */}
+          <Avatar className="h-14 w-14 flex-shrink-0">
+            <AvatarImage src={customer.avatar_url} alt={customer.name} />
+            <AvatarFallback className="text-lg bg-gradient-to-br from-purple-500 to-blue-600 text-white">
+              {getInitials(customer.name)}
+            </AvatarFallback>
+          </Avatar>
 
-            {/* Informações Principais */}
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{customer.name}</h1>
-              
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
-                {customer.email && (
-                  <div className="flex items-center gap-1">
-                    <Mail className="h-4 w-4" />
-                    <a href={`mailto:${customer.email}`} className="hover:text-blue-600">
-                      {customer.email}
-                    </a>
-                  </div>
-                )}
-                
-                {customer.phone && (
-                  <div className="flex items-center gap-1">
-                    <Phone className="h-4 w-4" />
-                    <a href={`tel:${customer.phone}`} className="hover:text-blue-600">
-                      {customer.phone}
-                    </a>
-                  </div>
-                )}
-                
-                {customer.city && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>{customer.city}, {customer.state}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Tags */}
-              {customer.tags && customer.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {customer.tags.map(tag => (
-                    <Badge key={tag.id} variant="secondary" style={{ backgroundColor: tag.color }}>
-                      {tag.name}
-                    </Badge>
-                  ))}
-                </div>
+          {/* Informações Principais - Inline */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-gray-900 truncate">{customer.name}</h1>
+            <div className="flex items-center gap-3 text-xs text-gray-600 mt-0.5">
+              {customer.email && (
+                <a href={`mailto:${customer.email}`} className="flex items-center gap-1 hover:text-gray-900">
+                  <Mail className="h-3 w-3" />
+                  <span className="truncate max-w-[150px]">{customer.email}</span>
+                </a>
+              )}
+              {customer.phone && (
+                <a href={`tel:${customer.phone}`} className="flex items-center gap-1 hover:text-gray-900">
+                  <Phone className="h-3 w-3" />
+                  <span>{customer.phone}</span>
+                </a>
+              )}
+              {customer.city && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {customer.city}, {customer.state}
+                </span>
               )}
             </div>
+          </div>
 
-            {/* Estatísticas Rápidas */}
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
-                  ${customer.total_sales || 0}
-                </div>
-                <div className="text-xs text-gray-600">Total Gasto</div>
-              </div>
-              
-              <div className="bg-green-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
-                  {customer.total_appointments || 0}
-                </div>
-                <div className="text-xs text-gray-600">Agendamentos</div>
-              </div>
-              
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">
-                  {customer.loyalty_points_balance || 0}
-                </div>
-                <div className="text-xs text-gray-600">Pontos</div>
-              </div>
-              
-              <div className="bg-red-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-red-600">
-                  {customer.no_shows || 0}
-                </div>
-                <div className="text-xs text-gray-600">Faltas</div>
-              </div>
+          {/* Estatísticas Compactas - Inline */}
+          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+            <div className="text-center px-3 py-1 bg-blue-50 rounded border-l-2 border-blue-500">
+              <div className="text-lg font-bold text-blue-700">${customer.total_sales || 0}</div>
+              <div className="text-[10px] text-blue-600 uppercase">Gasto</div>
+            </div>
+            
+            <div className="text-center px-3 py-1 bg-green-50 rounded border-l-2 border-green-500">
+              <div className="text-lg font-bold text-green-700">{customer.total_appointments || 0}</div>
+              <div className="text-[10px] text-green-600 uppercase">Agendamentos</div>
+            </div>
+            
+            <div className="text-center px-3 py-1 bg-purple-50 rounded border-l-2 border-purple-500">
+              <div className="text-lg font-bold text-purple-700">{customer.loyalty_points_balance || 0}</div>
+              <div className="text-[10px] text-purple-600 uppercase">Pontos</div>
+            </div>
+            
+            <div className="text-center px-3 py-1 bg-red-50 rounded border-l-2 border-red-500">
+              <div className="text-lg font-bold text-red-700">{customer.no_shows || 0}</div>
+              <div className="text-[10px] text-red-600 uppercase">Faltas</div>
             </div>
           </div>
-        </div>
-      </Card>
 
-      {/* Sistema de Abas */}
+          {/* Botões de Ação */}
+          <div className="flex gap-2 flex-shrink-0">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-8 px-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+              onClick={() => {
+                if (customer.email) {
+                  window.location.href = `mailto:${customer.email}`;
+                } else if (customer.phone) {
+                  const cleanPhone = customer.phone.replace(/\D/g, '');
+                  window.open(`https://wa.me/${cleanPhone}`, '_blank');
+                } else {
+                  alert('Cliente não possui email ou telefone cadastrado');
+                }
+              }}
+            >
+              <Mail className="h-3.5 w-3.5" />
+            </Button>
+            <Button 
+              size="sm"
+              className="h-8 px-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-xs"
+              onClick={() => {
+                setActiveTab('profile');
+                setShouldEditProfile(true);
+              }}
+            >
+              Editar
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Sistema de Abas - Estilo Cabeçalho Compacto */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-10 mb-6">
-          <TabsTrigger value="profile" className="flex items-center gap-1">
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline">Profile</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="appointments" className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Agendamentos</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="products" className="flex items-center gap-1">
-            <Package className="h-4 w-4" />
-            <span className="hidden sm:inline">Produtos</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="notes" className="flex items-center gap-1">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Notas</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="forms" className="flex items-center gap-1">
-            <FileSpreadsheet className="h-4 w-4" />
-            <span className="hidden sm:inline">Formulários</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="files" className="flex items-center gap-1">
-            <Folder className="h-4 w-4" />
-            <span className="hidden sm:inline">Arquivos</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="giftcards" className="flex items-center gap-1">
-            <Gift className="h-4 w-4" />
-            <span className="hidden sm:inline">Gift Cards</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="packages" className="flex items-center gap-1">
-            <Package className="h-4 w-4" />
-            <span className="hidden sm:inline">Pacotes</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="memberships" className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Memberships</span>
-          </TabsTrigger>
-          
-          <TabsTrigger value="invoices" className="flex items-center gap-1">
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden sm:inline">Faturas</span>
-          </TabsTrigger>
-        </TabsList>
+        {/* Abas Estilo Header - Compactas */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-x-auto">
+          <div className="flex items-center min-w-max">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'profile'
+                  ? 'border-purple-600 text-purple-600 bg-purple-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <User className="h-4 w-4" />
+              <span className="text-sm font-medium">Perfil</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('appointments')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'appointments'
+                  ? 'border-green-600 text-green-600 bg-green-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Calendar className="h-4 w-4" />
+              <span className="text-sm font-medium">Agendamentos</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('invoices')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'invoices'
+                  ? 'border-blue-600 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <CreditCard className="h-4 w-4" />
+              <span className="text-sm font-medium">Faturas</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('notes')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'notes'
+                  ? 'border-orange-600 text-orange-600 bg-orange-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              <span className="text-sm font-medium">Notas</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('files')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'files'
+                  ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Folder className="h-4 w-4" />
+              <span className="text-sm font-medium">Arquivos</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'products'
+                  ? 'border-pink-600 text-pink-600 bg-pink-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Package className="h-4 w-4" />
+              <span className="text-sm font-medium">Produtos</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('packages')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'packages'
+                  ? 'border-teal-600 text-teal-600 bg-teal-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Package className="h-4 w-4" />
+              <span className="text-sm font-medium">Pacotes</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('giftcards')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'giftcards'
+                  ? 'border-rose-600 text-rose-600 bg-rose-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Gift className="h-4 w-4" />
+              <span className="text-sm font-medium">Gift Cards</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('memberships')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'memberships'
+                  ? 'border-violet-600 text-violet-600 bg-violet-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              <span className="text-sm font-medium">Membros</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('forms')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap ${
+                activeTab === 'forms'
+                  ? 'border-slate-600 text-slate-600 bg-slate-50'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              <span className="text-sm font-medium">Formulários</span>
+            </button>
+          </div>
+        </div>
 
         <TabsContent value="profile">
           <ProfileTab 

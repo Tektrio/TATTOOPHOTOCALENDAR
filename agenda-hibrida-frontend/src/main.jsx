@@ -8,17 +8,21 @@ import ClientProfile from './pages/ClientProfile.jsx'
 import CustomerPage from './pages/CustomerPage.jsx'
 import NewCustomerPage from './pages/NewCustomerPage.jsx'
 import Customers from './pages/Customers.jsx'
+import Layout from './components/Layout.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/clients/:clientId" element={<ClientProfile />} />
-        <Route path="/customers" element={<Customers />} />
-        <Route path="/customers/new" element={<NewCustomerPage />} />
-        <Route path="/customers/:id" element={<CustomerPage />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<App />} />
+          <Route path="/clients" element={<Customers />} />
+          <Route path="/clients/:clientId" element={<ClientProfile />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/customers/new" element={<NewCustomerPage />} />
+          <Route path="/customers/:id" element={<CustomerPage />} />
+        </Routes>
+      </Layout>
       <Toaster 
         position="top-right" 
         richColors 

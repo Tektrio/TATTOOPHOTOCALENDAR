@@ -238,31 +238,34 @@ const Customers = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-            <Users className="w-8 h-8" />
-            Clientes
-          </h1>
-          <p className="text-gray-400 mt-1">
-            {filteredCustomers.length} cliente{filteredCustomers.length !== 1 ? 's' : ''} 
-            {searchTerm || filterTag !== 'all' || filterDateRange !== 'all' ? ' (filtrado)' : ''}
-          </p>
+    <div className="container mx-auto p-4 max-w-7xl">
+      {/* Barra de Título e Ações - Compacta */}
+      <div className="flex items-center justify-between mb-4 py-3 px-4 bg-white/5 rounded-lg border border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="bg-purple-600 p-2 rounded">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white">Clientes</h1>
+            <p className="text-xs text-gray-400">
+              {filteredCustomers.length} cliente{filteredCustomers.length !== 1 ? 's' : ''} 
+              {searchTerm || filterTag !== 'all' || filterDateRange !== 'all' ? ' (filtrado)' : ''}
+            </p>
+          </div>
         </div>
         <Button 
           onClick={() => navigate('/customers/new')}
-          className="bg-purple-600 hover:bg-purple-700 text-white"
+          size="sm"
+          className="bg-purple-600 hover:bg-purple-700 text-white h-9"
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Adicionar Cliente
+          Novo Cliente
         </Button>
       </div>
 
-      {/* Barra de Pesquisa e Filtros */}
-      <Card className="mb-6 bg-gray-800 border-gray-700">
-        <CardContent className="p-4">
+      {/* Barra de Pesquisa e Filtros - Compacta */}
+      <Card className="mb-4 bg-white/5 border-white/10">
+        <CardContent className="p-3">
           <div className="flex flex-col gap-4">
             {/* Linha 1: Pesquisa */}
             <div className="flex gap-3">
