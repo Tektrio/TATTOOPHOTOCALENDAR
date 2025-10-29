@@ -1,0 +1,86 @@
+🧹 Limpeza de Histórico Git - Remover Emojis
+==================================================
+
+⚠️  ATENÇÃO: Esta operação reescreverá TODO o histórico Git!
+
+   - Todos os SHAs de commits serão alterados
+   - Colaboradores precisarão re-clonar
+   - Esta operação leva 5-30 minutos
+
+   Backup criado: backup-pre-limpeza-emojis
+
+
+🚀 Iniciando limpeza do histórico...
+
+📁 Diretório temporário: /var/folders/qn/2mnpjygs7xz5yj4dprq981w00000gn/T/tmp.cg63QJrPKf
+📦 Criando mirror do repositório...
+Cloning into bare repository '/var/folders/qn/2mnpjygs7xz5yj4dprq981w00000gn/T/tmp.cg63QJrPKf/repo-mirror.git'...
+done.
+✅ Mirror criado
+
+🔧 Executando BFG Repo-Cleaner...
+   Arquivo de mapeamento: emoji-to-ascii-mapping.txt
+
+
+Using repo : /private/var/folders/qn/2mnpjygs7xz5yj4dprq981w00000gn/T/tmp.cg63QJrPKf/repo-mirror.git
+
+Found 1096 objects to protect
+Found 5 commit-pointing refs : HEAD, refs/heads/backup-pre-limpeza-emojis, refs/heads/main, ...
+Found 1 tag-pointing refs : refs/tags/backup-emoji-cleanup-20251029-154403
+
+Protected commits
+-----------------
+
+These are your protected commits, and so their contents will NOT be altered:
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.cache.Striped64 (file:/opt/homebrew/Cellar/bfg/1.15.0/libexec/bfg-1.15.0.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.cache.Striped64
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+ * commit 41c2ed22 (protected by 'HEAD')
+
+Cleaning
+--------
+
+Found 87 commits
+Cleaning commits:         1% ( 1/87)Cleaning commits:         2% ( 2/87)Cleaning commits:         3% ( 3/87)Cleaning commits:         5% ( 4/87)Cleaning commits:         6% ( 5/87)Cleaning commits:         7% ( 6/87)Cleaning commits:         8% ( 7/87)Cleaning commits:         9% ( 8/87)Cleaning commits:        10% ( 9/87)Cleaning commits:        11% (10/87)Cleaning commits:        13% (11/87)Cleaning commits:        14% (12/87)Cleaning commits:        15% (13/87)Cleaning commits:        16% (14/87)Cleaning commits:        17% (15/87)Cleaning commits:        18% (16/87)Cleaning commits:        20% (17/87)Cleaning commits:        21% (18/87)Cleaning commits:        22% (19/87)Cleaning commits:        23% (20/87)Cleaning commits:        24% (21/87)Cleaning commits:        25% (22/87)Cleaning commits:        26% (23/87)Cleaning commits:        28% (24/87)Cleaning commits:        29% (25/87)Cleaning commits:        30% (26/87)Cleaning commits:        31% (27/87)Cleaning commits:        32% (28/87)Cleaning commits:        33% (29/87)Cleaning commits:        34% (30/87)Cleaning commits:        36% (31/87)Cleaning commits:        37% (32/87)Cleaning commits:        38% (33/87)Cleaning commits:        39% (34/87)Cleaning commits:        40% (35/87)Cleaning commits:        41% (36/87)Cleaning commits:        43% (37/87)Cleaning commits:        44% (38/87)Cleaning commits:        45% (39/87)Cleaning commits:        46% (40/87)Cleaning commits:        47% (41/87)Cleaning commits:        48% (42/87)Cleaning commits:        49% (43/87)Cleaning commits:        51% (44/87)Cleaning commits:        52% (45/87)Cleaning commits:        53% (46/87)Cleaning commits:        54% (47/87)Cleaning commits:        55% (48/87)Cleaning commits:        56% (49/87)Cleaning commits:        57% (50/87)Cleaning commits:        59% (51/87)Cleaning commits:        60% (52/87)Cleaning commits:        61% (53/87)Cleaning commits:        62% (54/87)Cleaning commits:        63% (55/87)Cleaning commits:        64% (56/87)Cleaning commits:        66% (57/87)Cleaning commits:        67% (58/87)Cleaning commits:        68% (59/87)Cleaning commits:        69% (60/87)Cleaning commits:        70% (61/87)Cleaning commits:        71% (62/87)Cleaning commits:        72% (63/87)Cleaning commits:        74% (64/87)Cleaning commits:        75% (65/87)Cleaning commits:        76% (66/87)Cleaning commits:        77% (67/87)Cleaning commits:        78% (68/87)Cleaning commits:        79% (69/87)Cleaning commits:        80% (70/87)Cleaning commits:        82% (71/87)Cleaning commits:        83% (72/87)Cleaning commits:        84% (73/87)Cleaning commits:        85% (74/87)Cleaning commits:        86% (75/87)Cleaning commits:        87% (76/87)Cleaning commits:        89% (77/87)Cleaning commits:        90% (78/87)Cleaning commits:        91% (79/87)Cleaning commits:        92% (80/87)Cleaning commits:        93% (81/87)Cleaning commits:        94% (82/87)Cleaning commits:        95% (83/87)Cleaning commits:        97% (84/87)Cleaning commits:        98% (85/87)Cleaning commits:        99% (86/87)Cleaning commits:       100% (87/87)Cleaning commits:       100% (87/87)
+Cleaning commits completed in 550 ms.
+
+BFG aborting: No refs to update - no dirty commits found??
+
+
+✅ BFG concluído
+
+🗑️  Limpando reflog...
+🗑️  Executando garbage collection...
+✅ Limpeza de objetos concluída
+
+🔍 Verificando resultado...
+⚠️  Ainda existem 1607 arquivo(s) com caracteres especiais
+   Pode ser necessário executar novamente ou usar outro método
+
+📊 Sincronizando com repositório local original...
+💾 Fazendo backup do .git atual...
+🔄 Substituindo histórico local...
+Updating files:  83% (940/1130)Updating files:  84% (950/1130)Updating files:  85% (961/1130)Updating files:  86% (972/1130)Updating files:  87% (984/1130)Updating files:  88% (995/1130)Updating files:  89% (1006/1130)Updating files:  90% (1017/1130)Updating files:  91% (1029/1130)Updating files:  92% (1040/1130)Updating files:  93% (1051/1130)Updating files:  94% (1063/1130)Updating files:  95% (1074/1130)Updating files:  96% (1085/1130)Updating files:  97% (1097/1130)Updating files:  98% (1108/1130)Updating files:  99% (1119/1130)Updating files: 100% (1130/1130)Updating files: 100% (1130/1130), done.
+HEAD is now at 41c2ed2 docs: adicionar guia de solução para erro de clone no Windows
+✅ Histórico local atualizado
+
+🗑️  Limpando arquivos temporários...
+
+✅ Limpeza concluída com sucesso!
+==================================================
+
+📊 Resumo:
+   - Arquivos com emojis restantes: 1607
+   - Backup do .git original: .git.backup-original
+   - Branch de backup: backup-pre-limpeza-emojis
+
+⏭️  Próximos passos:
+   1. Verificar integridade: ./verificar-limpeza.sh
+   2. Testar clone local
+   3. Force push: ./force-push-seguro.sh
+
+⚠️  IMPORTANTE: Ainda não foi feito push para o remoto!
+   O histórico remoto permanece inalterado.
+

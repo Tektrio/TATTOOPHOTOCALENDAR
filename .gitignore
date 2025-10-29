@@ -153,3 +153,18 @@ agenda-hibrida-v2/config/google-tokens.json
 # Arquivos de documentação com dados sensíveis de exemplo (backup local)
 # Nota: Estes arquivos devem conter apenas exemplos/placeholders no repositório
 # Versões com dados reais devem ser mantidas localmente
+
+# Backups do Git
+.git.backup-original/
+*.backup-original/
+
+# Screenshots e arquivos de teste
+screenshots/
+
+# Dados de importação Vagaro
+vagaro_dados_download/
+
+# Arquivos temporários de diagnóstico
+diagnostico-*.json
+diagnostico-*.json-e
+*.log.txt
