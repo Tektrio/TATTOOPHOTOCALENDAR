@@ -222,7 +222,11 @@ class SyncWebSocketClient {
    */
   reconnect() {
     if (this.socket) {
+      // Socket existe mas está desconectado
       this.socket.connect();
+    } else {
+      // Socket foi destruído (após disconnect()), criar nova conexão
+      this.connect();
     }
   }
 }
