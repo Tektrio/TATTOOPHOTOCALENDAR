@@ -43,6 +43,7 @@ import SeletorHorarioMelhorado from './components/SeletorHorarioMelhorado.jsx'
 import { ValidatedInput, ValidatedTextarea, ValidatedSelect } from './components/ValidatedInput.jsx'
 import LoadingSpinner from './components/LoadingSpinner.jsx'
 import SyncStatusBadge from './components/SyncStatusBadge.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { 
   validateEmail, 
   validatePhone, 
@@ -1415,9 +1416,11 @@ function App() {
 
           {/* Local Storage Tab */}
           <TabsContent value="localstorage" className="space-y-6 mt-6">
-            <Suspense fallback={<LoadingSpinner />}>
-              <LocalStorage />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<LoadingSpinner />}>
+                <LocalStorage />
+              </Suspense>
+            </ErrorBoundary>
           </TabsContent>
 
           {/* Settings Tab */}
@@ -1430,9 +1433,11 @@ function App() {
 
           {/* Employees Tab */}
           <TabsContent value="employees" className="space-y-6 mt-6">
-            <Suspense fallback={<LoadingSpinner />}>
-              <Employees />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Employees />
+              </Suspense>
+            </ErrorBoundary>
           </TabsContent>
 
           {/* Settings Tab */}

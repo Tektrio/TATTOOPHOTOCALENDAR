@@ -165,6 +165,70 @@ class SyncWebSocketService {
   isConnected() {
     return this.connectionState === 'CONNECTED' && this.socket?.connected;
   }
+
+  /**
+   * Inscreve para receber updates de um arquivo específico
+   * @param {string} fileId - ID do arquivo
+   */
+  subscribeToFile(fileId) {
+    if (this.socket) {
+      this.socket.emit('subscribe:file', { fileId });
+      console.log('📝 Inscrito para updates do arquivo:', fileId);
+    }
+  }
+
+  /**
+   * Desinscreve de updates de um arquivo específico
+   * @param {string} fileId - ID do arquivo
+   */
+  unsubscribeFromFile(fileId) {
+    if (this.socket) {
+      this.socket.emit('unsubscribe:file', { fileId });
+      console.log('📝 Desinscrito de updates do arquivo:', fileId);
+    }
+  }
+
+  /**
+   * Inscreve para receber updates da fila de sincronização
+   */
+  subscribeToQueue() {
+    if (this.socket) {
+      this.socket.emit('subscribe:queue');
+      console.log('📝 Inscrito para updates da fila');
+    }
+  }
+
+  /**
+   * Desinscreve de updates da fila de sincronização
+   */
+  unsubscribeFromQueue() {
+    if (this.socket) {
+      this.socket.emit('unsubscribe:queue');
+      console.log('📝 Desinscrito de updates da fila');
+    }
+  }
+
+  /**
+   * Adiciona listener para evento específico
+   * @param {string} event - Nome do evento
+   * @param {function} callback - Função de callback
+   */
+  on(event, callback) {
+    if (this.socket) {
+      this.socket.on(event, callback);
+    }
+  }
+
+  /**
+   * Remove listener de evento específico
+   * @param {string} event - Nome do evento
+   * @param {function} callback - Função de callback
+   */
+  off(event, callback) {
+    if (this.socket) {
+      this.socket.off(event, callback);
+    }
+  }
 }
 
 // Exportar instância singleton

@@ -70,7 +70,12 @@ export default function Employees() {
   });
 
   useEffect(() => {
-    loadEmployees();
+    try {
+      loadEmployees();
+    } catch (error) {
+      console.error('Erro ao inicializar Employees:', error);
+      setError('Erro ao inicializar página de funcionários');
+    }
   }, []);
 
   const loadEmployees = async () => {
@@ -82,7 +87,7 @@ export default function Employees() {
       const data = await response.json();
       
       if (data.success) {
-        setEmployees(data.employees);
+        setEmployees(data.employees || []);
       } else {
         throw new Error(data.message || 'Erro ao carregar funcionários');
       }
@@ -214,7 +219,7 @@ export default function Employees() {
   };
 
   // Filtrar funcionários
-  const filteredEmployees = employees.filter(employee => {
+  const filteredEmployees = (employees || []).filter(employee => {
     const matchesSearch = employee.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (employee.employee_email || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === 'all' || employee.role === filterRole;
@@ -225,10 +230,10 @@ export default function Employees() {
 
   // Estatísticas
   const stats = {
-    total: employees.length,
-    active: employees.filter(e => e.employment_status === 'active').length,
-    totalRevenue: employees.reduce((sum, e) => sum + (e.total_revenue || 0), 0),
-    avgRating: employees.reduce((sum, e) => sum + (e.average_rating || 0), 0) / employees.length || 0
+    total: (employees || []).length,
+    active: (employees || []).filter(e => e.employment_status === 'active').length,
+    totalRevenue: (employees || []).reduce((sum, e) => sum + (e.total_revenue || 0), 0),
+    avgRating: (employees || []).reduce((sum, e) => sum + (e.average_rating || 0), 0) / ((employees || []).length || 1)
   };
 
   if (loading) {

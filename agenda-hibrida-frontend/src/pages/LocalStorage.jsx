@@ -39,9 +39,14 @@ export default function LocalStorage() {
   // ============================================
 
   useEffect(() => {
-    loadConfig();
-    loadDestinations();
-    loadFiles();
+    try {
+      loadConfig();
+      loadDestinations();
+      loadFiles();
+    } catch (error) {
+      console.error('Erro ao carregar LocalStorage:', error);
+      toast.error('Erro ao carregar dados locais');
+    }
   }, []);
 
   const loadConfig = async () => {
