@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import io from 'socket.io-client';
+import syncWebSocketService from '../services/syncWebSocket';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -23,43 +23,66 @@ export default function SyncStatusBadge({ googleStatus }) {
   const [lastSync, setLastSync] = useState(null);
   const [syncStatus, setSyncStatus] = useState('idle'); // idle | syncing | success | error
   const [syncStats, setSyncStats] = useState(null);
-  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
 
-  // Conectar ao WebSocket para updates em tempo real
+  // Conectar ao WebSocket Singleton para updates em tempo real
   useEffect(() => {
     if (!googleStatus?.authenticated) return;
 
-    const newSocket = io(API_URL);
+    const listenerId = `sync-badge-${Date.now()}`;
 
-    newSocket.on('connect', () => {
-      console.log('✅ WebSocket conectado para sync status');
-    });
+    // Handler para eventos do WebSocket
+    const handleWebSocketEvent = (event, data) => {
+      switch (event) {
+        case 'connect':
+          setIsConnected(true);
+          break;
 
-    newSocket.on('calendar_sync_started', (data) => {
-      console.log('🔄 Sincronização iniciada:', data);
-      setSyncStatus('syncing');
-    });
+        case 'disconnect':
+        case 'connect_error':
+          setIsConnected(false);
+          break;
 
-    newSocket.on('calendar_synced', (data) => {
-      console.log('📅 Sincronização recebida:', data);
-      setLastSync(new Date(data.timestamp));
-      setSyncStats(data.report);
-      setSyncStatus('success');
-      
-      // Voltar para idle após 3 segundos
-      setTimeout(() => {
-        setSyncStatus('idle');
-      }, 3000);
-    });
+        case 'calendar_sync_started':
+          setSyncStatus('syncing');
+          break;
 
-    newSocket.on('disconnect', () => {
-      console.log('❌ WebSocket desconectado');
-    });
+        case 'calendar_synced':
+          setLastSync(new Date(data.timestamp));
+          setSyncStats(data.report);
+          setSyncStatus('success');
+          
+          // Voltar para idle após 3 segundos
+          setTimeout(() => {
+            setSyncStatus('idle');
+          }, 3000);
+          break;
 
-    setSocket(newSocket);
+        case 'calendar_sync_error':
+          setSyncStatus('error');
+          setTimeout(() => {
+            setSyncStatus('idle');
+          }, 3000);
+          break;
 
+        default:
+          break;
+      }
+    };
+
+    // Adicionar listener
+    syncWebSocketService.addListener(listenerId, handleWebSocketEvent);
+
+    // Conectar se ainda não estiver conectado
+    if (!syncWebSocketService.isConnected()) {
+      syncWebSocketService.connect();
+    } else {
+      setIsConnected(true);
+    }
+
+    // Cleanup: remover listener mas NÃO desconectar o socket (outros componentes podem estar usando)
     return () => {
-      newSocket.disconnect();
+      syncWebSocketService.removeListener(listenerId);
     };
   }, [googleStatus?.authenticated]);
 

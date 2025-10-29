@@ -65,11 +65,25 @@ export default function FinancialDashboard() {
     setLoading(true);
     
     try {
-      const response = await fetch(`${API_URL}/api/financials/dashboard?range=${dateRange}`);
+      const response = await fetch(`${API_URL}/api/stats/financial?period=${dateRange}`);
       const data = await response.json();
       
       if (data.success) {
-        setFinancialData(data.data);
+        // Adaptar estrutura da API para o formato esperado pelo componente
+        setFinancialData({
+          summary: {
+            total_revenue: data.summary.total_revenue || 0,
+            total_transactions: data.summary.total_transactions || 0,
+            average_ticket: data.summary.average_ticket || 0,
+            growth_rate: data.summary.revenue_growth || 0,
+            active_customers: data.summary.active_clients || 0
+          },
+          revenue_by_day: data.charts.revenue_by_day || [],
+          revenue_by_type: data.charts.revenue_by_category || [],
+          revenue_by_payment_method: data.charts.payment_methods || [],
+          top_services: data.top_services || [],
+          recent_transactions: data.recent_transactions || []
+        });
       }
     } catch (err) {
       console.error('Erro ao carregar dados financeiros:', err);

@@ -468,10 +468,7 @@ export default function LocalStorage() {
                 <Plus className="w-4 h-4 mr-2" />
                 Adicionar Google Drive
               </Button>
-              <Button onClick={() => { setQnapToEdit(null); setShowQnapConfig(true); }} size="sm" variant="outline">
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar QNAP
-              </Button>
+              {/* QNAP NAS removido - feature não utilizada */}
             </div>
           </div>
         </CardHeader>
@@ -482,7 +479,7 @@ export default function LocalStorage() {
                 <Server className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                 <p className="text-gray-400">Nenhum destino configurado</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  Adicione uma conta Google Drive ou QNAP NAS para começar
+                  Adicione uma conta Google Drive para começar
                 </p>
               </AlertDescription>
             </Alert>
