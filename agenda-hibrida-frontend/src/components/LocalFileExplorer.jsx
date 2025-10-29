@@ -29,7 +29,11 @@ import {
   X,
   Check,
   Copy,
-  Move
+  Move,
+  Clock,
+  Layers,
+  TrendingUp,
+  HardDrive
 } from 'lucide-react';
 import SyncStatusIndicator from './SyncStatusIndicator';
 import FilePreviewModal from './FilePreviewModal';
@@ -357,42 +361,56 @@ export default function LocalFileExplorer({
   // Renderiza pasta em modo árvore
   const renderTreeFolder = (folder, depth = 0) => {
     const isExpanded = expandedFolders.has(folder.path);
+    const percentOfTotal = folderTree.totalSize > 0 
+      ? (folder.totalSize / folderTree.totalSize * 100) 
+      : 0;
     
     return (
       <div key={folder.path}>
         <div
-          className={`flex items-center gap-2 px-3 py-2 hover:bg-gray-700/50 cursor-pointer rounded transition-colors ${
-            currentPath === folder.path ? 'bg-blue-600/20 border-l-4 border-blue-500' : ''
+          className={`group relative flex items-center gap-2 px-3 py-2.5 mx-2 my-0.5 hover:bg-gray-700/50 cursor-pointer rounded-lg transition-all border ${
+            currentPath === folder.path ? 'bg-blue-600/20 border-blue-500/50' : 'border-transparent'
           }`}
           style={{ paddingLeft: `${depth * 20 + 12}px` }}
           onClick={() => toggleFolder(folder.path)}
           onDoubleClick={() => navigateToFolder(folder.path)}
         >
-          <button
-            className="p-0 hover:bg-gray-600 rounded"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFolder(folder.path);
-            }}
-          >
+          {/* Barra de progresso visual do tamanho (TreeSize style) */}
+          <div 
+            className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 transition-all pointer-events-none"
+            style={{ width: `${Math.max(percentOfTotal, 2)}%` }}
+          />
+          
+          <div className="relative flex items-center gap-2 flex-1 min-w-0">
+            <button
+              className="p-0 hover:bg-gray-600 rounded flex-shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFolder(folder.path);
+              }}
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              )}
+            </button>
+            
             {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <FolderOpen className="w-5 h-5 text-yellow-400 flex-shrink-0" />
             ) : (
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <Folder className="w-5 h-5 text-yellow-400 flex-shrink-0" />
             )}
-          </button>
-          
-          {isExpanded ? (
-            <FolderOpen className="w-5 h-5 text-yellow-400" />
-          ) : (
-            <Folder className="w-5 h-5 text-yellow-400" />
-          )}
-          
-          <span className="flex-1 text-white font-medium">{folder.name}</span>
-          
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span>{folder.fileCount} {folder.fileCount === 1 ? 'item' : 'itens'}</span>
-            <span>{formatFileSize(folder.totalSize)}</span>
+            
+            <span className="flex-1 text-white font-medium truncate">{folder.name}</span>
+            
+            <div className="flex flex-col items-end gap-0.5 text-xs flex-shrink-0">
+              <span className="text-gray-300 font-semibold">{formatFileSize(folder.totalSize)}</span>
+              <span className="text-gray-500">{folder.fileCount} {folder.fileCount === 1 ? 'item' : 'itens'}</span>
+              {percentOfTotal > 0.1 && (
+                <span className="text-blue-400 text-[10px] font-medium">{percentOfTotal.toFixed(1)}%</span>
+              )}
+            </div>
           </div>
         </div>
         
@@ -404,70 +422,122 @@ export default function LocalFileExplorer({
   // Renderiza item em modo lista
   const renderListItem = (item) => {
     if (item.type === 'folder') {
+      const percentOfTotal = currentNode.totalSize > 0 
+        ? (item.totalSize / currentNode.totalSize * 100) 
+        : 0;
+      
       return (
         <div
           key={item.path}
-          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 cursor-pointer rounded transition-colors"
+          className="group relative flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 cursor-pointer rounded transition-all"
           onDoubleClick={() => navigateToFolder(item.path)}
         >
-          <Folder className="w-6 h-6 text-yellow-400 flex-shrink-0" />
+          {/* Barra de progresso visual do tamanho (TreeSize style) */}
+          <div 
+            className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-yellow-500/20 to-yellow-500/5 transition-all pointer-events-none"
+            style={{ width: `${Math.max(percentOfTotal, 1)}%` }}
+          />
           
-          <div className="flex-1 min-w-0">
-            <div className="font-medium text-white truncate">{item.name}</div>
-            <div className="text-xs text-gray-400">
-              {item.fileCount} {item.fileCount === 1 ? 'item' : 'itens'}
+          <div className="relative flex items-center gap-3 flex-1 min-w-0">
+            <Folder className="w-6 h-6 text-yellow-400 flex-shrink-0" />
+            
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-white truncate">{item.name}</div>
+              <div className="text-xs text-gray-400">
+                {item.fileCount} {item.fileCount === 1 ? 'item' : 'itens'} 
+                {percentOfTotal > 0.1 && (
+                  <span className="ml-2 text-blue-400 font-medium">• {percentOfTotal.toFixed(1)}%</span>
+                )}
+              </div>
             </div>
+            
+            <div className="text-sm font-semibold text-gray-300">{formatFileSize(item.totalSize)}</div>
+            
+            <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
-          
-          <div className="text-sm text-gray-400">{formatFileSize(item.totalSize)}</div>
-          
-          <ChevronRight className="w-4 h-4 text-gray-400" />
         </div>
       );
     }
     
     // Arquivo
+    const percentOfTotal = currentNode.totalSize > 0 
+      ? (item.file_size / currentNode.totalSize * 100) 
+      : 0;
+    const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(item.file_type?.toLowerCase());
+    
     return (
       <div
         key={item.id}
-        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 rounded transition-colors group"
+        className="group relative flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 rounded transition-all"
       >
-        <Checkbox
-          checked={selectedFiles.includes(item.id)}
-          onCheckedChange={(checked) => handleSelectFile(item.id, checked)}
-        />
+        {/* Barra de progresso visual do tamanho */}
+        {percentOfTotal > 0.05 && (
+          <div 
+            className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-500/10 to-blue-500/5 transition-all pointer-events-none"
+            style={{ width: `${Math.max(percentOfTotal, 0.5)}%` }}
+          />
+        )}
         
-        {getFileIcon(item)}
-        
-        <div className="flex-1 min-w-0">
-          <div className="font-medium text-white truncate" title={item.file_name}>
-            {item.file_name}
+        <div className="relative flex items-center gap-3 flex-1 min-w-0">
+          <Checkbox
+            checked={selectedFiles.includes(item.id)}
+            onCheckedChange={(checked) => handleSelectFile(item.id, checked)}
+          />
+          
+          {/* Thumbnail para imagens */}
+          {isImage ? (
+            <div className="w-10 h-10 rounded border border-gray-600 overflow-hidden bg-gray-800 flex-shrink-0">
+              <img 
+                src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/files/${item.id}/thumbnail`}
+                alt={item.file_name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/></svg></div>';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="flex-shrink-0">
+              {getFileIcon(item)}
+            </div>
+          )}
+          
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-white truncate" title={item.file_name}>
+              {item.file_name}
+            </div>
+            <div className="text-xs text-gray-400 flex items-center gap-2">
+              <span>{formatTimestamp(item.created_at)}</span>
+              {percentOfTotal > 0.1 && (
+                <span className="text-blue-400 font-medium">• {percentOfTotal.toFixed(1)}%</span>
+              )}
+            </div>
           </div>
-          <div className="text-xs text-gray-400">{formatTimestamp(item.created_at)}</div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <SyncStatusIndicator fileId={item.id} compact />
-          <span className="text-sm text-gray-400">{formatFileSize(item.file_size)}</span>
-        </div>
-        
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setPreviewFile(item)}
-            title="Visualizar"
-          >
-            <Eye className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onSync && onSync([item.id])}
-            title="Sincronizar"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </Button>
+          
+          <div className="flex items-center gap-3">
+            <SyncStatusIndicator fileId={item.id} compact />
+            <span className="text-sm font-semibold text-gray-300 w-20 text-right">{formatFileSize(item.file_size)}</span>
+          </div>
+          
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPreviewFile(item)}
+              title="Visualizar"
+            >
+              <Eye className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSync && onSync([item.id])}
+              title="Sincronizar"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -476,72 +546,138 @@ export default function LocalFileExplorer({
   // Renderiza item em modo grade
   const renderGridItem = (item) => {
     if (item.type === 'folder') {
+      const percentOfTotal = currentNode.totalSize > 0 
+        ? (item.totalSize / currentNode.totalSize * 100) 
+        : 0;
+      
       return (
         <div
           key={item.path}
-          className="flex flex-col items-center p-4 hover:bg-gray-700/50 cursor-pointer rounded-lg transition-all hover:scale-105"
+          className="relative flex flex-col items-center p-4 hover:bg-gray-700/50 cursor-pointer rounded-lg transition-all hover:scale-105 border border-transparent hover:border-yellow-500/30"
           onDoubleClick={() => navigateToFolder(item.path)}
         >
-          <Folder className="w-16 h-16 text-yellow-400 mb-3" />
-          <div className="text-center w-full">
+          {/* Indicador de tamanho no fundo */}
+          {percentOfTotal > 1 && (
+            <div 
+              className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-yellow-500/10 to-transparent pointer-events-none"
+              style={{ height: `${Math.min(percentOfTotal * 2, 100)}%` }}
+            />
+          )}
+          
+          <Folder className="w-16 h-16 text-yellow-400 mb-3 z-10 relative" />
+          <div className="text-center w-full z-10 relative">
             <div className="font-medium text-white truncate mb-1" title={item.name}>
               {item.name}
             </div>
             <div className="text-xs text-gray-400">
               {item.fileCount} {item.fileCount === 1 ? 'item' : 'itens'}
             </div>
-            <div className="text-xs text-gray-400">{formatFileSize(item.totalSize)}</div>
+            <div className="text-xs font-semibold text-gray-300">{formatFileSize(item.totalSize)}</div>
+            {percentOfTotal > 0.5 && (
+              <div className="text-[10px] text-blue-400 font-medium mt-1">{percentOfTotal.toFixed(1)}%</div>
+            )}
           </div>
         </div>
       );
     }
     
     // Arquivo
+    const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(item.file_type?.toLowerCase());
+    const percentOfTotal = currentNode.totalSize > 0 
+      ? (item.file_size / currentNode.totalSize * 100) 
+      : 0;
+    
     return (
       <div
         key={item.id}
-        className="flex flex-col items-center p-4 hover:bg-gray-700/50 rounded-lg transition-all group relative"
+        className="relative flex flex-col items-center p-4 hover:bg-gray-700/50 rounded-lg transition-all group border border-transparent hover:border-blue-500/30"
       >
         <Checkbox
-          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-20"
           checked={selectedFiles.includes(item.id)}
           onCheckedChange={(checked) => handleSelectFile(item.id, checked)}
         />
         
-        <div className="mb-3">
-          {getFileIcon(item)}
-        </div>
+        {/* Indicador de tamanho no fundo para arquivos grandes */}
+        {percentOfTotal > 0.5 && (
+          <div 
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-500/10 to-transparent pointer-events-none"
+            style={{ height: `${Math.min(percentOfTotal * 3, 100)}%` }}
+          />
+        )}
         
-        <div className="text-center w-full">
-          <div className="font-medium text-white truncate text-sm mb-1" title={item.file_name}>
+        {/* Thumbnail para imagens ou ícone */}
+        {isImage ? (
+          <div className="w-24 h-24 rounded-lg border border-gray-600 overflow-hidden bg-gray-800 mb-3 z-10 relative shadow-lg">
+            <img 
+              src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/files/${item.id}/thumbnail`}
+              alt={item.file_name}
+              className="w-full h-full object-cover hover:scale-110 transition-transform"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-500"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/></svg></div>';
+              }}
+            />
+          </div>
+        ) : (
+          <div className="mb-3 z-10 relative transform scale-150">
+            {getFileIcon(item)}
+          </div>
+        )}
+        
+        <div className="text-center w-full z-10 relative">
+          <div className="font-medium text-white truncate text-sm mb-1 px-1" title={item.file_name}>
             {item.file_name}
           </div>
-          <div className="text-xs text-gray-400">{formatFileSize(item.file_size)}</div>
+          <div className="text-xs font-semibold text-gray-300">{formatFileSize(item.file_size)}</div>
+          {percentOfTotal > 0.5 && (
+            <div className="text-[10px] text-blue-400 font-medium mt-1">{percentOfTotal.toFixed(1)}%</div>
+          )}
         </div>
         
-        <SyncStatusIndicator fileId={item.id} compact className="mt-2" />
+        <SyncStatusIndicator fileId={item.id} compact className="mt-2 z-10 relative" />
+        
+        {/* Botões de ação visíveis ao hover */}
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => setPreviewFile(item)}
+            title="Visualizar"
+          >
+            <Eye className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
     );
   };
 
   return (
-    <Card className="flex h-[600px]">
+    <Card className="flex h-auto min-h-[700px] max-h-[calc(100vh-120px)]">
       {/* Sidebar - Árvore de navegação */}
-      <div className="w-64 border-r border-gray-700 flex flex-col">
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center gap-2 text-white font-semibold mb-2">
+      <div className="w-64 border-r border-gray-700 flex flex-col overflow-hidden">
+        <div className="p-4 border-b border-gray-700 bg-gray-800/50">
+          <div className="flex items-center gap-2 mb-3">
             <Folder className="w-5 h-5 text-yellow-400" />
-            <span>Estrutura</span>
+            <span className="text-white font-bold text-base">Estrutura de Pastas</span>
           </div>
-          <div className="text-xs text-gray-400">
-            {folderTree.fileCount} arquivos • {formatFileSize(folderTree.totalSize)}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <FileText className="w-3 h-3 text-blue-400" />
+              <span className="text-sm text-gray-300">{folderTree.fileCount} arquivos</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <HardDrive className="w-3 h-3 text-green-400" />
+              <span className="text-sm text-gray-300">{formatFileSize(folderTree.totalSize)}</span>
+            </div>
           </div>
         </div>
         
         <div className="flex-1 overflow-y-auto">
           <div
-            className={`flex items-center gap-2 px-3 py-2 hover:bg-gray-700/50 cursor-pointer rounded transition-colors ${
-              currentPath === '' ? 'bg-blue-600/20 border-l-4 border-blue-500' : ''
+            className={`flex items-center gap-2 px-3 py-3 mx-2 my-1 hover:bg-gray-700/50 cursor-pointer rounded-lg transition-colors border ${
+              currentPath === '' ? 'bg-blue-600/20 border-blue-500/50' : 'border-transparent'
             }`}
             onClick={() => navigateToFolder('')}
           >
@@ -554,7 +690,7 @@ export default function LocalFileExplorer({
       </div>
 
       {/* Área principal */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <CardHeader className="border-b border-gray-700">
           {/* Breadcrumbs */}
           <div className="flex items-center gap-2 mb-3 text-sm">
@@ -574,73 +710,6 @@ export default function LocalFileExplorer({
               </div>
             ))}
           </div>
-
-          {/* Painel de Estatísticas TreeSize */}
-          {showStorageStats && (
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Total */}
-                <div className="flex flex-col">
-                  <div className="text-xs text-gray-400 mb-1">Tamanho Total</div>
-                  <div className="text-2xl font-bold text-white">{formatFileSize(currentNode.totalSize)}</div>
-                  <div className="text-xs text-gray-400 mt-1">{currentNode.fileCount} arquivos</div>
-                </div>
-                
-                {/* Distribuição por categoria */}
-                <div className="col-span-2">
-                  <div className="text-xs text-gray-400 mb-2">Distribuição por Tipo</div>
-                  <div className="space-y-2">
-                    {(() => {
-                      const stats = {
-                        images: { size: 0, count: 0, color: 'bg-blue-500' },
-                        documents: { size: 0, count: 0, color: 'bg-red-500' },
-                        videos: { size: 0, count: 0, color: 'bg-purple-500' },
-                        audio: { size: 0, count: 0, color: 'bg-green-500' },
-                        other: { size: 0, count: 0, color: 'bg-gray-500' }
-                      };
-                      
-                      const countAllFiles = (node) => {
-                        node.files.forEach(file => {
-                          const category = getFileCategory(file);
-                          stats[category].size += file.file_size || 0;
-                          stats[category].count++;
-                        });
-                        node.children.forEach(countAllFiles);
-                      };
-                      
-                      countAllFiles(currentNode);
-                      
-                      return Object.entries(stats)
-                        .filter(([, data]) => data.count > 0)
-                        .map(([category, data]) => {
-                          const percentage = currentNode.totalSize > 0 
-                            ? (data.size / currentNode.totalSize * 100).toFixed(1)
-                            : 0;
-                          
-                          return (
-                            <div key={category} className="flex items-center gap-2">
-                              <div className="w-24 text-xs text-gray-300 capitalize">{category}:</div>
-                              <div className="flex-1 bg-gray-700 rounded-full h-2 overflow-hidden">
-                                <div 
-                                  className={`h-full ${data.color} transition-all duration-300`}
-                                  style={{ width: `${percentage}%` }}
-                                />
-                              </div>
-                              <div className="text-xs text-gray-400 w-20 text-right">
-                                {formatFileSize(data.size)}
-                              </div>
-                              <div className="text-xs text-gray-500 w-16 text-right">
-                                ({data.count})
-                              </div>
-                            </div>
-                          );
-                        });
-                    })()}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Filtros rápidos por tipo */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -760,7 +829,163 @@ export default function LocalFileExplorer({
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-y-auto p-0">
+        {/* Painel de Estatísticas - FORA do CardHeader */}
+        {showStorageStats && (
+          <div className="mx-4 my-3 bg-gradient-to-br from-gray-800/70 via-gray-800/50 to-gray-800/30 rounded-lg p-4 border border-gray-700 shadow-lg backdrop-blur">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <PieChart className="w-4 h-4 text-blue-400" />
+                <h3 className="text-sm font-semibold text-white">Estatísticas de Armazenamento</h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowStorageStats(false)}
+                className="h-7 w-7 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              {/* Card Total - Compacto */}
+              <div className="lg:col-span-3 bg-gradient-to-br from-blue-600/20 to-blue-500/10 rounded-lg p-3 border border-blue-500/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <HardDrive className="w-4 h-4 text-blue-400" />
+                  <div className="text-xs font-medium text-blue-400">Total Usado</div>
+                </div>
+                <div className="text-2xl font-bold text-white">{formatFileSize(currentNode.totalSize)}</div>
+                <div className="flex items-center gap-3 mt-1 text-xs text-gray-300">
+                  <span><FileText className="w-3 h-3 inline mr-1" />{currentNode.fileCount} arquivo{currentNode.fileCount !== 1 ? 's' : ''}</span>
+                  {currentNode.children.length > 0 && (
+                    <span><Folder className="w-3 h-3 inline mr-1" />{currentNode.children.length} pasta{currentNode.children.length !== 1 ? 's' : ''}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Distribuição - Compacta */}
+              <div className="lg:col-span-9">
+                <div className="text-xs font-medium text-gray-300 mb-2">Distribuição por Tipo</div>
+                <div className="space-y-2">
+                  {(() => {
+                    const stats = {
+                      images: { size: 0, count: 0, color: 'bg-blue-500', icon: '🖼️', label: 'Imagens', ringColor: 'ring-blue-500' },
+                      documents: { size: 0, count: 0, color: 'bg-red-500', icon: '📄', label: 'Documentos', ringColor: 'ring-red-500' },
+                      videos: { size: 0, count: 0, color: 'bg-purple-500', icon: '🎥', label: 'Vídeos', ringColor: 'ring-purple-500' },
+                      audio: { size: 0, count: 0, color: 'bg-green-500', icon: '🎵', label: 'Áudio', ringColor: 'ring-green-500' },
+                      other: { size: 0, count: 0, color: 'bg-gray-500', icon: '📦', label: 'Outros', ringColor: 'ring-gray-500' }
+                    };
+                    
+                    const countAllFiles = (node) => {
+                      node.files.forEach(file => {
+                        const category = getFileCategory(file);
+                        stats[category].size += file.file_size || 0;
+                        stats[category].count++;
+                      });
+                      node.children.forEach(countAllFiles);
+                    };
+                    
+                    countAllFiles(currentNode);
+                    
+                    return Object.entries(stats)
+                      .filter(([, data]) => data.count > 0)
+                      .sort(([, a], [, b]) => b.size - a.size)
+                      .map(([category, data]) => {
+                        const percentage = currentNode.totalSize > 0 
+                          ? (data.size / currentNode.totalSize * 100)
+                          : 0;
+                        
+                        return (
+                          <div key={category} className="group">
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5 w-24 flex-shrink-0">
+                                <span className="text-base">{data.icon}</span>
+                                <span className="text-xs font-medium text-gray-200">{data.label}</span>
+                              </div>
+                              <div className="flex-1 bg-gray-700/50 rounded-full h-2 overflow-hidden border border-gray-600/50">
+                                <div 
+                                  className={`h-full ${data.color} transition-all duration-500 ease-out`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-2 text-xs">
+                                <span className="font-bold text-white w-12 text-right">{percentage.toFixed(1)}%</span>
+                                <span className="font-semibold text-gray-300 w-16 text-right">{formatFileSize(data.size)}</span>
+                                <span className="text-gray-500 w-8 text-right">({data.count})</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      });
+                  })()}
+                </div>
+              </div>
+            </div>
+            
+            {/* Informações úteis adicionais */}
+            <div className="mt-3 pt-3 border-t border-gray-700/50 grid grid-cols-3 gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <Layers className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-gray-500 text-[10px]">Maior arquivo</div>
+                  <div className="text-gray-300 font-medium truncate">
+                    {(() => {
+                      const allFiles = [];
+                      const collectFiles = (node) => {
+                        allFiles.push(...node.files);
+                        node.children.forEach(collectFiles);
+                      };
+                      collectFiles(currentNode);
+                      const largestFile = allFiles.reduce((max, file) => 
+                        file.file_size > (max?.file_size || 0) ? file : max, null);
+                      return largestFile ? formatFileSize(largestFile.file_size) : '-';
+                    })()}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-gray-500 text-[10px]">Média por arquivo</div>
+                  <div className="text-gray-300 font-medium">
+                    {formatFileSize(currentNode.fileCount > 0 ? currentNode.totalSize / currentNode.fileCount : 0)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <HardDrive className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-gray-500 text-[10px]">Tipos diferentes</div>
+                  <div className="text-gray-300 font-medium">
+                    {(() => {
+                      const types = new Set();
+                      const collectTypes = (node) => {
+                        node.files.forEach(file => {
+                          if (file.file_type) types.add(file.file_type.toLowerCase());
+                        });
+                        node.children.forEach(collectTypes);
+                      };
+                      collectTypes(currentNode);
+                      return types.size;
+                    })()} formato{(() => {
+                      const types = new Set();
+                      const collectTypes = (node) => {
+                        node.files.forEach(file => {
+                          if (file.file_type) types.add(file.file_type.toLowerCase());
+                        });
+                        node.children.forEach(collectTypes);
+                      };
+                      collectTypes(currentNode);
+                      return types.size !== 1 ? 's' : '';
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <CardContent className="flex-1 overflow-y-auto p-0 min-h-0">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <RefreshCw className="w-16 h-16 mb-4 animate-spin opacity-50" />
@@ -790,9 +1015,9 @@ export default function LocalFileExplorer({
           ) : (
             <>
               {viewMode === 'list' ? (
-                <div className="p-2">
+                <div className="p-2 pb-40">
                   {/* Cabeçalho com ordenação */}
-                  <div className="flex items-center gap-3 px-4 py-2 bg-gray-800/50 rounded-t sticky top-0 z-10 border-b border-gray-700 mb-2">
+                  <div className="flex items-center gap-3 px-4 py-2 bg-gray-800/80 rounded-t border-b border-gray-700 mb-2">
                     <div className="w-8"></div>
                     <div className="w-8"></div>
                     <button
@@ -823,7 +1048,7 @@ export default function LocalFileExplorer({
                   {filteredAndSortedItems.files.map(renderListItem)}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 p-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 p-4 pb-40">
                   {/* Pastas primeiro */}
                   {filteredAndSortedItems.children.map(renderGridItem)}
                   

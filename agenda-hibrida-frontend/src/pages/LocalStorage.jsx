@@ -534,7 +534,7 @@ export default function LocalStorage() {
           basePath={config?.base_path || ''}
           onSync={handleSyncFiles}
           onRefresh={loadFiles}
-          loading={loading.files}
+          loading={loading}
         />
       ) : (
         <LocalFileTable

@@ -704,7 +704,7 @@ app.get('/auth/google', (req, res) => {
 // Rota GET para receber o código do Google OAuth (redirect)
 app.get('/auth/google/callback', async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code, state } = req.query;
     
     if (!code) {
       return res.send(`
@@ -720,41 +720,46 @@ app.get('/auth/google/callback', async (req, res) => {
       `);
     }
     
-    // Garantir redirectUri correto nesta instância antes de trocar o código por tokens
-    const redirectUri = `http://localhost:${port}/auth/google/callback`;
-    oauth2Client.redirectUri = redirectUri;
-    const { tokens } = await oauth2Client.getToken(code);
-    oauth2Client.setCredentials(tokens);
+    // ============================================
+    // SISTEMA MULTI-CONTA (novo)
+    // Envia código via postMessage para o frontend processar
+    // ============================================
+    console.log('🔐 Callback OAuth recebido - enviando código para frontend via postMessage');
     
-    // Salvar tokens
-    fs.writeJsonSync('./tokens.json', tokens);
-    
-    // Inicializar Google Drive e Calendar
-    driveClient = google.drive({ version: 'v3', auth: oauth2Client });
-    const calendarClient = google.calendar({ version: 'v3', auth: oauth2Client });
-    
-    // Inicializar Sistema de Sincronização
-    initializeSyncSystem();
-    
-    console.log('✅ Autenticação Google realizada com sucesso');
-    console.log('✅ Google Drive conectado');
-    console.log('✅ Google Calendar conectado');
-    
-    // Retornar página de sucesso que fecha automaticamente
     res.send(`
       <html>
         <body style="background: #1a1a2e; color: white; font-family: Arial; display: flex; align-items: center; justify-content: center; height: 100vh;">
           <div style="text-align: center;">
-            <h1>✅ Autenticação bem-sucedida!</h1>
-            <p>Google Calendar e Drive conectados.</p>
-            <p>Esta janela fechará automaticamente...</p>
+            <h1>🔄 Processando autenticação...</h1>
+            <p>Aguarde enquanto conectamos sua conta Google Drive.</p>
             <script>
-              setTimeout(() => window.close(), 2000);
+              // Envia código OAuth para a janela pai (frontend)
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'google-oauth',
+                  code: '${code}',
+                  state: '${state || ''}'
+                }, '*');
+                
+                // Fecha após enviar
+                setTimeout(() => {
+                  window.close();
+                }, 500);
+              } else {
+                document.body.innerHTML = \`
+                  <div style="text-align: center;">
+                    <h1>✅ Código recebido!</h1>
+                    <p>Por favor, feche esta janela e retorne ao aplicativo.</p>
+                    <button onclick="window.close()" style="margin-top: 20px; padding: 10px 20px; background: #4a4a8a; color: white; border: none; border-radius: 5px; cursor: pointer;">Fechar</button>
+                  </div>
+                \`;
+              }
             </script>
           </div>
         </body>
       </html>
     `);
+    
   } catch (error) {
     console.error('❌ Erro na autenticação Google:', error);
     

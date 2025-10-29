@@ -11,6 +11,16 @@
 function validateGoogleDriveConfig(config) {
   const errors = [];
   
+  // Se é destino pendente (aguardando OAuth), não precisa de tokens ainda
+  if (config.pending === true) {
+    // Destino pendente é válido, tokens virão depois do OAuth
+    return {
+      valid: true,
+      errors: []
+    };
+  }
+  
+  // Para destinos ativos, tokens são obrigatórios
   if (!config.tokens) {
     errors.push('Tokens OAuth são obrigatórios');
   } else {

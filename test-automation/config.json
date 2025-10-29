@@ -1,0 +1,227 @@
+{
+  "projectRoot": "/Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR",
+  "duration": 28800000,
+  "durationHuman": "8 horas",
+  "startServers": true,
+  "browserTests": false,
+  "cyclePause": 300000,
+  "cyclePauseHuman": "5 minutos",
+  
+  "servers": {
+    "backend": {
+      "url": "http://localhost:3001",
+      "healthEndpoint": "/health",
+      "startCommand": "npm start",
+      "cwd": "agenda-hibrida-v2",
+      "startupTime": 10000
+    },
+    "frontend": {
+      "url": "http://localhost:5173",
+      "startCommand": "npm run dev",
+      "cwd": "agenda-hibrida-frontend",
+      "startupTime": 15000
+    }
+  },
+  
+  "healthMonitor": {
+    "checkInterval": 30000,
+    "checkIntervalHuman": "30 segundos",
+    "maxMemoryMB": 1024,
+    "maxRestartAttempts": 3,
+    "timeouts": {
+      "request": 5000,
+      "maxResponseTime": 3000
+    }
+  },
+  
+  "googleSafety": {
+    "limits": {
+      "calendar": {
+        "createEvents": {
+          "max": 10,
+          "window": 60000,
+          "windowHuman": "1 minuto"
+        },
+        "readEvents": {
+          "max": 5,
+          "window": 60000
+        },
+        "updateEvents": {
+          "max": 8,
+          "window": 60000
+        },
+        "deleteEvents": {
+          "max": 5,
+          "window": 60000
+        },
+        "listCalendars": {
+          "max": 3,
+          "window": 60000
+        },
+        "syncAll": {
+          "max": 1,
+          "window": 300000,
+          "windowHuman": "5 minutos"
+        }
+      },
+      "drive": {
+        "uploadFiles": {
+          "max": 5,
+          "window": 60000
+        },
+        "listFiles": {
+          "max": 10,
+          "window": 60000
+        },
+        "listFolders": {
+          "max": 5,
+          "window": 60000
+        },
+        "deleteFiles": {
+          "max": 3,
+          "window": 60000
+        },
+        "updatePermissions": {
+          "max": 2,
+          "window": 60000
+        },
+        "recursiveList": {
+          "max": 1,
+          "window": 300000
+        },
+        "createFolders": {
+          "max": 3,
+          "window": 60000
+        }
+      },
+      "gmail": {
+        "sendEmails": {
+          "max": 5,
+          "window": 60000
+        },
+        "listEmails": {
+          "max": 10,
+          "window": 60000
+        },
+        "deleteEmails": {
+          "max": 5,
+          "window": 60000
+        }
+      },
+      "general": {
+        "totalRequests": {
+          "max": 50,
+          "window": 3600000,
+          "windowHuman": "1 hora"
+        }
+      }
+    }
+  },
+  
+  "autoFix": {
+    "enabled": true,
+    "maxFixAttempts": 3,
+    "allowedFixes": [
+      "timeout",
+      "selector",
+      "css",
+      "validation",
+      "race_condition"
+    ],
+    "reTestAfterFix": true
+  },
+  
+  "playwright": {
+    "timeout": 60000,
+    "navigationTimeout": 30000,
+    "actionTimeout": 15000,
+    "retries": 2,
+    "workers": 1,
+    "fullyParallel": false,
+    "reporter": [
+      "list",
+      "html",
+      "json"
+    ],
+    "projects": [
+      "chromium"
+    ]
+  },
+  
+  "reporting": {
+    "outputDir": "RELATORIOS_NOTURNO",
+    "generateScreenshots": true,
+    "generateVideos": true,
+    "keepLogs": true,
+    "formats": [
+      "markdown",
+      "json"
+    ]
+  },
+  
+  "paths": {
+    "frontend": "agenda-hibrida-frontend",
+    "backend": "agenda-hibrida-v2",
+    "tests": "agenda-hibrida-frontend/tests/e2e",
+    "logs": "test-automation/logs",
+    "reports": "RELATORIOS_NOTURNO",
+    "screenshots": "RELATORIOS_NOTURNO/screenshots",
+    "videos": "RELATORIOS_NOTURNO/videos"
+  },
+  
+  "testSuites": {
+    "e2e": [
+      "01-navigation.spec.js",
+      "02-clients.spec.js",
+      "03-appointments.spec.js",
+      "04-integration-flow.spec.js",
+      "05-google-sync.spec.js",
+      "06-import-preview.spec.js",
+      "07-drag-and-drop.spec.js",
+      "08-complete-navigation-test.spec.js",
+      "09-test-all-tabs.spec.js",
+      "10-test-corrections.spec.js",
+      "11-google-drive-integration.spec.js",
+      "12-import-vagaro.spec.js",
+      "13-gallery-advanced.spec.js",
+      "14-data-local-operations.spec.js",
+      "15-stress-test.spec.js"
+    ],
+    "critical": [
+      "01-navigation.spec.js",
+      "02-clients.spec.js",
+      "03-appointments.spec.js",
+      "04-integration-flow.spec.js"
+    ],
+    "google": [
+      "05-google-sync.spec.js",
+      "11-google-drive-integration.spec.js"
+    ],
+    "performance": [
+      "15-stress-test.spec.js"
+    ]
+  },
+  
+  "notifications": {
+    "createMorningReport": true,
+    "highlightCriticalIssues": true,
+    "includeScreenshots": true
+  },
+  
+  "advanced": {
+    "cleanupOldReports": false,
+    "maxReportsToKeep": 10,
+    "enableDebugMode": false,
+    "verboseLogging": true,
+    "captureConsoleErrors": true,
+    "captureNetworkErrors": true
+  },
+  
+  "meta": {
+    "version": "1.0.0",
+    "createdAt": "2025-10-29",
+    "description": "Configuração do Sistema de Testes Autônomos Noturnos",
+    "author": "Manus AI"
+  }
+}
+

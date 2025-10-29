@@ -159,116 +159,119 @@ export default function QnapConfigModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Server className="w-5 h-5" />
+      <DialogContent>
+        <DialogHeader className="pb-2">
+          <DialogTitle className="flex items-center gap-2.5 text-xl">
+            <Server className="w-6 h-6 text-purple-400" />
             {initialConfig ? 'Editar' : 'Configurar'} QNAP NAS
           </DialogTitle>
-          <DialogDescription>
-            Configure a conexão com seu QNAP NAS
+          <DialogDescription className="text-sm">
+            Configure a conexão com seu servidor QNAP
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Nome */}
-          <div className="space-y-2">
-            <Label htmlFor="qnap-name">Nome *</Label>
-            <Input
-              id="qnap-name"
-              placeholder="Ex: QNAP Studio"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+        <div className="space-y-2.5">
+          {/* Nome e Host em grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="qnap-name" className="text-sm font-medium">Nome *</Label>
+              <Input
+                id="qnap-name"
+                placeholder="QNAP Studio"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-10"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="qnap-host" className="text-sm font-medium">Host/IP *</Label>
+              <Input
+                id="qnap-host"
+                placeholder="192.168.1.100"
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
+                className="h-10"
+              />
+            </div>
           </div>
 
-          {/* Host */}
-          <div className="space-y-2">
-            <Label htmlFor="qnap-host">Host/IP *</Label>
-            <Input
-              id="qnap-host"
-              placeholder="Ex: 192.168.1.100 ou qnap.local"
-              value={host}
-              onChange={(e) => setHost(e.target.value)}
-            />
+          {/* Protocolo e Porta em grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="qnap-protocol" className="text-sm font-medium">Protocolo *</Label>
+              <Select value={protocol} onValueChange={setProtocol}>
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="webdav">WebDAV</SelectItem>
+                  <SelectItem value="ftp">FTP</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="qnap-port" className="text-sm font-medium">Porta</Label>
+              <Input
+                id="qnap-port"
+                type="number"
+                placeholder={protocol === 'webdav' ? '80/443' : '21'}
+                value={port}
+                onChange={(e) => setPort(e.target.value)}
+                className="h-10"
+              />
+            </div>
           </div>
 
-          {/* Protocolo */}
-          <div className="space-y-2">
-            <Label htmlFor="qnap-protocol">Protocolo *</Label>
-            <Select value={protocol} onValueChange={setProtocol}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="webdav">WebDAV (Recomendado)</SelectItem>
-                <SelectItem value="ftp">FTP</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Porta */}
-          <div className="space-y-2">
-            <Label htmlFor="qnap-port">Porta (opcional)</Label>
-            <Input
-              id="qnap-port"
-              type="number"
-              placeholder={protocol === 'webdav' ? '80 ou 443' : '21'}
-              value={port}
-              onChange={(e) => setPort(e.target.value)}
-            />
-            <p className="text-xs text-gray-400">
-              Deixe vazio para usar porta padrão
-            </p>
-          </div>
-
-          {/* HTTPS/Secure */}
+          {/* HTTPS checkbox */}
           {protocol === 'webdav' && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2 py-1">
               <input
                 type="checkbox"
                 id="qnap-secure"
                 checked={secure}
                 onChange={(e) => setSecure(e.target.checked)}
-                className="w-4 h-4"
+                className="w-4 h-4 rounded"
               />
-              <Label htmlFor="qnap-secure" className="cursor-pointer">
+              <Label htmlFor="qnap-secure" className="text-sm cursor-pointer">
                 Usar HTTPS (conexão segura)
               </Label>
             </div>
           )}
 
-          {/* Usuário */}
-          <div className="space-y-2">
-            <Label htmlFor="qnap-user">Usuário *</Label>
-            <Input
-              id="qnap-user"
-              autoComplete="off"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-
-          {/* Senha */}
-          <div className="space-y-2">
-            <Label htmlFor="qnap-pass">Senha *</Label>
-            <Input
-              id="qnap-pass"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          {/* Usuário e Senha em grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="qnap-user" className="text-sm font-medium">Usuário *</Label>
+              <Input
+                id="qnap-user"
+                autoComplete="off"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="h-10"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="qnap-pass" className="text-sm font-medium">Senha *</Label>
+              <Input
+                id="qnap-pass"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-10"
+              />
+            </div>
           </div>
 
           {/* Pasta Remota */}
-          <div className="space-y-2">
-            <Label htmlFor="qnap-path">Pasta Remota</Label>
+          <div className="space-y-1">
+            <Label htmlFor="qnap-path" className="text-sm font-medium">Pasta Remota</Label>
             <Input
               id="qnap-path"
               placeholder="/"
               value={remotePath}
               onChange={(e) => setRemotePath(e.target.value)}
+              className="h-10"
             />
           </div>
 
@@ -310,14 +313,15 @@ export default function QnapConfigModal({
           )}
         </div>
 
-        <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={handleTest} disabled={testing || saving}>
-            {testing ? '🔄 Testando...' : 'Testar Conexão'}
+        <DialogFooter className="flex gap-2 mt-3">
+          <Button variant="outline" onClick={handleTest} disabled={testing || saving} className="h-10 text-sm">
+            {testing ? '⏳ Testando...' : 'Testar'}
           </Button>
-          <Button variant="outline" onClick={handleClose} disabled={saving}>
+          <div className="flex-1"></div>
+          <Button variant="outline" onClick={handleClose} disabled={saving} className="h-10">
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving || !testResult?.valid}>
+          <Button onClick={handleSave} disabled={saving || !testResult?.valid} className="h-10">
             {saving ? '💾 Salvando...' : 'Salvar'}
           </Button>
         </DialogFooter>
