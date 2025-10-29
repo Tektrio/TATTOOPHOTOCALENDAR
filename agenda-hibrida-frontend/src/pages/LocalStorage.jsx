@@ -39,14 +39,24 @@ export default function LocalStorage() {
   // ============================================
 
   useEffect(() => {
-    try {
-      loadConfig();
-      loadDestinations();
-      loadFiles();
-    } catch (error) {
-      console.error('Erro ao carregar LocalStorage:', error);
-      toast.error('Erro ao carregar dados locais');
-    }
+    const initializeData = async () => {
+      try {
+        setLoading(true);
+        // Executa todas as requisições em paralelo
+        await Promise.all([
+          loadConfig(),
+          loadDestinations(),
+          loadFiles()
+        ]);
+      } catch (error) {
+        console.error('Erro ao carregar LocalStorage:', error);
+        toast.error('Erro ao carregar dados locais');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initializeData();
   }, []);
 
   const loadConfig = async () => {
@@ -75,8 +85,6 @@ export default function LocalStorage() {
       }
     } catch (error) {
       console.error('Erro ao carregar destinos:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
