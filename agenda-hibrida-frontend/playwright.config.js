@@ -81,7 +81,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'cd ../agenda-hibrida-v2 && npm start',
-      url: 'http://localhost:3001/api/appointments', // Health check endpoint (porta 3001)
+      url: 'http://localhost:3001/health', // Health check endpoint correto
       timeout: 120 * 1000,
       reuseExistingServer: !process.env.CI,
       stdout: 'pipe',
