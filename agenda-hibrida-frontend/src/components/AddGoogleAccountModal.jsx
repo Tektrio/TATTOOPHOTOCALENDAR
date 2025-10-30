@@ -88,8 +88,32 @@ export default function AddGoogleAccountModal({
       } else if (event.data.error) {
         // Recebeu erro do callback
         console.error('❌ Erro no callback OAuth:', event.data.error);
-        toast.error(`Erro: ${event.data.error}`);
+        
+        // Verifica se é erro 403: access_denied
+        if (event.data.error.includes('403') || event.data.error.includes('access_denied')) {
+          // Mostra mensagem específica para erro OAuth 403
+          const errorMsg = `
+⚠️ Autenticação cancelada ou falhou.
+
+Se você viu erro "403: access_denied", significa que:
+
+• O app está em modo de TESTE no Google Cloud
+• Você precisa ser adicionado como testador autorizado
+• OU o app precisa ser publicado em PRODUÇÃO
+
+Consulte o guia "GOOGLE_OAUTH_SOLUCAO_COMPLETA.md" para resolver.
+          `.trim();
+          
+          // Cria um alerta personalizado
+          if (confirm(errorMsg + '\n\nDeseja abrir o guia de solução?')) {
+            window.open('/GOOGLE_OAUTH_SOLUCAO_COMPLETA.md', '_blank');
+          }
+        } else {
+          toast.error(`Erro: ${event.data.error}`);
+        }
+        
         setLoading(false);
+        localStorage.removeItem('pending_google_account');
       }
     };
     

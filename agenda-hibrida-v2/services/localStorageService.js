@@ -343,6 +343,167 @@ class LocalStorageService {
       );
     });
   }
+
+  /**
+   * Sincroniza todos os arquivos
+   * @param {string} mode - 'incremental' ou 'full'
+   * @param {number} destinationId - ID do destino de sincronização
+   * @returns {Promise<object>}
+   */
+  async syncAll(mode, destinationId) {
+    return new Promise((resolve, reject) => {
+      let query;
+      
+      if (mode === 'incremental') {
+        // Apenas arquivos não sincronizados ou modificados
+        query = `
+          SELECT * FROM local_files 
+          WHERE sync_status IS NULL 
+             OR sync_status = 'pending'
+             OR (last_synced_at IS NULL)
+             OR (last_modified > last_synced_at)
+        `;
+      } else {
+        // Todos os arquivos (forçar resync)
+        query = 'SELECT * FROM local_files';
+      }
+
+      this.db.all(query, [], (err, files) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({
+            files,
+            count: files.length,
+            mode,
+            destinationId
+          });
+        }
+      });
+    });
+  }
+
+  /**
+   * Sincroniza arquivos de uma pasta específica
+   * @param {string} folderPath - Caminho da pasta
+   * @param {string} mode - 'incremental' ou 'full'
+   * @param {number} destinationId - ID do destino de sincronização
+   * @returns {Promise<object>}
+   */
+  async syncFolder(folderPath, mode, destinationId) {
+    return new Promise((resolve, reject) => {
+      let query;
+      const params = [`${folderPath}%`];
+
+      if (mode === 'incremental') {
+        query = `
+          SELECT * FROM local_files 
+          WHERE file_path LIKE ?
+            AND (sync_status IS NULL 
+                OR sync_status = 'pending'
+                OR last_synced_at IS NULL
+                OR last_modified > last_synced_at)
+        `;
+      } else {
+        query = 'SELECT * FROM local_files WHERE file_path LIKE ?';
+      }
+
+      this.db.all(query, params, (err, files) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({
+            files,
+            count: files.length,
+            folderPath,
+            mode,
+            destinationId
+          });
+        }
+      });
+    });
+  }
+
+  /**
+   * Obtém configuração de auto-sync
+   * @returns {Promise<object>}
+   */
+  async getAutoSyncConfig() {
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        `SELECT auto_sync_enabled as enabled, 
+                auto_sync_interval as intervalMinutes, 
+                auto_sync_mode as mode 
+         FROM local_storage_config WHERE id = 1`,
+        [],
+        (err, row) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(row || { enabled: false, intervalMinutes: 30, mode: 'incremental' });
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Salva configuração de auto-sync
+   * @param {boolean} enabled 
+   * @param {number} intervalMinutes 
+   * @param {string} mode 
+   * @returns {Promise<object>}
+   */
+  async setAutoSyncConfig(enabled, intervalMinutes, mode) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `UPDATE local_storage_config 
+         SET auto_sync_enabled = ?,
+             auto_sync_interval = ?,
+             auto_sync_mode = ?
+         WHERE id = 1`,
+        [enabled ? 1 : 0, intervalMinutes, mode],
+        function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({ 
+              success: true, 
+              changes: this.changes,
+              config: { enabled, intervalMinutes, mode }
+            });
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Atualiza status de sincronização de um arquivo
+   * @param {number} fileId 
+   * @param {string} status - 'pending', 'syncing', 'synced', 'error'
+   * @returns {Promise<object>}
+   */
+  async updateSyncStatus(fileId, status) {
+    return new Promise((resolve, reject) => {
+      const now = status === 'synced' ? new Date().toISOString() : null;
+      
+      this.db.run(
+        `UPDATE local_files 
+         SET sync_status = ?,
+             last_synced_at = COALESCE(?, last_synced_at)
+         WHERE id = ?`,
+        [status, now, fileId],
+        function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({ success: true, changes: this.changes });
+          }
+        }
+      );
+    });
+  }
 }
 
 module.exports = LocalStorageService;

@@ -56,7 +56,7 @@ export default function NewCustomerPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/customers`, {
+      const response = await fetch(`${API_URL}/api/clients`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -18,6 +18,7 @@ import {
 import { Input } from '../ui/input';
 import { Alert, AlertDescription } from '../ui/alert';
 import SyncStatusIndicator from '../SyncStatusIndicator';
+import { useCategories } from '../../hooks/useCategories';
 import {
   Select,
   SelectContent,
@@ -49,12 +50,8 @@ const FilesTab = ({ customerId }) => {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, file: null });
   const [previewImage, setPreviewImage] = useState(null);
 
-  const categories = [
-    { value: 'referencias', label: 'Referências', color: 'bg-blue-500' },
-    { value: 'desenhos_aprovados', label: 'Desenhos Aprovados', color: 'bg-green-500' },
-    { value: 'fotos_finais', label: 'Fotos Finais', color: 'bg-purple-500' },
-    { value: 'documentos', label: 'Documentos', color: 'bg-orange-500' }
-  ];
+  // Carregar categorias dinâmicas do backend
+  const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 

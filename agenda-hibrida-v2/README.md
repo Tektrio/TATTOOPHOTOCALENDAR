@@ -30,6 +30,52 @@ Sistema completo de agenda visual especialmente desenvolvido para tatuadores, co
 - **QNAP NAS**: Integração com servidores locais
 - **Sincronização**: Automática entre todas as fontes
 
+## 📁 Pasta Local de Arquivos
+
+**IMPORTANTE**: A pasta local NUNCA deve ficar dentro do repositório para não aumentar o tamanho do repositório.
+
+### Caminho Padrão
+
+```
+/Users/{usuario}/Documents/Tatto_Photo_CAlendar_Pasta_Local
+```
+
+### Configuração
+
+No arquivo `.env`, defina:
+
+```env
+CLIENTS_FOLDER=/Users/{usuario}/Documents/Tatto_Photo_CAlendar_Pasta_Local
+```
+
+### Estrutura de Pastas por Cliente
+
+```
+Tatto_Photo_CAlendar_Pasta_Local/
+└── Cliente_{nome-slug}_{telefone}_{id}/
+    ├── Tattoo/
+    │   ├── 00_Briefing/
+    │   ├── 01_Referencias/
+    │   ├── 02_Arquivos_psd/
+    │   └── 03_Fotos_e_videos/
+    │       ├── Antes/
+    │       ├── Durante/
+    │       └── Finais/
+    ├── Documentos/
+    │   ├── Contratos_Assinados/
+    │   ├── Termo_Consentimento/
+    │   ├── Cuidados_Pos/
+    │   └── Autorizacoes_Imagem/
+    ├── Financeiro/
+    │   ├── Orcamentos/
+    │   ├── Pagamentos/
+    │   └── Notas/
+    ├── Agendamentos/
+    └── Midia_Social/
+        ├── Selecionadas/
+        └── Brutas/
+```
+
 ### 👥 Gestão de Clientes
 - Cadastro completo com histórico
 - Organização automática de arquivos por cliente

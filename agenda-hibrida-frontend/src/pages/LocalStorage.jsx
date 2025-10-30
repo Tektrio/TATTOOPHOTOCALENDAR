@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { HardDrive, FolderOpen, RefreshCw, Plus, Cloud, Server, CheckCircle, AlertCircle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { HardDrive, FolderOpen, RefreshCw, Plus, Cloud, Server, CheckCircle, AlertCircle, Loader2, ChevronDown } from 'lucide-react';
 import DestinationManager from '../components/DestinationManager';
 import LocalFileTable from '../components/LocalFileTable';
 import LocalFileExplorer from '../components/LocalFileExplorer';
@@ -31,6 +33,11 @@ export default function LocalStorage() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [qnapToEdit, setQnapToEdit] = useState(null);
   const [viewMode, setViewMode] = useState('explorer'); // 'explorer' ou 'table'
+  
+  // Estados para sincronização
+  const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
+  const [autoSyncInterval, setAutoSyncInterval] = useState(30);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -46,7 +53,8 @@ export default function LocalStorage() {
         await Promise.all([
           loadConfig(),
           loadDestinations(),
-          loadFiles()
+          loadFiles(),
+          loadAutoSyncStatus()
         ]);
       } catch (error) {
         console.error('Erro ao carregar LocalStorage:', error);
@@ -377,6 +385,107 @@ export default function LocalStorage() {
   };
 
   // ============================================
+  // SEÇÃO 4: SINCRONIZAÇÃO AUTOMÁTICA
+  // ============================================
+
+  const loadAutoSyncStatus = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/local-storage/auto-sync-status`);
+      if (response.ok) {
+        const data = await response.json();
+        setAutoSyncEnabled(data.enabled || false);
+        setAutoSyncInterval(data.intervalMinutes || 30);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar status de auto-sync:', error);
+    }
+  };
+
+  const handleToggleAutoSync = async (enabled) => {
+    try {
+      const response = await fetch(`${API_URL}/api/local-storage/auto-sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          enabled, 
+          intervalMinutes: autoSyncInterval,
+          mode: 'incremental'
+        })
+      });
+
+      if (response.ok) {
+        setAutoSyncEnabled(enabled);
+        toast.success(enabled ? 'Sincronização automática ativada' : 'Sincronização automática desativada');
+      } else {
+        throw new Error('Erro ao configurar auto-sync');
+      }
+    } catch (error) {
+      console.error('Erro ao toggle auto-sync:', error);
+      toast.error('Erro ao configurar sincronização automática');
+    }
+  };
+
+  const handleSyncAll = async (mode) => {
+    if (!destinations.length) {
+      toast.error('Nenhum destino de sincronização configurado');
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const response = await fetch(`${API_URL}/api/local-storage/sync-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          mode, 
+          destinationId: destinations[0].id 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(`${data.count} arquivo(s) adicionado(s) à fila de sincronização`);
+      } else {
+        throw new Error('Erro ao sincronizar');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar:', error);
+      toast.error('Erro ao sincronizar arquivos');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSyncFolder = async (folderPath, mode) => {
+    if (!destinations.length) {
+      toast.error('Nenhum destino de sincronização configurado');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/local-storage/sync-folder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          folderPath,
+          mode, 
+          destinationId: destinations[0].id 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(`${data.count} arquivo(s) da pasta adicionado(s) à fila`);
+      } else {
+        throw new Error('Erro ao sincronizar pasta');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar pasta:', error);
+      toast.error('Erro ao sincronizar pasta');
+    }
+  };
+
+  // ============================================
   // RENDER
   // ============================================
 
@@ -514,11 +623,85 @@ export default function LocalStorage() {
       </Card>
 
       {/* ============================================ */}
-      {/* SEÇÃO 3: EXPLORADOR DE ARQUIVOS */}
+      {/* SEÇÃO 3: SINCRONIZAÇÃO AUTOMÁTICA */}
+      {/* ============================================ */}
+      <Card className="bg-gray-800 border-gray-700">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-white">Sincronização Automática</CardTitle>
+            <Switch 
+              checked={autoSyncEnabled}
+              onCheckedChange={handleToggleAutoSync}
+              disabled={!destinations.length}
+            />
+          </div>
+        </CardHeader>
+        {autoSyncEnabled && (
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <label className="text-sm text-gray-300">Intervalo:</label>
+              <select 
+                value={autoSyncInterval}
+                onChange={(e) => setAutoSyncInterval(Number(e.target.value))}
+                className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={5}>5 minutos</option>
+                <option value={15}>15 minutos</option>
+                <option value={30}>30 minutos</option>
+                <option value={60}>1 hora</option>
+              </select>
+              <span className="text-sm text-gray-400">
+                (modo: incremental - apenas novos arquivos)
+              </span>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
+      {/* ============================================ */}
+      {/* SEÇÃO 4: EXPLORADOR DE ARQUIVOS */}
       {/* ============================================ */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">Arquivos e Pastas</h3>
+        
+        {/* Botão Sincronizar Tudo + View Mode */}
         <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                disabled={isSyncing || !destinations.length}
+                variant="default"
+                size="sm"
+              >
+                {isSyncing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sincronizando...
+                  </>
+                ) : (
+                  <>
+                    <Cloud className="w-4 h-4 mr-2" />
+                    Sincronizar Tudo
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-gray-800 border-gray-700">
+              <DropdownMenuItem 
+                onClick={() => handleSyncAll('incremental')}
+                className="text-white hover:bg-gray-700 cursor-pointer"
+              >
+                📊 Incremental (apenas novos)
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleSyncAll('full')}
+                className="text-white hover:bg-gray-700 cursor-pointer"
+              >
+                🔄 Completo (forçar tudo)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             variant={viewMode === 'explorer' ? 'default' : 'outline'}
             size="sm"
@@ -543,6 +726,7 @@ export default function LocalStorage() {
           files={files}
           basePath={config?.base_path || ''}
           onSync={handleSyncFiles}
+          onSyncFolder={handleSyncFolder}
           onRefresh={loadFiles}
           loading={loading}
         />

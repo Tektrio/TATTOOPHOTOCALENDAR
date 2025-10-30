@@ -83,12 +83,11 @@ export default function AdvancedGallery() {
     notes: ''
   })
 
-  const categoryOptions = [
+  // Carregar categorias dinâmicas do backend
+  const { categories: dynamicCategories } = useCategories();
+  const categoryOptions = dynamicCategories.length > 0 ? dynamicCategories : [
     { value: 'referencias', label: 'Referências', icon: '🎨', color: '#3B82F6' },
-    { value: 'desenhos_aprovados', label: 'Desenhos Aprovados', icon: '✅', color: '#10B981' },
-    { value: 'fotos_finais', label: 'Fotos Finais', icon: '📸', color: '#8B5CF6' },
-    { value: 'processo', label: 'Processo', icon: '⚙️', color: '#F59E0B' },
-    { value: 'cicatrizacao', label: 'Cicatrização', icon: '🩹', color: '#EF4444' }
+    { value: 'fotos_finais', label: 'Fotos Finais', icon: '📸', color: '#8B5CF6' }
   ]
 
   useEffect(() => {

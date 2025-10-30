@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+  "categories": {
+    "briefing": {
+      "path": "Tattoo/00_Briefing",
+      "label": "Briefing",
+      "icon": "📋",
+      "color": "#EAB308",
+      "allowedTypes": ["pdf", "txt", "docx", "doc"],
+      "maxSize": 10485760
+    },
+    "referencias": {
+      "path": "Tattoo/01_Referencias",
+      "label": "Referências",
+      "icon": "🎨",
+      "color": "#3B82F6",
+      "allowedTypes": ["jpg", "jpeg", "png", "webp", "pdf", "gif"],
+      "maxSize": 52428800
+    },
+    "arquivos_psd": {
+      "path": "Tattoo/02_Arquivos_psd",
+      "label": "Arquivos PSD",
+      "icon": "🖌️",
+      "color": "#8B5CF6",
+      "allowedTypes": ["psd", "ai", "svg", "procreate", "sketch"],
+      "maxSize": 524288000
+    },
+    "fotos_antes": {
+      "path": "Tattoo/03_Fotos_e_videos/Antes",
+      "label": "Fotos Antes",
+      "icon": "📷",
+      "color": "#6B7280",
+      "allowedTypes": ["jpg", "jpeg", "png", "webp", "heic"],
+      "maxSize": 52428800
+    },
+    "fotos_durante": {
+      "path": "Tattoo/03_Fotos_e_videos/Durante",
+      "label": "Fotos Durante",
+      "icon": "📸",
+      "color": "#F97316",
+      "allowedTypes": ["jpg", "jpeg", "png", "webp", "mp4", "mov", "heic"],
+      "maxSize": 104857600
+    },
+    "fotos_finais": {
+      "path": "Tattoo/03_Fotos_e_videos/Finais",
+      "label": "Fotos Finais",
+      "icon": "✨",
+      "color": "#10B981",
+      "allowedTypes": ["jpg", "jpeg", "png", "webp", "heic"],
+      "maxSize": 52428800
+    },
+    "contratos": {
+      "path": "Documentos/Contratos_Assinados",
+      "label": "Contratos Assinados",
+      "icon": "📄",
+      "color": "#DC2626",
+      "allowedTypes": ["pdf", "docx", "doc"],
+      "maxSize": 10485760
+    },
+    "termo_consentimento": {
+      "path": "Documentos/Termo_Consentimento",
+      "label": "Termo de Consentimento",
+      "icon": "📝",
+      "color": "#EC4899",
+      "allowedTypes": ["pdf", "docx", "doc", "jpg", "jpeg", "png"],
+      "maxSize": 10485760
+    },
+    "cuidados_pos": {
+      "path": "Documentos/Cuidados_Pos",
+      "label": "Cuidados Pós-Tattoo",
+      "icon": "🩹",
+      "color": "#F59E0B",
+      "allowedTypes": ["pdf", "docx", "doc", "txt"],
+      "maxSize": 5242880
+    },
+    "autorizacoes": {
+      "path": "Documentos/Autorizacoes_Imagem",
+      "label": "Autorizações de Imagem",
+      "icon": "✅",
+      "color": "#14B8A6",
+      "allowedTypes": ["pdf", "docx", "doc", "jpg", "jpeg", "png"],
+      "maxSize": 10485760
+    },
+    "orcamentos": {
+      "path": "Financeiro/Orcamentos",
+      "label": "Orçamentos",
+      "icon": "💰",
+      "color": "#10B981",
+      "allowedTypes": ["pdf", "xlsx", "xls", "csv", "docx"],
+      "maxSize": 5242880
+    },
+    "pagamentos": {
+      "path": "Financeiro/Pagamentos",
+      "label": "Comprovantes de Pagamento",
+      "icon": "💳",
+      "color": "#059669",
+      "allowedTypes": ["pdf", "jpg", "jpeg", "png"],
+      "maxSize": 10485760
+    },
+    "notas_fiscais": {
+      "path": "Financeiro/Notas",
+      "label": "Notas Fiscais",
+      "icon": "🧾",
+      "color": "#0D9488",
+      "allowedTypes": ["pdf", "xml"],
+      "maxSize": 5242880
+    },
+    "midia_selecionada": {
+      "path": "Midia_Social/Selecionadas",
+      "label": "Mídia Social - Selecionadas",
+      "icon": "📱",
+      "color": "#6366F1",
+      "allowedTypes": ["jpg", "jpeg", "png", "webp", "mp4", "mov"],
+      "maxSize": 104857600
+    },
+    "midia_bruta": {
+      "path": "Midia_Social/Brutas",
+      "label": "Mídia Social - Brutas",
+      "icon": "📹",
+      "color": "#8B5CF6",
+      "allowedTypes": ["jpg", "jpeg", "png", "webp", "mp4", "mov", "raw"],
+      "maxSize": 524288000
+    }
+  },
+  "legacyMapping": {
+    "referencias": "referencias",
+    "desenhos_aprovados": "arquivos_psd",
+    "fotos_finais": "fotos_finais",
+    "documentos": "contratos"
+  }
+}
+

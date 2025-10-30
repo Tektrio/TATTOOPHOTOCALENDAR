@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { 
   Search, 
   RefreshCw, 
@@ -33,7 +34,8 @@ import {
   Clock,
   Layers,
   TrendingUp,
-  HardDrive
+  HardDrive,
+  Cloud
 } from 'lucide-react';
 import SyncStatusIndicator from './SyncStatusIndicator';
 import FilePreviewModal from './FilePreviewModal';
@@ -137,6 +139,7 @@ export default function LocalFileExplorer({
   files = [],
   basePath = '',
   onSync,
+  onSyncFolder,
   onRefresh,
   loading = false
 }) {
@@ -430,7 +433,6 @@ export default function LocalFileExplorer({
         <div
           key={item.path}
           className="group relative flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 cursor-pointer rounded transition-all"
-          onDoubleClick={() => navigateToFolder(item.path)}
         >
           {/* Barra de progresso visual do tamanho (TreeSize style) */}
           <div 
@@ -438,7 +440,10 @@ export default function LocalFileExplorer({
             style={{ width: `${Math.max(percentOfTotal, 1)}%` }}
           />
           
-          <div className="relative flex items-center gap-3 flex-1 min-w-0">
+          <div 
+            className="relative flex items-center gap-3 flex-1 min-w-0"
+            onDoubleClick={() => navigateToFolder(item.path)}
+          >
             <Folder className="w-6 h-6 text-yellow-400 flex-shrink-0" />
             
             <div className="flex-1 min-w-0">
@@ -452,9 +457,57 @@ export default function LocalFileExplorer({
             </div>
             
             <div className="text-sm font-semibold text-gray-300">{formatFileSize(item.totalSize)}</div>
-            
-            <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
+
+          {/* Botões de ação da pasta */}
+          {onSyncFolder && (
+            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => e.stopPropagation()}
+                    title="Sincronizar pasta"
+                  >
+                    <Cloud className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-gray-800 border-gray-700">
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSyncFolder(item.path, 'incremental');
+                    }}
+                    className="text-white hover:bg-gray-700 cursor-pointer"
+                  >
+                    📊 Incremental
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSyncFolder(item.path, 'full');
+                    }}
+                    className="text-white hover:bg-gray-700 cursor-pointer"
+                  >
+                    🔄 Completo
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigateToFolder(item.path);
+                }}
+                title="Abrir pasta"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
       );
     }

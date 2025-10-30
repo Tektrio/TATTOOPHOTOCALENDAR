@@ -37,38 +37,42 @@ const Customers = () => {
     fetchTags();
   }, []);
 
+  // Debounce da busca - aguardar 500ms após o usuário parar de digitar
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchCustomers(searchTerm);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
   useEffect(() => {
     applyFilters();
-  }, [customers, searchTerm, sortBy, sortOrder, filterTag, filterDateRange]);
+  }, [customers, filterTag, filterDateRange, sortBy, sortOrder]);
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (searchQuery = '') => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/customers`);
+      const url = new URL(`${API_URL}/api/customers`);
+      if (searchQuery) {
+        url.searchParams.append('search', searchQuery);
+      }
+      url.searchParams.append('limit', '100'); // Aumentar limite
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Erro ao buscar clientes');
       const data = await response.json();
       
-      // Normalizar dados dos clientes
-      let normalizedData = [];
-      if (Array.isArray(data)) {
-        normalizedData = data;
-      } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
-        // API retorna {data: [], pagination: {}} 
-        normalizedData = data.data;
-      } else if (data && typeof data === 'object' && Array.isArray(data.customers)) {
-        normalizedData = data.customers;
-      } else {
-        console.warn('API retornou formato inesperado:', data);
-        normalizedData = [];
-      }
+      // Backend retorna { data: [], pagination: {} }
+      const normalizedData = Array.isArray(data) ? data : (data.data || []);
       
       // Normalizar tags para cada cliente
-      normalizedData = normalizedData.map(customer => ({
+      const normalized = normalizedData.map(customer => ({
         ...customer,
         tags: normalizeTags(customer.tags)
       }));
       
-      setCustomers(normalizedData);
+      setCustomers(normalized);
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
       toast.error('Erro ao carregar clientes');
@@ -132,25 +136,18 @@ const Customers = () => {
       return;
     }
     
+    // Aplicar apenas ordenação local (filtros de tag e data permanecem locais)
+    // A busca de texto agora é feita pelo backend
     let result = [...customers];
 
-    // Filtro de busca (nome, email, telefone)
-    if (searchTerm) {
-      result = result.filter(customer => 
-        customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.phone?.includes(searchTerm)
-      );
-    }
-
-    // Filtro por tag
+    // Filtro por tag (local)
     if (filterTag && filterTag !== 'all') {
       result = result.filter(customer => 
         customer.tags?.some(tag => tag.id === parseInt(filterTag))
       );
     }
 
-    // Filtro por data de criação
+    // Filtro por data de criação (local)
     if (filterDateRange && filterDateRange !== 'all') {
       const now = new Date();
       const ranges = {
@@ -169,7 +166,7 @@ const Customers = () => {
       }
     }
 
-    // Ordenação
+    // Ordenação (local)
     result.sort((a, b) => {
       let aValue, bValue;
 

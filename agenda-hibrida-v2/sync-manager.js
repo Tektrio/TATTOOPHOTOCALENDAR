@@ -306,8 +306,8 @@ class SyncManager {
         throw new Error('Não foi possível criar pasta do cliente no Drive');
       }
 
-      // Buscar ou criar subpasta da categoria
-      const categoryFolderId = await this.getOrCreateDriveFolder(category, clientFolderId);
+      // Buscar ou criar subpasta da categoria (suporta caminhos aninhados)
+      const categoryFolderId = await this.createNestedDriveFolders(category, clientFolderId);
 
       // Upload do arquivo
       const filePath = path.join(this.uploadsPath, localFile.path);
@@ -343,8 +343,11 @@ class SyncManager {
    */
   async getOrCreateDriveFolder(folderName, parentId = null) {
     try {
+      // Escapar aspas simples no nome da pasta
+      const escapedFolderName = folderName.replace(/'/g, "\\'");
+      
       // Buscar pasta existente
-      let query = `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+      let query = `name='${escapedFolderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
       if (parentId) {
         query += ` and '${parentId}' in parents`;
       }
@@ -356,6 +359,7 @@ class SyncManager {
       });
 
       if (response.data.files && response.data.files.length > 0) {
+        console.log(`✅ Pasta encontrada no Drive: ${folderName}`);
         return response.data.files[0].id;
       }
 
@@ -376,6 +380,71 @@ class SyncManager {
     } catch (error) {
       console.error('❌ Erro ao buscar/criar pasta no Drive:', error);
       return null;
+    }
+  }
+
+  /**
+   * Criar estrutura de pastas aninhadas no Google Drive
+   * Suporta caminhos como "Tattoo/01_Referencias" ou "Documentos/Contratos_Assinados"
+   * @param {string} folderPath - Caminho completo (ex: "Tattoo/01_Referencias")
+   * @param {string} clientFolderId - ID da pasta raiz do cliente no Drive
+   * @returns {Promise<string>} - ID da pasta final criada
+   */
+  async createNestedDriveFolders(folderPath, clientFolderId) {
+    try {
+      if (!folderPath) {
+        return clientFolderId;
+      }
+
+      const parts = folderPath.split('/').filter(p => p.trim().length > 0);
+      let currentParentId = clientFolderId;
+
+      console.log(`📁 Criando estrutura aninhada no Drive: ${folderPath}`);
+
+      // Navegar pela hierarquia criando pastas conforme necessário
+      for (const part of parts) {
+        currentParentId = await this.getOrCreateDriveFolder(part, currentParentId);
+        
+        if (!currentParentId) {
+          throw new Error(`Falha ao criar/encontrar pasta: ${part}`);
+        }
+      }
+
+      console.log(`✅ Estrutura aninhada criada: ${folderPath}`);
+      return currentParentId;
+    } catch (error) {
+      console.error('❌ Erro ao criar estrutura aninhada:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Criar estrutura completa de pastas de um cliente no Drive
+   * @param {string} clientFolderName - Nome da pasta raiz do cliente
+   * @param {Array<string>} folderStructure - Array de caminhos (ex: ["Tattoo/01_Referencias", "Documentos/Contratos"])
+   * @returns {Promise<string>} - ID da pasta raiz do cliente
+   */
+  async createFolderStructure(clientFolderName, folderStructure) {
+    try {
+      console.log(`📁 Criando estrutura completa no Drive para: ${clientFolderName}`);
+
+      // Criar/obter pasta raiz do cliente
+      const clientFolderId = await this.getOrCreateDriveFolder(clientFolderName);
+      
+      if (!clientFolderId) {
+        throw new Error('Não foi possível criar pasta raiz do cliente');
+      }
+
+      // Criar todas as subpastas
+      for (const folderPath of folderStructure) {
+        await this.createNestedDriveFolders(folderPath, clientFolderId);
+      }
+
+      console.log(`✅ Estrutura completa criada no Drive para: ${clientFolderName}`);
+      return clientFolderId;
+    } catch (error) {
+      console.error('❌ Erro ao criar estrutura de pastas no Drive:', error);
+      throw error;
     }
   }
 

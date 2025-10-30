@@ -106,7 +106,12 @@ class FileWatcher {
         }
 
         const clientFolderName = pathParts[0];
-        const category = pathParts[1] || 'outros';
+        
+        // Extrair caminho completo da categoria (suporta caminhos aninhados)
+        // Ex: Cliente_joao_123/Tattoo/01_Referencias/foto.jpg -> Tattoo/01_Referencias
+        const categoryPath = pathParts.slice(1, -1).join('/') || 'outros';
+        
+        console.log(`📂 Pasta detectada: ${clientFolderName}, Categoria: ${categoryPath}`);
 
         // Buscar cliente no banco
         const client = await this.findClientByFolderName(clientFolderName);
@@ -133,12 +138,12 @@ class FileWatcher {
         const uploadResult = await this.syncManager.uploadToDrive(
           fileInfo,
           clientFolderName,
-          category
+          categoryPath
         );
 
         if (uploadResult.success) {
           // Registrar no banco de dados
-          await this.registerFileInDatabase(client.id, fileInfo, category);
+          await this.registerFileInDatabase(client.id, fileInfo, categoryPath);
 
           // Notificar clientes conectados via WebSocket
           this.io.emit('file_synced', {
@@ -177,7 +182,9 @@ class FileWatcher {
         if (pathParts.length < 2) return;
 
         const clientFolderName = pathParts[0];
-        const category = pathParts[1] || 'outros';
+        
+        // Extrair caminho completo da categoria (suporta caminhos aninhados)
+        const categoryPath = pathParts.slice(1, -1).join('/') || 'outros';
 
         const client = await this.findClientByFolderName(clientFolderName);
         if (!client) return;
@@ -199,7 +206,7 @@ class FileWatcher {
         const uploadResult = await this.syncManager.uploadToDrive(
           fileInfo,
           clientFolderName,
-          category
+          categoryPath
         );
 
         if (uploadResult.success) {

@@ -24,6 +24,10 @@ const SyncManager = require('./sync-manager');
 const FileWatcher = require('./file-watcher');
 const { createGoogleEvent, updateGoogleEvent, deleteGoogleEvent, syncGoogleCalendar } = require('./services/googleCalendarService');
 const { startTokenMonitoring } = require('./services/googleAuthService');
+const folderUtils = require('./utils/folderUtils');
+const categoryService = require('./services/categoryService');
+const FolderOperationService = require('./services/folderOperationService');
+const { getClientsFolder } = require('./utils/pathResolver');
 require('dotenv').config();
 
 const app = express();
@@ -138,13 +142,22 @@ app.use(express.static('public', {
   etag: true
 }));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+app.use('/uploads', express.static(getClientsFolder(), {
   maxAge: '7d', // Cache de 7 dias para uploads
   etag: true
 }));
 
 // Configuração do banco de dados SQLite
 const db = new sqlite3.Database('./agenda_hibrida.db');
+
+// Inicializar FolderOperationService
+let folderOperationService = null;
+try {
+  folderOperationService = new FolderOperationService(db);
+  console.log('✅ FolderOperationService inicializado');
+} catch (err) {
+  console.error('⚠️ Erro ao inicializar FolderOperationService:', err);
+}
 
 // ============================================
 // OTIMIZAÇÕES SQLITE PARA PRODUÇÃO
@@ -177,12 +190,14 @@ const importsRouter = require('./routes/imports');
 const vagaroImportRouter = require('./routes/vagaroImport');
 const financialRouter = require('./routes/financial');
 const employeesRouter = require('./routes/employees');
+const auditLogsRouter = require('./routes/auditLogs');
 app.use('/api/imports', importsRouter);
 app.use('/api/imports/vagaro', vagaroImportRouter);
 app.use('/api/auth', importsRouter);
 app.use('/api/sync', importsRouter);
 app.use('/api', financialRouter);
 app.use('/api', employeesRouter);
+app.use('/api/audit-logs', auditLogsRouter);
 
 // ============================================
 // ROTAS DE SINCRONIZAÇÃO MULTI-DESTINO
@@ -196,6 +211,8 @@ const syncMultiRouter = require('./routes/syncRouter');
 // Inicializa serviços com dependências
 const GoogleDriveMultiAccountService = require('./services/googleDriveMultiAccountService');
 const QnapService = require('./services/qnapService');
+const LocalStorageService = require('./services/localStorageService');
+const AutoSyncWorker = require('./services/autoSyncWorker');
 
 const googleMultiService = new GoogleDriveMultiAccountService(db);
 const qnapService = new QnapService(db);
@@ -205,6 +222,26 @@ syncDestinationsRouter.initService(db);
 googleAccountsRouter.initService(db);
 qnapRouter.initService(db);
 syncMultiRouter.initService(db, io, googleMultiService, qnapService);
+
+// Obter instâncias dos serviços para AutoSyncWorker
+const localStorageService = new LocalStorageService(db);
+const syncQueue = syncMultiRouter.getSyncQueue ? syncMultiRouter.getSyncQueue() : null;
+
+// Inicializar AutoSyncWorker
+let autoSyncWorker = null;
+if (syncQueue) {
+  autoSyncWorker = new AutoSyncWorker(db, syncQueue, localStorageService);
+  autoSyncWorker.start().catch(err => {
+    console.error('❌ Erro ao iniciar AutoSyncWorker:', err.message);
+  });
+  console.log('✅ AutoSyncWorker inicializado');
+} else {
+  console.warn('⚠️ SyncQueue não disponível, AutoSyncWorker não será iniciado');
+}
+
+// Disponibilizar instâncias para as rotas via app.locals
+app.locals.syncQueue = syncQueue;
+app.locals.autoSyncWorker = autoSyncWorker;
 
 // Registra rotas
 app.use('/api/local-storage', localStorageRouter);
@@ -443,11 +480,19 @@ function initializeSyncSystem() {
       return;
     }
 
-    const uploadsPath = process.env.CLIENTS_FOLDER || './uploads';
+    const uploadsPath = getClientsFolder();
+    console.log(`📁 Pasta de clientes: ${uploadsPath}`);
 
     // Inicializar Sync Manager
     syncManager = new SyncManager(driveClient, db, uploadsPath);
     console.log('✅ Sync Manager inicializado');
+
+    // Conectar FolderOperationService com SyncManager
+    if (folderOperationService) {
+      folderOperationService.setSyncManager(syncManager);
+      folderOperationService.start();
+      console.log('✅ FolderOperationService conectado ao SyncManager e iniciado');
+    }
 
     // Inicializar File Watcher
     fileWatcher = new FileWatcher(syncManager, uploadsPath, db, io);
@@ -490,7 +535,7 @@ class HybridStorage {
   }
 
   async initializeLocal() {
-    const localPath = process.env.CLIENTS_FOLDER || './uploads';
+    const localPath = getClientsFolder();
     await fs.ensureDir(localPath);
     console.log(`📁 Armazenamento local: ${localPath}`);
   }
@@ -561,7 +606,7 @@ class HybridStorage {
   }
 
   async saveToLocal(file, clientName, category) {
-    const clientFolder = path.join(process.env.CLIENTS_FOLDER || './uploads', clientName.replace(/\s+/g, '_'));
+    const clientFolder = path.join(getClientsFolder(), clientName.replace(/\s+/g, '_'));
     const categoryFolder = path.join(clientFolder, category);
     await fs.ensureDir(categoryFolder);
 
@@ -709,7 +754,57 @@ app.get('/auth/google', (req, res) => {
 // Rota GET para receber o código do Google OAuth (redirect)
 app.get('/auth/google/callback', async (req, res) => {
   try {
-    const { code, state } = req.query;
+    const { code, state, error } = req.query;
+    
+    // Verificar se houve erro do Google (ex: access_denied)
+    if (error) {
+      console.error('🚨 Erro retornado pelo Google OAuth:', error);
+      
+      let errorMessage = '';
+      let errorDetails = '';
+      
+      if (error === 'access_denied') {
+        errorMessage = '⚠️ Autenticação cancelada ou falhou.';
+        errorDetails = `
+Se você viu erro "403: access_denied", significa que:
+
+• O app está em modo de TESTE no Google Cloud
+• Você precisa ser adicionado como testador autorizado
+• OU o app precisa ser publicado em PRODUÇÃO
+
+Consulte o guia "GOOGLE_OAUTH_SOLUCAO_COMPLETA.md" para resolver.
+        `.trim();
+      } else {
+        errorMessage = 'Erro na autenticação Google';
+        errorDetails = `Erro: ${error}`;
+      }
+      
+      // Envia erro via postMessage para o frontend
+      return res.send(`
+        <html>
+          <body style="background: #1a1a2e; color: white; font-family: Arial; padding: 40px; text-align: center;">
+            <div style="max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #ff6b6b;">❌ ${errorMessage}</h1>
+              <p style="white-space: pre-line; line-height: 1.6; margin: 20px 0;">${errorDetails}</p>
+              <button onclick="window.close()" style="margin-top: 20px; padding: 12px 24px; background: #4a4a8a; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Fechar</button>
+            </div>
+            <script>
+              // Envia erro para a janela pai
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'google-oauth',
+                  error: '403: access_denied - ${errorMessage}. ${errorDetails.replace(/\n/g, ' ')}'
+                }, '*');
+                
+                setTimeout(() => {
+                  window.close();
+                }, 3000);
+              }
+            </script>
+          </body>
+        </html>
+      `);
+    }
     
     if (!code) {
       return res.send(`
@@ -936,7 +1031,7 @@ app.get('/api/config', (req, res) => {
       storageMode: row ? row.value : hybridStorage.storageMode,
       qnapEnabled: !!process.env.QNAP_HOST,
       gdriveEnabled: !!driveClient,
-      localPath: process.env.CLIENTS_FOLDER || './uploads'
+      localPath: getClientsFolder()
     });
   });
 });
@@ -1019,49 +1114,164 @@ app.get('/api/clients/:id', (req, res) => {
   });
 });
 
-app.post('/api/clients', (req, res) => {
+app.post('/api/clients', async (req, res) => {
   const { name, email, phone, notes } = req.body;
-  const folderPath = name.replace(/\s+/g, '_');
   
-  db.run(
-    "INSERT INTO clients (name, email, phone, notes, folder_path) VALUES (?, ?, ?, ?, ?)",
-    [name, email, phone, notes, folderPath],
-    async function(err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
+  // 1. Validação de entrada
+  if (!name || !phone) {
+    return res.status(400).json({ error: 'Nome e telefone são obrigatórios' });
+  }
 
-      // Criação de pastas no Google Drive (cliente/referencias, desenhos_aprovados, fotos_finais)
-      try {
-        await hybridStorage.initializeGoogleDrive();
-        if (driveClient) {
-          const clientFolderId = await (async () => {
-            try {
-              return await hybridStorage.getOrCreateGDriveFolder(folderPath);
-            } catch (e) {
-              console.warn('Falha ao criar pasta do cliente no Drive:', e.message);
-              return null;
-            }
-          })();
+  let tempFolderPath = null;
+  let lockPath = null;
 
-          if (clientFolderId) {
-            const subfolders = ['referencias', 'desenhos_aprovados', 'fotos_finais'];
-            for (const sub of subfolders) {
-              try {
-                await hybridStorage.getOrCreateGDriveFolder(sub, clientFolderId);
-              } catch (e) {
-                console.warn(`Falha ao criar subpasta ${sub} no Drive:`, e.message);
-              }
-            }
-          }
+  try {
+    // 2. Gerar dados da pasta
+    const slug = folderUtils.generateNameSlug(name);
+    const phoneClean = folderUtils.formatPhone(phone);
+    const tempFolderName = `Cliente_${slug}_${phoneClean}_temp`;
+    
+    // 3. Tratar colisão de pasta temp
+    const uploadsPath = getClientsFolder();
+    await fs.ensureDir(uploadsPath);
+    
+    const finalTempName = await folderUtils.handleFolderCollision(
+      uploadsPath, 
+      tempFolderName
+    );
+    
+    tempFolderPath = path.join(uploadsPath, finalTempName);
+
+    // 4. Criar lockfile
+    lockPath = await folderUtils.createLockfile(tempFolderPath);
+
+    // 5. Inserir no banco
+    const clientId = await new Promise((resolve, reject) => {
+      db.run(
+        `INSERT INTO clients 
+         (name, email, phone, notes, folder_path, slug, phone_clean) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [name, email, phone, notes, finalTempName, slug, phoneClean],
+        function(err) {
+          if (err) reject(err);
+          else resolve(this.lastID);
         }
-      } catch (e) {
-        console.warn('Google Drive não disponível para criar pastas do cliente:', e.message);
-      }
+      );
+    });
 
-      res.json({ id: this.lastID, success: true });
+    // 6. Criar estrutura de pastas local
+    const folderStructure = categoryService.getFolderStructure();
+    for (const folder of folderStructure) {
+      await fs.ensureDir(path.join(tempFolderPath, folder));
     }
-  );
+
+    // 7. Renomear para incluir ID
+    const finalFolderName = folderUtils.generateFolderName(name, phone, clientId);
+    const finalFolderPath = path.join(uploadsPath, finalFolderName);
+    await fs.move(tempFolderPath, finalFolderPath, { overwrite: false });
+
+    // 8. Atualizar banco com folder_path final
+    await new Promise((resolve, reject) => {
+      db.run(
+        `UPDATE clients 
+         SET folder_path = ?, folder_created_at = CURRENT_TIMESTAMP 
+         WHERE id = ?`,
+        [finalFolderName, clientId],
+        (err) => err ? reject(err) : resolve()
+      );
+    });
+
+    // 9. Remover lockfile
+    if (lockPath) {
+      await folderUtils.removeLockfile(lockPath);
+    }
+
+    // 10. Enfileirar criação no Drive (assíncrono)
+    const queueEnabled = process.env.FOLDER_OPERATION_QUEUE_ENABLED === 'true';
+    if (driveClient && queueEnabled && folderOperationService) {
+      try {
+        await folderOperationService.enqueue(clientId, 'create_drive_structure', {
+          folderName: finalFolderName,
+          structure: folderStructure
+        });
+        console.log(`📥 Criação de estrutura no Drive enfileirada para cliente ${clientId}`);
+      } catch (queueErr) {
+        console.warn('⚠️ Erro ao enfileirar operação no Drive:', queueErr);
+      }
+    }
+
+    // 11. Emitir evento Socket.IO (se disponível)
+    if (typeof io !== 'undefined' && io) {
+      io.emit('client:created', {
+        id: clientId,
+        name,
+        folder_path: finalFolderName
+      });
+    }
+
+    // 12. Log de auditoria (se disponível)
+    if (typeof auditLog === 'function') {
+      try {
+        await auditLog('client', 'create', clientId, { 
+          name, 
+          phone, 
+          folder_path: finalFolderName 
+        });
+      } catch (auditErr) {
+        console.warn('⚠️ Erro ao registrar auditoria:', auditErr);
+      }
+    }
+
+    console.log(`✅ Cliente ${name} criado com sucesso (ID: ${clientId}, Pasta: ${finalFolderName})`);
+
+    res.json({
+      id: clientId,
+      message: 'Cliente criado com sucesso',
+      folder_path: finalFolderName,
+      success: true
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao criar cliente:', error);
+    
+    // Rollback: tentar remover pasta criada
+    if (tempFolderPath) {
+      try {
+        if (await fs.pathExists(tempFolderPath)) {
+          await fs.remove(tempFolderPath);
+          console.log('🔄 Rollback: pasta temporária removida');
+        }
+      } catch (rollbackErr) {
+        console.error('⚠️ Erro no rollback:', rollbackErr);
+      }
+    }
+
+    // Remover lockfile se existir
+    if (lockPath) {
+      try {
+        await folderUtils.removeLockfile(lockPath);
+      } catch (lockErr) {
+        console.error('⚠️ Erro ao remover lockfile:', lockErr);
+      }
+    }
+
+    res.status(500).json({ 
+      error: 'Erro ao criar cliente', 
+      details: error.message,
+      success: false
+    });
+  }
+});
+
+// GET /api/categories - Obter todas as categorias
+app.get('/api/categories', (req, res) => {
+  try {
+    const categories = categoryService.getAll();
+    res.json(categories);
+  } catch (error) {
+    console.error('❌ Erro ao buscar categorias:', error);
+    res.status(500).json({ error: 'Erro ao buscar categorias' });
+  }
 });
 
 // Agendamentos com integração Google Calendar
@@ -1222,7 +1432,7 @@ app.post('/api/appointments', async (req, res) => {
             if (client) {
               await hybridStorage.initializeStorage();
               // Criar estrutura de pastas
-              const clientFolder = path.join(process.env.CLIENTS_FOLDER || './uploads', client.folder_path);
+              const clientFolder = path.join(getClientsFolder(), client.folder_path);
               await fs.ensureDir(path.join(clientFolder, 'referencias'));
               await fs.ensureDir(path.join(clientFolder, 'desenhos_aprovados'));
               await fs.ensureDir(path.join(clientFolder, 'fotos_finais'));
@@ -1257,12 +1467,35 @@ app.post('/api/clients/:clientId/upload/:category', upload.array('files', 10), a
 
       const uploadResults = [];
       
+      // Mapear categoria para o novo caminho
+      let categoryPath;
+      try {
+        categoryPath = categoryService.getPath(category);
+      } catch (error) {
+        console.warn(`⚠️ Categoria não mapeada, usando valor original: ${category}`);
+        categoryPath = category;
+      }
+      
       for (const file of req.files) {
         try {
-          // Salvar usando armazenamento híbrido
-          const results = await hybridStorage.saveFile(file, client.folder_path, category);
+          // Validar arquivo contra categoria
+          const fileExt = path.extname(file.originalname).substring(1);
+          const validation = categoryService.validate(category, fileExt, file.size);
           
-          // Registrar no banco
+          if (!validation.valid) {
+            console.warn(`⚠️ Arquivo rejeitado: ${validation.error}`);
+            uploadResults.push({
+              name: file.originalname,
+              error: validation.error,
+              success: false
+            });
+            continue;
+          }
+
+          // Salvar usando armazenamento híbrido com caminho mapeado
+          const results = await hybridStorage.saveFile(file, client.folder_path, categoryPath);
+          
+          // Registrar no banco (usar categoryPath no file_path)
           const primaryResult = results[0]; // Resultado local sempre primeiro
           db.run(
             `INSERT INTO files 
@@ -1274,7 +1507,7 @@ app.post('/api/clients/:clientId/upload/:category', upload.array('files', 10), a
               file.originalname,
               primaryResult.path,
               primaryResult.storage,
-              category,
+              categoryPath, // Usar caminho mapeado
               getFileType(file.originalname),
               file.size
             ]
@@ -1284,12 +1517,19 @@ app.post('/api/clients/:clientId/upload/:category', upload.array('files', 10), a
             name: primaryResult.filename,
             originalName: file.originalname,
             category: category,
+            categoryPath: categoryPath,
             size: file.size,
             type: getFileType(file.originalname),
-            storageResults: results
+            storageResults: results,
+            success: true
           });
         } catch (error) {
           console.error('Erro ao fazer upload:', error);
+          uploadResults.push({
+            name: file.originalname,
+            error: error.message,
+            success: false
+          });
         }
       }
 
@@ -2328,7 +2568,7 @@ app.post('/api/clients/open-folder', async (req, res) => {
           return res.status(404).json({ error: 'Cliente não encontrado' });
         }
         
-        const clientFolderPath = path.join(__dirname, 'uploads', client.folder_path);
+        const clientFolderPath = path.join(getClientsFolder(), client.folder_path);
         
         // Criar pasta se não existir
         await fs.ensureDir(clientFolderPath);
@@ -2393,7 +2633,7 @@ app.post('/api/clients/open-folder', async (req, res) => {
       });
     } else if (folderPath) {
       // Abrir pasta específica
-      const fullPath = path.join(__dirname, 'uploads', folderPath);
+      const fullPath = path.join(getClientsFolder(), folderPath);
       
       await fs.ensureDir(fullPath);
       
