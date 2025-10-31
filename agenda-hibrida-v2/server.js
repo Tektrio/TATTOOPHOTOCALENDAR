@@ -1312,6 +1312,79 @@ app.get('/api/clients/:id/sync-status', async (req, res) => {
   }
 });
 
+// Abrir pasta QNAP do cliente
+app.post('/api/clients/:id/open-qnap-folder', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validação: ID deve ser um número positivo
+    const clientId = parseInt(id, 10);
+    if (isNaN(clientId) || clientId <= 0) {
+      return res.status(400).json({ error: 'ID de cliente inválido' });
+    }
+    
+    // Verificar se QNAP está habilitado
+    const qnapEnabled = process.env.QNAP_ENABLED === 'true';
+    if (!qnapEnabled) {
+      return res.status(400).json({ 
+        error: 'QNAP não está habilitado',
+        message: 'Configure QNAP_ENABLED=true no arquivo .env'
+      });
+    }
+    
+    // Verificar se variáveis necessárias estão configuradas
+    if (!process.env.QNAP_HOST) {
+      return res.status(400).json({ 
+        error: 'QNAP_HOST não configurado',
+        message: 'Configure QNAP_HOST no arquivo .env'
+      });
+    }
+    
+    // Buscar cliente
+    const client = await new Promise((resolve, reject) => {
+      db.get('SELECT id, name, phone, folder_path FROM clients WHERE id = ?', [clientId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!client) {
+      return res.status(404).json({ error: 'Cliente não encontrado' });
+    }
+    
+    if (!client.folder_path) {
+      return res.status(400).json({ 
+        error: 'Cliente não possui pasta configurada',
+        message: 'Crie a pasta do cliente primeiro'
+      });
+    }
+    
+    // Construir URL do QNAP File Station
+    const qnapHost = process.env.QNAP_HOST;
+    const qnapSharePath = process.env.QNAP_SHARE_PATH || '/share/Tatuagens';
+    
+    // Normalizar o caminho para URL
+    const folderPathEncoded = encodeURIComponent(path.join(qnapSharePath, client.folder_path));
+    
+    // URL do File Station do QNAP
+    // Formato: http://QNAP_HOST:PORT/cgi-bin/filemanager/utilRequest.cgi?func=get_tree&path=/share/folder
+    // Ou simplesmente: http://QNAP_HOST/ (File Station abrirá na pasta principal)
+    const qnapUrl = `http://${qnapHost}`;
+    
+    res.json({
+      success: true,
+      url: qnapUrl,
+      path: path.join(qnapSharePath, client.folder_path),
+      message: 'URL do QNAP File Station gerada com sucesso',
+      note: 'Navegue manualmente até a pasta: ' + path.join(qnapSharePath, client.folder_path)
+    });
+    
+  } catch (error) {
+    console.error('Erro ao abrir pasta QNAP:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Criar estrutura de pastas para cliente existente sem pasta
 app.post('/api/clients/:id/create-folders', async (req, res) => {
   const { id } = req.params;
@@ -2063,7 +2136,7 @@ app.get('/api/clients/:clientId/files', (req, res) => {
   const { clientId } = req.params;
   
   db.all(
-    "SELECT * FROM files WHERE client_id = ? ORDER BY uploaded_at DESC",
+    "SELECT * FROM files WHERE client_id = ? AND deleted_at IS NULL ORDER BY uploaded_at DESC",
     [clientId],
     (err, files) => {
       if (err) {
@@ -2506,24 +2579,575 @@ app.get('/api/files/:id/preview', async (req, res) => {
   }
 });
 
-// Excluir arquivo
+// Excluir arquivo (soft delete ou permanente)
 app.delete('/api/files/:fileId', async (req, res) => {
-  const { fileId } = req.params;
-  db.get("SELECT * FROM files WHERE id = ?", [fileId], async (err, file) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!file) return res.status(404).json({ error: 'Arquivo não encontrado' });
-    try {
-      if (file.storage_type === 'local' && file.file_path && fs.existsSync(file.file_path)) {
-        await fs.remove(file.file_path);
-      }
-    } catch (e) {
-      console.warn('Não foi possível remover o arquivo local:', e.message);
+  try {
+    const { fileId } = req.params;
+    const { permanent } = req.query; // ?permanent=true para deletar permanentemente
+    
+    // Validação: fileId deve ser um número positivo
+    const fileIdInt = parseInt(fileId, 10);
+    if (isNaN(fileIdInt) || fileIdInt <= 0) {
+      return res.status(400).json({ error: 'ID de arquivo inválido' });
     }
-    db.run("DELETE FROM files WHERE id = ?", [fileId], function(deleteErr) {
-      if (deleteErr) return res.status(500).json({ error: deleteErr.message });
-      res.json({ success: true });
+    
+    const file = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM files WHERE id = ?", [fileIdInt], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
     });
-  });
+    
+    if (!file) {
+      return res.status(404).json({ error: 'Arquivo não encontrado' });
+    }
+    
+    const isPermanent = permanent === 'true';
+    
+    if (isPermanent) {
+      // Deleção permanente
+      try {
+        if (file.storage_type === 'local' && file.file_path && await fs.pathExists(file.file_path)) {
+          await fs.remove(file.file_path);
+        }
+      } catch (e) {
+        console.warn('Não foi possível remover o arquivo local:', e.message);
+      }
+      
+      await new Promise((resolve, reject) => {
+        db.run("DELETE FROM files WHERE id = ?", [fileIdInt], function(err) {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      
+      console.log(`🗑️ Arquivo ${fileIdInt} deletado permanentemente`);
+      res.json({ success: true, message: 'Arquivo deletado permanentemente' });
+      
+    } else {
+      // Soft delete - mover para .trash
+      if (file.storage_type === 'local' && file.file_path && await fs.pathExists(file.file_path)) {
+        try {
+          const trashDir = path.join(getClientsFolder(), '.trash');
+          await fs.ensureDir(trashDir);
+          
+          const fileName = path.basename(file.file_path);
+          const timestamp = Date.now();
+          const trashPath = path.join(trashDir, `${timestamp}_${fileName}`);
+          
+          await fs.move(file.file_path, trashPath);
+          
+          // Atualizar banco com deleted_at e novo caminho
+          await new Promise((resolve, reject) => {
+            db.run(
+              `UPDATE files 
+               SET deleted_at = CURRENT_TIMESTAMP, 
+                   file_path = ? 
+               WHERE id = ?`,
+              [trashPath, fileIdInt],
+              (err) => {
+                if (err) reject(err);
+                else resolve();
+              }
+            );
+          });
+          
+          console.log(`🗑️ Arquivo ${fileIdInt} movido para lixeira`);
+          res.json({ 
+            success: true, 
+            message: 'Arquivo movido para lixeira',
+            canRestore: true 
+          });
+          
+        } catch (moveErr) {
+          console.error('Erro ao mover arquivo para lixeira:', moveErr);
+          // Fallback: apenas marcar como deletado no banco
+          await new Promise((resolve, reject) => {
+            db.run(
+              "UPDATE files SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?",
+              [fileIdInt],
+              (err) => {
+                if (err) reject(err);
+                else resolve();
+              }
+            );
+          });
+          
+          res.json({ 
+            success: true, 
+            message: 'Arquivo marcado como deletado',
+            canRestore: false 
+          });
+        }
+      } else {
+        // Para arquivos remotos, apenas marcar como deletado
+        await new Promise((resolve, reject) => {
+          db.run(
+            "UPDATE files SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?",
+            [fileIdInt],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
+        
+        console.log(`🗑️ Arquivo remoto ${fileIdInt} marcado como deletado`);
+        res.json({ 
+          success: true, 
+          message: 'Arquivo marcado como deletado',
+          canRestore: false 
+        });
+      }
+    }
+    
+  } catch (error) {
+    console.error('Erro ao deletar arquivo:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Copiar arquivo
+app.post('/api/files/:id/copy', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { targetCategory } = req.body;
+    
+    // Validação: ID deve ser um número positivo
+    const fileIdInt = parseInt(id, 10);
+    if (isNaN(fileIdInt) || fileIdInt <= 0) {
+      return res.status(400).json({ error: 'ID de arquivo inválido' });
+    }
+    
+    const file = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM files WHERE id = ?", [fileIdInt], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!file) {
+      return res.status(404).json({ error: 'Arquivo não encontrado' });
+    }
+    
+    // Se arquivo está deletado, não permitir copiar
+    if (file.deleted_at) {
+      return res.status(400).json({ error: 'Não é possível copiar arquivo deletado' });
+    }
+    
+    const sourceCategory = file.category || 'sem-categoria';
+    const destCategory = targetCategory ? targetCategory.trim() : sourceCategory;
+    
+    // Copiar arquivo físico (se for local)
+    let newFilePath = null;
+    let newFileName = null;
+    
+    if (file.storage_type === 'local' && file.file_path && await fs.pathExists(file.file_path)) {
+      try {
+        const originalName = path.basename(file.file_path);
+        const ext = path.extname(originalName);
+        const nameWithoutExt = path.basename(originalName, ext);
+        
+        // Adicionar sufixo _copy
+        newFileName = `${nameWithoutExt}_copy${ext}`;
+        
+        // Construir caminho de destino
+        let destDir;
+        if (destCategory === sourceCategory) {
+          destDir = path.dirname(file.file_path);
+        } else {
+          destDir = path.join(path.dirname(path.dirname(file.file_path)), destCategory);
+          await fs.ensureDir(destDir);
+        }
+        
+        newFilePath = path.join(destDir, newFileName);
+        
+        // Se já existir arquivo com esse nome, adicionar número
+        let counter = 1;
+        while (await fs.pathExists(newFilePath)) {
+          newFileName = `${nameWithoutExt}_copy${counter}${ext}`;
+          newFilePath = path.join(destDir, newFileName);
+          counter++;
+        }
+        
+        // Copiar arquivo
+        await fs.copy(file.file_path, newFilePath);
+        
+      } catch (copyErr) {
+        console.error('Erro ao copiar arquivo físico:', copyErr);
+        return res.status(500).json({ error: 'Erro ao copiar arquivo físico' });
+      }
+    }
+    
+    // Criar nova entrada no banco
+    const newFile = await new Promise((resolve, reject) => {
+      db.run(
+        `INSERT INTO files 
+         (client_id, category, filename, original_name, file_path, file_size, mime_type, storage_type, uploaded_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        [
+          file.client_id,
+          destCategory,
+          newFileName || `${file.filename}_copy`,
+          newFileName || `${file.original_name}_copy`,
+          newFilePath || null,
+          file.file_size,
+          file.mime_type,
+          file.storage_type
+        ],
+        function(err) {
+          if (err) reject(err);
+          else resolve({ id: this.lastID });
+        }
+      );
+    });
+    
+    console.log(`📋 Arquivo ${fileIdInt} copiado. Novo ID: ${newFile.id}`);
+    res.json({ 
+      success: true, 
+      message: 'Arquivo copiado com sucesso',
+      newFileId: newFile.id,
+      newFileName: newFileName || `${file.original_name}_copy`,
+      category: destCategory,
+      sourceFileId: fileIdInt
+    });
+    
+  } catch (error) {
+    console.error('Erro ao copiar arquivo:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Mover arquivo para outra categoria
+app.patch('/api/files/:id/move', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newCategory } = req.body;
+    
+    // Validação: ID deve ser um número positivo
+    const fileIdInt = parseInt(id, 10);
+    if (isNaN(fileIdInt) || fileIdInt <= 0) {
+      return res.status(400).json({ error: 'ID de arquivo inválido' });
+    }
+    
+    // Validação: newCategory é obrigatória
+    if (!newCategory || typeof newCategory !== 'string' || newCategory.trim().length === 0) {
+      return res.status(400).json({ error: 'Nova categoria é obrigatória' });
+    }
+    
+    const file = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM files WHERE id = ?", [fileIdInt], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!file) {
+      return res.status(404).json({ error: 'Arquivo não encontrado' });
+    }
+    
+    // Se arquivo está deletado, não permitir mover
+    if (file.deleted_at) {
+      return res.status(400).json({ error: 'Não é possível mover arquivo deletado' });
+    }
+    
+    const oldCategory = file.category || 'sem-categoria';
+    const newCategoryTrimmed = newCategory.trim();
+    
+    // Se a categoria for a mesma, não fazer nada
+    if (oldCategory === newCategoryTrimmed) {
+      return res.json({ 
+        success: true, 
+        message: 'Arquivo já está nesta categoria',
+        category: newCategoryTrimmed
+      });
+    }
+    
+    // Mover arquivo físico (se for local)
+    if (file.storage_type === 'local' && file.file_path && await fs.pathExists(file.file_path)) {
+      try {
+        const oldDir = path.dirname(file.file_path);
+        const fileName = path.basename(file.file_path);
+        
+        // Construir novo caminho
+        const newDir = path.join(path.dirname(oldDir), newCategoryTrimmed);
+        const newPath = path.join(newDir, fileName);
+        
+        // Criar diretório da nova categoria se não existir
+        await fs.ensureDir(newDir);
+        
+        // Verificar se já existe arquivo com esse nome na nova categoria
+        if (await fs.pathExists(newPath)) {
+          return res.status(400).json({ error: 'Já existe um arquivo com esse nome na categoria de destino' });
+        }
+        
+        // Mover arquivo
+        await fs.move(file.file_path, newPath);
+        
+        // Atualizar banco
+        await new Promise((resolve, reject) => {
+          db.run(
+            `UPDATE files 
+             SET category = ?, 
+                 file_path = ?
+             WHERE id = ?`,
+            [newCategoryTrimmed, newPath, fileIdInt],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
+        
+        console.log(`📦 Arquivo ${fileIdInt} movido: ${oldCategory} → ${newCategoryTrimmed}`);
+        res.json({ 
+          success: true, 
+          message: 'Arquivo movido com sucesso',
+          newCategory: newCategoryTrimmed,
+          oldCategory: oldCategory
+        });
+        
+      } catch (moveErr) {
+        console.error('Erro ao mover arquivo físico:', moveErr);
+        res.status(500).json({ error: 'Erro ao mover arquivo físico' });
+      }
+    } else {
+      // Para arquivos remotos, apenas atualizar banco
+      await new Promise((resolve, reject) => {
+        db.run(
+          "UPDATE files SET category = ? WHERE id = ?",
+          [newCategoryTrimmed, fileIdInt],
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+      
+      console.log(`📦 Arquivo remoto ${fileIdInt} movido: ${oldCategory} → ${newCategoryTrimmed}`);
+      res.json({ 
+        success: true, 
+        message: 'Arquivo movido com sucesso',
+        newCategory: newCategoryTrimmed,
+        oldCategory: oldCategory,
+        note: 'Arquivo remoto - categoria atualizada apenas no banco de dados'
+      });
+    }
+    
+  } catch (error) {
+    console.error('Erro ao mover arquivo:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Renomear arquivo
+app.patch('/api/files/:id/rename', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newName } = req.body;
+    
+    // Validação: ID deve ser um número positivo
+    const fileIdInt = parseInt(id, 10);
+    if (isNaN(fileIdInt) || fileIdInt <= 0) {
+      return res.status(400).json({ error: 'ID de arquivo inválido' });
+    }
+    
+    // Validação: newName é obrigatório
+    if (!newName || typeof newName !== 'string' || newName.trim().length === 0) {
+      return res.status(400).json({ error: 'Novo nome é obrigatório' });
+    }
+    
+    // Validação: caracteres não permitidos
+    const invalidChars = /[<>:"/\\|?*\x00-\x1F]/;
+    if (invalidChars.test(newName)) {
+      return res.status(400).json({ 
+        error: 'Nome contém caracteres não permitidos',
+        invalidChars: '< > : " / \\ | ? *'
+      });
+    }
+    
+    // Validação: nome muito longo
+    if (newName.length > 255) {
+      return res.status(400).json({ error: 'Nome muito longo (máximo 255 caracteres)' });
+    }
+    
+    const file = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM files WHERE id = ?", [fileIdInt], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!file) {
+      return res.status(404).json({ error: 'Arquivo não encontrado' });
+    }
+    
+    // Se arquivo está deletado, não permitir renomear
+    if (file.deleted_at) {
+      return res.status(400).json({ error: 'Não é possível renomear arquivo deletado' });
+    }
+    
+    const oldName = file.original_name || file.filename;
+    const oldExt = path.extname(oldName);
+    let finalName = newName.trim();
+    
+    // Se o novo nome não tem extensão, manter a original
+    if (!path.extname(finalName) && oldExt) {
+      finalName += oldExt;
+    }
+    
+    // Renomear arquivo físico (se for local)
+    if (file.storage_type === 'local' && file.file_path && await fs.pathExists(file.file_path)) {
+      try {
+        const newPath = path.join(path.dirname(file.file_path), finalName);
+        
+        // Verificar se já existe arquivo com esse nome
+        if (await fs.pathExists(newPath) && newPath !== file.file_path) {
+          return res.status(400).json({ error: 'Já existe um arquivo com esse nome nesta pasta' });
+        }
+        
+        await fs.rename(file.file_path, newPath);
+        
+        // Atualizar banco com novo nome e caminho
+        await new Promise((resolve, reject) => {
+          db.run(
+            `UPDATE files 
+             SET original_name = ?, 
+                 filename = ?,
+                 file_path = ?
+             WHERE id = ?`,
+            [finalName, finalName, newPath, fileIdInt],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
+        
+        console.log(`📝 Arquivo ${fileIdInt} renomeado: ${oldName} → ${finalName}`);
+        res.json({ 
+          success: true, 
+          message: 'Arquivo renomeado com sucesso',
+          newName: finalName,
+          oldName: oldName
+        });
+        
+      } catch (renameErr) {
+        console.error('Erro ao renomear arquivo físico:', renameErr);
+        res.status(500).json({ error: 'Erro ao renomear arquivo físico' });
+      }
+    } else {
+      // Para arquivos remotos, apenas atualizar banco
+      await new Promise((resolve, reject) => {
+        db.run(
+          `UPDATE files 
+           SET original_name = ?, 
+               filename = ?
+           WHERE id = ?`,
+          [finalName, finalName, fileIdInt],
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+      
+      console.log(`📝 Arquivo remoto ${fileIdInt} renomeado: ${oldName} → ${finalName}`);
+      res.json({ 
+        success: true, 
+        message: 'Arquivo renomeado com sucesso',
+        newName: finalName,
+        oldName: oldName,
+        note: 'Arquivo remoto - nome atualizado apenas no banco de dados'
+      });
+    }
+    
+  } catch (error) {
+    console.error('Erro ao renomear arquivo:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Restaurar arquivo da lixeira
+app.post('/api/files/:fileId/restore', async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    
+    // Validação: fileId deve ser um número positivo
+    const fileIdInt = parseInt(fileId, 10);
+    if (isNaN(fileIdInt) || fileIdInt <= 0) {
+      return res.status(400).json({ error: 'ID de arquivo inválido' });
+    }
+    
+    const file = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM files WHERE id = ? AND deleted_at IS NOT NULL", [fileIdInt], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!file) {
+      return res.status(404).json({ error: 'Arquivo não encontrado na lixeira' });
+    }
+    
+    if (file.storage_type === 'local' && file.file_path && await fs.pathExists(file.file_path)) {
+      try {
+        // Determinar caminho original
+        const fileName = path.basename(file.file_path).replace(/^\d+_/, ''); // Remove timestamp
+        const originalDir = path.dirname(file.file_path).replace('/.trash', '');
+        const originalPath = path.join(originalDir, fileName);
+        
+        await fs.move(file.file_path, originalPath);
+        
+        // Atualizar banco removendo deleted_at e restaurando caminho
+        await new Promise((resolve, reject) => {
+          db.run(
+            `UPDATE files 
+             SET deleted_at = NULL, 
+                 file_path = ? 
+             WHERE id = ?`,
+            [originalPath, fileIdInt],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
+        
+        console.log(`♻️ Arquivo ${fileIdInt} restaurado da lixeira`);
+        res.json({ 
+          success: true, 
+          message: 'Arquivo restaurado com sucesso'
+        });
+        
+      } catch (restoreErr) {
+        console.error('Erro ao restaurar arquivo:', restoreErr);
+        res.status(500).json({ error: 'Erro ao restaurar arquivo físico' });
+      }
+    } else {
+      // Para arquivos remotos, apenas remover marca de deletado
+      await new Promise((resolve, reject) => {
+        db.run(
+          "UPDATE files SET deleted_at = NULL WHERE id = ?",
+          [fileIdInt],
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+      
+      console.log(`♻️ Arquivo remoto ${fileIdInt} restaurado`);
+      res.json({ 
+        success: true, 
+        message: 'Arquivo restaurado com sucesso'
+      });
+    }
+    
+  } catch (error) {
+    console.error('Erro ao restaurar arquivo:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Backup automático

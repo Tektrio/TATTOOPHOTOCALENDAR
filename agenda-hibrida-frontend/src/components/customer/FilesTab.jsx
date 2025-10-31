@@ -22,7 +22,10 @@ import {
   FolderPlus,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Edit,
+  FolderInput,
+  Copy
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { Input } from '../ui/input';
@@ -60,6 +63,9 @@ const FilesTab = ({ customerId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, file: null });
+  const [renameDialog, setRenameDialog] = useState({ open: false, file: null, newName: '' });
+  const [moveDialog, setMoveDialog] = useState({ open: false, file: null, targetCategory: '' });
+  const [copyDialog, setCopyDialog] = useState({ open: false, file: null, targetCategory: '' });
   const [customer, setCustomer] = useState(null);
   const [folderLinks, setFolderLinks] = useState({
     local: { available: false, path: '', exists: false },
@@ -354,6 +360,129 @@ const FilesTab = ({ customerId }) => {
     }
   };
 
+  // Renomear arquivo
+  const handleRenameFile = async () => {
+    if (!renameDialog.file || !renameDialog.newName.trim()) {
+      setError('Nome do arquivo não pode estar vazio');
+      return;
+    }
+
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${renameDialog.file.id}/rename`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newName: renameDialog.newName }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao renomear arquivo');
+      }
+
+      setSuccess(`Arquivo renomeado com sucesso: ${data.newName}`);
+      
+      // Recarregar lista
+      await loadFiles();
+      
+      // Fechar dialog
+      setRenameDialog({ open: false, file: null, newName: '' });
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao renomear arquivo:', err);
+      setError(err.message || 'Erro ao renomear arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Mover arquivo para outra categoria
+  const handleMoveFile = async () => {
+    if (!moveDialog.file || !moveDialog.targetCategory) {
+      setError('Selecione uma categoria de destino');
+      return;
+    }
+
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${moveDialog.file.id}/move`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newCategory: moveDialog.targetCategory }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao mover arquivo');
+      }
+
+      setSuccess(`Arquivo movido para "${data.newCategory}" com sucesso!`);
+      
+      // Recarregar lista
+      await loadFiles();
+      
+      // Fechar dialog
+      setMoveDialog({ open: false, file: null, targetCategory: '' });
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao mover arquivo:', err);
+      setError(err.message || 'Erro ao mover arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Copiar arquivo
+  const handleCopyFile = async () => {
+    if (!copyDialog.file) {
+      setError('Arquivo não selecionado');
+      return;
+    }
+
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${copyDialog.file.id}/copy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ targetCategory: copyDialog.targetCategory || copyDialog.file.category }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao copiar arquivo');
+      }
+
+      setSuccess(`Arquivo copiado: ${data.newFileName}`);
+      
+      // Recarregar lista
+      await loadFiles();
+      
+      // Fechar dialog
+      setCopyDialog({ open: false, file: null, targetCategory: '' });
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao copiar arquivo:', err);
+      setError(err.message || 'Erro ao copiar arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
   // Preview de arquivo
   const handlePreview = (file) => {
     setPreviewFile(file);
@@ -506,9 +635,47 @@ const FilesTab = ({ customerId }) => {
     }
   };
 
-  const handleOpenQNAPFolder = () => {
-    setError('QNAP ainda não está configurado. Em breve!');
-    setTimeout(() => setError(null), 3000);
+  const handleOpenQNAPFolder = async () => {
+    if (!folderLinks.qnap.available) {
+      setError('QNAP não está disponível para este cliente');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    try {
+      setLoadingStates(prev => ({ ...prev, qnap: true }));
+      setError(null);
+
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/open-qnap-folder`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || 'Erro ao abrir QNAP');
+      }
+
+      const data = await response.json();
+
+      // Abrir QNAP em nova aba
+      window.open(data.url, '_blank');
+
+      // Mostrar mensagem com o caminho da pasta
+      setSuccess(`QNAP aberto! Navegue até: ${data.path}`);
+      setTimeout(() => setSuccess(null), 10000); // 10 segundos para dar tempo de ler
+
+    } catch (error) {
+      console.error('Erro ao abrir QNAP:', error);
+      setError(error.message || 'Erro ao abrir QNAP. Verifique se está configurado.');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setTimeout(() => {
+        setLoadingStates(prev => ({ ...prev, qnap: false }));
+      }, 500);
+    }
   };
 
   // Handler para criar pasta quando não existe
@@ -760,21 +927,32 @@ const FilesTab = ({ customerId }) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!folderLinks.qnap.available}
-                    onClick={handleOpenQNAPFolder}
-                    className="flex items-center gap-2"
-                  >
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!folderLinks.qnap.available || loadingStates.qnap}
+                onClick={handleOpenQNAPFolder}
+                className="flex items-center gap-2"
+              >
+                {loadingStates.qnap ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Abrindo...
+                  </>
+                ) : (
+                  <>
                     <Server className="h-4 w-4" />
                     QNAP
                     {renderSyncStatusIcon(syncStatus.qnap)}
-                  </Button>
+                  </>
+                )}
+              </Button>
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                QNAP em desenvolvimento. Em breve!
+                {folderLinks.qnap.available
+                  ? "Abrir QNAP File Station (nova aba)"
+                  : "QNAP não configurado ou não disponível"}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -880,29 +1058,56 @@ const FilesTab = ({ customerId }) => {
                       )}
                       
                       {/* Overlay com ações */}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
                         {(isImage(file.file_type) || file.mime_type === 'application/pdf') && (
                           <Button
                             size="sm"
                             variant="secondary"
                             onClick={() => handlePreview(file)}
+                            title="Visualizar"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3 w-3" />
                           </Button>
                         )}
                         <Button
                           size="sm"
                           variant="secondary"
                           onClick={() => window.open(`${API_URL}/api/files/${file.id}/download`, '_blank')}
+                          title="Baixar"
                         >
-                          <Download className="h-4 w-4" />
+                          <Download className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setRenameDialog({ open: true, file, newName: file.original_name || file.filename })}
+                          title="Renomear"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setMoveDialog({ open: true, file, targetCategory: '' })}
+                          title="Mover"
+                        >
+                          <FolderInput className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setCopyDialog({ open: true, file, targetCategory: '' })}
+                          title="Copiar"
+                        >
+                          <Copy className="h-3 w-3" />
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
                           onClick={() => setDeleteDialog({ open: true, file })}
+                          title="Deletar"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
@@ -1016,6 +1221,108 @@ const FilesTab = ({ customerId }) => {
               className="bg-red-600 hover:bg-red-700"
             >
               Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog para renomear arquivo */}
+      <AlertDialog open={renameDialog.open} onOpenChange={(open) => setRenameDialog({ open, file: null, newName: '' })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Renomear Arquivo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Digite o novo nome para o arquivo "{renameDialog.file?.original_name}"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input
+              value={renameDialog.newName}
+              onChange={(e) => setRenameDialog(prev => ({ ...prev, newName: e.target.value }))}
+              placeholder="Novo nome do arquivo"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleRenameFile();
+                }
+              }}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRenameFile}>
+              Renomear
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog para mover arquivo */}
+      <AlertDialog open={moveDialog.open} onOpenChange={(open) => setMoveDialog({ open, file: null, targetCategory: '' })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mover Arquivo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Selecione a categoria de destino para o arquivo "{moveDialog.file?.original_name}"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Select 
+              value={moveDialog.targetCategory} 
+              onValueChange={(value) => setMoveDialog(prev => ({ ...prev, targetCategory: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.filter(cat => cat.value !== moveDialog.file?.category).map(cat => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleMoveFile}>
+              Mover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog para copiar arquivo */}
+      <AlertDialog open={copyDialog.open} onOpenChange={(open) => setCopyDialog({ open, file: null, targetCategory: '' })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Copiar Arquivo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Selecione a categoria de destino para a cópia de "{copyDialog.file?.original_name}"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Select 
+              value={copyDialog.targetCategory} 
+              onValueChange={(value) => setCopyDialog(prev => ({ ...prev, targetCategory: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Mesma categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Mesma categoria</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCopyFile}>
+              Copiar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
