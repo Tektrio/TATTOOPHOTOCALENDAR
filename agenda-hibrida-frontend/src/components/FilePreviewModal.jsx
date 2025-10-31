@@ -226,17 +226,19 @@ const FilePreviewModal = ({
 
           {!error && isImage && (
             <div className="overflow-auto w-full h-full flex items-center justify-center">
-              <img
-                src={previewUrl}
-                alt={file.original_name || file.filename}
-                style={{ 
-                  width: `${zoom}%`,
-                  height: 'auto',
-                  maxWidth: 'none'
-                }}
-                onError={handleImageError}
-                className="object-contain"
-              />
+              <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'center' }}>
+                <img
+                  src={previewUrl}
+                  alt={file.original_name || file.filename}
+                  style={{ 
+                    display: 'block',
+                    maxWidth: '100%',
+                    height: 'auto'
+                  }}
+                  onError={handleImageError}
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
 
