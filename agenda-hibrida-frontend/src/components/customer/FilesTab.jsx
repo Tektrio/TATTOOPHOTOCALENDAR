@@ -1043,9 +1043,9 @@ const FilesTab = ({ customerId }) => {
                     {/* Preview */}
                     <div 
                       className="aspect-square bg-gray-100 relative cursor-pointer"
-                      onClick={() => isImage(file.file_type) && handlePreview(file)}
+                      onClick={() => isImage(file.mime_type) && handlePreview(file)}
                     >
-                      {isImage(file.file_type) ? (
+                      {isImage(file.mime_type) ? (
                         <img 
                           src={`${API_URL}${file.url}`}
                           alt={file.original_name}
@@ -1059,7 +1059,7 @@ const FilesTab = ({ customerId }) => {
                       
                       {/* Overlay com ações */}
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                        {(isImage(file.file_type) || file.file_type === 'application/pdf') && (
+                        {(isImage(file.mime_type) || file.mime_type === 'application/pdf') && (
                           <Button
                             size="sm"
                             variant="secondary"
@@ -1142,7 +1142,7 @@ const FilesTab = ({ customerId }) => {
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {isImage(file.file_type) ? (
+                      {isImage(file.mime_type) ? (
                         <img 
                           src={`${API_URL}${file.url}`}
                           alt={file.original_name}
@@ -1172,7 +1172,7 @@ const FilesTab = ({ customerId }) => {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      {isImage(file.file_type) && (
+                      {isImage(file.mime_type) && (
                         <Button
                           size="sm"
                           variant="outline"

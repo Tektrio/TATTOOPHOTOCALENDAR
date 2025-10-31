@@ -317,6 +317,7 @@ db.serialize(() => {
     mime_type TEXT,
     file_size INTEGER,
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    deleted_at DATETIME,
     FOREIGN KEY (client_id) REFERENCES clients (id),
     FOREIGN KEY (appointment_id) REFERENCES appointments (id)
   )`);
@@ -325,6 +326,13 @@ db.serialize(() => {
   db.run(`ALTER TABLE files ADD COLUMN mime_type TEXT`, (err) => {
     if (err && !err.message.includes('duplicate column')) {
       console.error('Erro ao adicionar coluna mime_type:', err.message);
+    }
+  });
+  
+  // Adicionar coluna deleted_at se não existir (para bancos existentes - soft delete)
+  db.run(`ALTER TABLE files ADD COLUMN deleted_at DATETIME`, (err) => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Erro ao adicionar coluna deleted_at:', err.message);
     }
   });
 
