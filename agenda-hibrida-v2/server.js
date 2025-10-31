@@ -2134,32 +2134,41 @@ async function extractPsdThumbnail(psdFilePath) {
 // Listar arquivos do cliente
 app.get('/api/clients/:clientId/files', (req, res) => {
   const { clientId } = req.params;
+  const { category } = req.query;
   
-  db.all(
-    "SELECT * FROM files WHERE client_id = ? AND deleted_at IS NULL ORDER BY uploaded_at DESC",
-    [clientId],
-    (err, files) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      
-      // Adicionar thumbnail_url para cada arquivo
-      const filesWithThumbnails = files.map(file => {
-        const mimeType = file.mime_type || '';
-        const fileExt = path.extname(file.original_name || '').toLowerCase();
-        const isPsd = fileExt === '.psd' || mimeType === 'image/vnd.adobe.photoshop';
-        const isImage = mimeType.startsWith('image/') || isPsd;
-        
-        return {
-          ...file,
-          thumbnail_url: isImage ? `/api/files/${file.id}/thumbnail?size=300` : null
-        };
-      });
-      
-      console.log(`📋 [FILES] Listando ${filesWithThumbnails.length} arquivos do cliente ${clientId}`);
-      res.json(filesWithThumbnails);
+  // Construir query SQL com filtro de categoria opcional
+  let query = "SELECT * FROM files WHERE client_id = ? AND deleted_at IS NULL";
+  const params = [clientId];
+  
+  if (category && category !== 'all') {
+    query += " AND category = ?";
+    params.push(category);
+  }
+  
+  query += " ORDER BY uploaded_at DESC";
+  
+  db.all(query, params, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
     }
-  );
+    
+    // Adicionar thumbnail_url para cada arquivo
+    const filesWithThumbnails = files.map(file => {
+      const mimeType = file.mime_type || '';
+      const fileExt = path.extname(file.original_name || '').toLowerCase();
+      const isPsd = fileExt === '.psd' || mimeType === 'image/vnd.adobe.photoshop';
+      const isImage = mimeType.startsWith('image/') || isPsd;
+      
+      return {
+        ...file,
+        thumbnail_url: isImage ? `/api/files/${file.id}/thumbnail?size=300` : null
+      };
+    });
+    
+    const categoryInfo = category && category !== 'all' ? ` (categoria: ${category})` : '';
+    console.log(`📋 [FILES] Listando ${filesWithThumbnails.length} arquivos do cliente ${clientId}${categoryInfo}`);
+    res.json(filesWithThumbnails);
+  });
 });
 
 // Servir arquivos com otimização e cache de thumbnails
