@@ -1,0 +1,183 @@
+name: 🐛 Bug Report
+description: Reportar um bug ou problema no sistema
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐛 Obrigado por reportar um bug!
+        
+        Por favor, preencha o formulário abaixo com o máximo de detalhes possível.
+        Isso nos ajudará a reproduzir e corrigir o problema mais rapidamente.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Descrição do Bug
+      description: Uma descrição clara e concisa do que é o bug
+      placeholder: O que aconteceu? O que você esperava que acontecesse?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔄 Passos para Reproduzir
+      description: Como podemos reproduzir este bug?
+      placeholder: |
+        1. Vá para '...'
+        2. Clique em '...'
+        3. Role até '...'
+        4. Veja o erro
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Comportamento Esperado
+      description: O que deveria acontecer?
+      placeholder: Descreva o comportamento esperado
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Comportamento Atual
+      description: O que está acontecendo?
+      placeholder: Descreva o comportamento atual
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots
+      description: Se aplicável, adicione screenshots para ajudar a explicar o problema
+      placeholder: Cole suas imagens aqui
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 💻 Sistema Operacional
+      description: Em qual sistema operacional o bug ocorre?
+      options:
+        - Windows
+        - macOS
+        - Linux (Ubuntu)
+        - Linux (Debian)
+        - Linux (Fedora)
+        - Linux (Outro)
+        - Outro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: 🌐 Navegador
+      description: Em qual navegador o bug ocorre?
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Opera
+        - Brave
+        - Outro
+    validations:
+      required: true
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: 🔢 Versão do Navegador
+      description: Qual versão do navegador você está usando?
+      placeholder: Ex. 120.0.6099.109
+    validations:
+      required: false
+
+  - type: input
+    id: app-version
+    attributes:
+      label: 📦 Versão da Aplicação
+      description: Qual versão da aplicação você está usando?
+      placeholder: Ex. v2.0.0 ou commit hash
+    validations:
+      required: false
+
+  - type: textarea
+    id: console-logs
+    attributes:
+      label: 📜 Logs de Erro
+      description: Cole aqui os logs de erro relevantes (se houver)
+      placeholder: |
+        Cole os logs aqui...
+        
+        Você pode encontrar os logs:
+        - Backend: Verifique o terminal do servidor
+        - Frontend: Abra DevTools (F12) → Console
+      render: shell
+
+  - type: textarea
+    id: browser-console
+    attributes:
+      label: 🖥️ Console do Navegador
+      description: Cole aqui os erros do console do navegador (F12)
+      placeholder: Cole os erros do console aqui...
+      render: javascript
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🔴 Severidade
+      description: Quão crítico é este bug?
+      options:
+        - 🔴 Crítica - Sistema não funciona / Perda de dados
+        - 🟠 Alta - Funcionalidade importante quebrada
+        - 🟡 Média - Funcionalidade menor afetada
+        - 🟢 Baixa - Problema cosmético / menor
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: 🔁 Frequência
+      description: Com que frequência o bug ocorre?
+      options:
+        - Sempre (100%)
+        - Frequentemente (>50%)
+        - Às vezes (25-50%)
+        - Raramente (<25%)
+        - Apenas uma vez
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 Contexto Adicional
+      description: Qualquer outra informação relevante sobre o problema
+      placeholder: |
+        - O problema começou após alguma ação específica?
+        - Existe algum workaround?
+        - Outros detalhes relevantes?
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Confirme que você verificou os seguintes itens
+      options:
+        - label: Procurei por issues similares antes de criar esta
+          required: true
+        - label: Este bug ainda está presente na versão mais recente
+          required: true
+        - label: Incluí todas as informações necessárias para reproduzir o bug
+          required: true
+

@@ -1,0 +1,12 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📚 Documentação
+    url: https://github.com/seu-usuario/tattoo-scheduler/blob/main/README.md
+    about: Consulte a documentação completa do sistema
+  - name: 💬 Discussões
+    url: https://github.com/seu-usuario/tattoo-scheduler/discussions
+    about: Faça perguntas ou discuta ideias com a comunidade
+  - name: 🆘 Ajuda / Suporte
+    url: https://github.com/seu-usuario/tattoo-scheduler/discussions/categories/q-a
+    about: Precisa de ajuda? Pergunte na seção Q&A
+

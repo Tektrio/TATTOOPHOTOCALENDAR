@@ -1,0 +1,190 @@
+name: ✨ Feature Request
+description: Sugerir uma nova funcionalidade para o sistema
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ✨ Obrigado por sugerir uma nova funcionalidade!
+        
+        Por favor, descreva sua ideia em detalhes. Queremos entender o problema
+        que você está tentando resolver e como você imagina a solução.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Descrição da Funcionalidade
+      description: Descreva claramente a funcionalidade que você gostaria de ver
+      placeholder: Eu gostaria que o sistema pudesse...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problema que Resolve
+      description: Qual problema esta funcionalidade resolveria?
+      placeholder: |
+        Atualmente eu não consigo...
+        Isso é um problema porque...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Solução Proposta
+      description: Como você imagina que esta funcionalidade deveria funcionar?
+      placeholder: |
+        A funcionalidade deveria...
+        O usuário poderia...
+        O sistema deveria...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternativas Consideradas
+      description: Você considerou outras soluções ou workarounds?
+      placeholder: |
+        Também pensei em...
+        Atualmente eu faço... mas não é ideal porque...
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockups / Screenshots / Wireframes
+      description: Se você tem uma ideia visual, compartilhe aqui
+      placeholder: |
+        Cole imagens, links para designs, ou desenhe no papel e tire foto!
+        Qualquer visualização ajuda a entender melhor sua ideia.
+
+  - type: dropdown
+    id: ux-impact
+    attributes:
+      label: 👥 Impacto na UX
+      description: Como esta funcionalidade afetaria a experiência do usuário?
+      options:
+        - Melhoria significativa na experiência
+        - Melhoria moderada
+        - Pequena melhoria
+        - Não tenho certeza
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 🧮 Complexidade Estimada
+      description: Na sua opinião, quão complexo seria implementar isso?
+      options:
+        - Simples (algumas horas)
+        - Moderado (alguns dias)
+        - Complexo (semanas)
+        - Muito complexo (meses)
+        - Não sei estimar
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⭐ Prioridade Sugerida
+      description: Quão importante/urgente é esta funcionalidade para você?
+      options:
+        - 🔴 Crítica - Necessário imediatamente
+        - 🟠 Alta - Muito importante
+        - 🟡 Média - Seria útil
+        - 🟢 Baixa - Nice to have
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-audience
+    attributes:
+      label: 🎯 Público-Alvo
+      description: Quem se beneficiaria desta funcionalidade?
+      multiple: true
+      options:
+        - Tatuadores (usuários principais)
+        - Clientes finais
+        - Administradores do sistema
+        - Todos os usuários
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: 📋 Requisitos Funcionais
+      description: Liste os requisitos específicos desta funcionalidade
+      placeholder: |
+        1. A funcionalidade deve...
+        2. O sistema precisa...
+        3. É necessário...
+      value: |
+        1. 
+        2. 
+        3. 
+
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: 🔧 Área Afetada
+      description: Qual parte do sistema seria afetada?
+      multiple: true
+      options:
+        - Dashboard
+        - Calendário
+        - Gestão de Clientes
+        - Agendamentos
+        - Galeria de Imagens
+        - Google Drive
+        - Importação de Dados
+        - Configurações
+        - Backend/API
+        - Banco de Dados
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: 🔬 Detalhes Técnicos (Opcional)
+      description: Se você tem conhecimento técnico, compartilhe ideias sobre implementação
+      placeholder: |
+        Talvez pudesse ser implementado usando...
+        Referências de bibliotecas/APIs: ...
+        Exemplos de implementação similar: ...
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 Contexto Adicional
+      description: Qualquer outra informação relevante sobre esta funcionalidade
+      placeholder: |
+        - Por que você precisa disso?
+        - Quão frequentemente você usaria?
+        - Links para referências similares em outros sistemas?
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Confirme que você verificou os seguintes itens
+      options:
+        - label: Procurei por feature requests similares antes de criar este
+          required: true
+        - label: Esta funcionalidade não existe no sistema atual
+          required: true
+        - label: Descrevi claramente o problema e a solução proposta
+          required: true
+        - label: Estou disponível para discutir detalhes desta funcionalidade
+          required: false
+

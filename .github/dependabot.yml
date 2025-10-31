@@ -1,0 +1,73 @@
+version: 2
+
+updates:
+  # Backend - npm
+  - package-ecosystem: "npm"
+    directory: "/agenda-hibrida-v2"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "seu-usuario"
+    assignees:
+      - "seu-usuario"
+    labels:
+      - "dependencies"
+      - "backend"
+    commit-message:
+      prefix: "chore(backend)"
+      include: "scope"
+    # Auto-merge patches de segurança
+    allow:
+      - dependency-type: "all"
+    # Agrupar updates
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  # Frontend - npm
+  - package-ecosystem: "npm"
+    directory: "/agenda-hibrida-frontend"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "seu-usuario"
+    assignees:
+      - "seu-usuario"
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "chore(frontend)"
+      include: "scope"
+    allow:
+      - dependency-type: "all"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+

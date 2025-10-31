@@ -1,0 +1,146 @@
+# Configuração de auto-label para PRs
+# Documentação: https://github.com/actions/labeler
+
+# Frontend
+frontend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'agenda-hibrida-frontend/src/**/*'
+      - 'agenda-hibrida-frontend/vite.config.js'
+      - 'agenda-hibrida-frontend/package.json'
+      - 'agenda-hibrida-frontend/index.html'
+      - 'agenda-hibrida-frontend/tailwind.config.js'
+
+# Backend
+backend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'agenda-hibrida-v2/routes/**/*'
+      - 'agenda-hibrida-v2/services/**/*'
+      - 'agenda-hibrida-v2/middleware/**/*'
+      - 'agenda-hibrida-v2/utils/**/*'
+      - 'agenda-hibrida-v2/server.js'
+      - 'agenda-hibrida-v2/package.json'
+
+# Database
+database:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'agenda-hibrida-v2/database/**/*'
+      - 'agenda-hibrida-v2/**/*.sql'
+      - 'agenda-hibrida-v2/database/migrations/**/*'
+
+# Tests
+tests:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/__tests__/**/*'
+      - '**/tests/**/*'
+      - '**/*.test.js'
+      - '**/*.spec.js'
+      - '**/playwright.config.js'
+      - '**/vitest.config.js'
+      - '**/jest.config.js'
+
+# E2E Tests
+e2e:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'agenda-hibrida-frontend/tests/e2e/**/*'
+      - '**/playwright.config.js'
+
+# Documentation
+docs:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.md'
+      - 'docs/**/*'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+
+# Configuration
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.config.js'
+      - '**/*.config.json'
+      - '.github/**/*'
+      - '**/.env.example'
+      - '**/tsconfig.json'
+      - '**/jsconfig.json'
+
+# CI/CD
+ci-cd:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**/*'
+      - '.github/actions/**/*'
+
+# Dependencies
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/pnpm-lock.yaml'
+
+# Security
+security:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/middleware/auth*'
+      - '**/services/*auth*'
+      - '**/*security*'
+
+# UI/UX
+ui:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/components/**/*'
+      - '**/*.css'
+      - '**/styles/**/*'
+      - '**/tailwind.config.js'
+
+# API
+api:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'agenda-hibrida-v2/routes/**/*'
+      - '**/api/**/*'
+
+# Build/Deploy
+build:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/vite.config.js'
+      - '**/webpack.config.js'
+      - '**/rollup.config.js'
+      - '**/Dockerfile'
+      - '**/.dockerignore'
+
+# Performance
+performance:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*performance*'
+      - '**/*optimization*'
+      - '**/*cache*'
+
+# Bugfix
+bug:
+  - head-branch:
+    - '^bugfix\/.+'
+    - '^fix\/.+'
+    - '^hotfix\/.+'
+
+# Feature
+feature:
+  - head-branch:
+    - '^feature\/.+'
+    - '^feat\/.+'
+
+# Refactor
+refactor:
+  - head-branch:
+    - '^refactor\/.+'
+
