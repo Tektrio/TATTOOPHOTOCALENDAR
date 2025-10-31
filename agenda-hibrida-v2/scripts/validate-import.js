@@ -106,7 +106,7 @@ async function validateClients(db, options) {
   return issues;
 }
 
-async function validateTransactions(db, options) {
+async function validateTransactions(db, _options) {
   console.log(c('blue', '\n💳 Validando Transações...'));
   
   const issues = [];
@@ -149,7 +149,7 @@ async function validateTransactions(db, options) {
   return issues;
 }
 
-async function validateServices(db, options) {
+async function validateServices(db, _options) {
   console.log(c('blue', '\n🔧 Validando Serviços...'));
   
   const issues = [];
@@ -188,7 +188,7 @@ async function validateServices(db, options) {
   return issues;
 }
 
-async function validateGiftCards(db, options) {
+async function validateGiftCards(db, _options) {
   console.log(c('blue', '\n🎁 Validando Gift Cards...'));
   
   const issues = [];
@@ -215,7 +215,7 @@ async function validateGiftCards(db, options) {
   return issues;
 }
 
-async function validateForms(db, options) {
+async function validateForms(db, _options) {
   console.log(c('blue', '\n📋 Validando Formulários...'));
   
   const issues = [];
@@ -245,7 +245,7 @@ async function validateForms(db, options) {
   return issues;
 }
 
-async function validateDataIntegrity(db, options) {
+async function validateDataIntegrity(db, _options) {
   console.log(c('blue', '\n🔍 Validando Integridade dos Dados...'));
   
   const issues = [];

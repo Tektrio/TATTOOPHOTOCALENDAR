@@ -1601,9 +1601,10 @@ app.post('/api/clients', async (req, res) => {
     }
 
     // 12. Log de auditoria (se disponível)
-    // eslint-disable-next-line no-undef
+    // eslint-disable-next-line no-undef, no-unreachable
     if (typeof auditLog === 'function') {
       try {
+        // eslint-disable-next-line no-undef
         await auditLog('client', 'create', clientId, { 
           name, 
           phone, 
@@ -4862,7 +4863,7 @@ app.get('/api/drive/versions/:fileId', async (req, res) => {
 // Upload de arquivos (rota alternativa para compatibilidade com frontend)
 app.post('/api/files/upload', upload.array('files', 10), async (req, res) => {
   try {
-    const { client_id, category, tags: _tags, notes: _notes } = req.body;
+    const { client_id, category } = req.body; // tags, notes não utilizados
     
     if (!client_id) {
       return res.status(400).json({ error: 'client_id é obrigatório' });
