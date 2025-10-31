@@ -12,7 +12,7 @@ test.describe('Appointment Management Tests', () => {
     
     // Navigate to Agendamentos tab
     await page.click('[data-testid="tab-appointments"]');
-    await page.waitForTimeout(2000); // Lazy loading
+    await page.waitForLoadState('networkidle', { timeout: 5000 });
   });
 
   test('should open new appointment modal', async ({ page }) => {
@@ -42,7 +42,7 @@ test.describe('Appointment Management Tests', () => {
     
     // Open new appointment modal
     await page.click('[data-testid="btn-new-appointment"]');
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(300);
     
     // Fill title
     await page.fill('[data-testid="input-appointment-title"]', appointmentData.title);
@@ -72,13 +72,13 @@ test.describe('Appointment Management Tests', () => {
     }
     
     // Wait for validation
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle', { timeout: 3000 });
     
     // Submit form
     await page.click('[data-testid="btn-save-appointment"]');
     
     // Wait for success
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 5000 });
     
     // Verify success (toast or appointment in list)
     const successNotification = page.locator('text=/sucesso|criado|agendado/i');
@@ -93,13 +93,13 @@ test.describe('Appointment Management Tests', () => {
   test('should validate appointment required fields', async ({ page }) => {
     // Open new appointment modal
     await page.click('[data-testid="btn-new-appointment"]');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
     
     // Try to submit empty form
     await page.click('[data-testid="btn-save-appointment"]');
     
     // Wait for validation
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle', { timeout: 3000 });
     
     // Verify error messages or that save button remains disabled
     const errorMessage = page.locator('text=/obrigatório|required|Campo obrigatório/i, [class*="error"]');
@@ -114,7 +114,7 @@ test.describe('Appointment Management Tests', () => {
   test('should display calendar view', async ({ page }) => {
     // Navigate to Calendário tab
     await page.click('[data-testid="tab-calendar"]');
-    await page.waitForTimeout(2000); // Lazy loading
+    await page.waitForLoadState('networkidle', { timeout: 5000 });
     await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Verify calendar elements
@@ -131,7 +131,7 @@ test.describe('Appointment Management Tests', () => {
   test('should navigate calendar months', async ({ page }) => {
     // Navigate to Calendário tab
     await page.click('[data-testid="tab-calendar"]');
-    await page.waitForTimeout(2000); // Lazy loading
+    await page.waitForLoadState('networkidle', { timeout: 5000 });
     await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Get current month
@@ -139,7 +139,7 @@ test.describe('Appointment Management Tests', () => {
     
     // Click next month
     await page.click('[data-testid="btn-calendar-next"]');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
     
     // Get new month
     const newMonth = await page.locator('text=/Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro/i').first().textContent();
@@ -151,7 +151,7 @@ test.describe('Appointment Management Tests', () => {
   test('should display different calendar views', async ({ page }) => {
     // Navigate to Calendário tab
     await page.click('[data-testid="tab-calendar"]');
-    await page.waitForTimeout(2000); // Lazy loading
+    await page.waitForLoadState('networkidle', { timeout: 5000 });
     await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Check for view toggle buttons (Month, Week, Day, List)
@@ -163,7 +163,7 @@ test.describe('Appointment Management Tests', () => {
     // If view toggles exist, test them
     if (await weekView.count() > 0) {
       await weekView.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300);
       
       // Verify week view loaded
       await expect(page.locator('text=/Seg|Mon|Ter|Tue|Qua|Wed|Qui|Thu|Sex|Fri|Sáb|Sat|Dom|Sun/i')).toBeVisible();
@@ -173,7 +173,7 @@ test.describe('Appointment Management Tests', () => {
   test('should click on calendar day', async ({ page }) => {
     // Navigate to Calendário tab
     await page.click('[data-testid="tab-calendar"]');
-    await page.waitForTimeout(2000); // Lazy loading
+    await page.waitForLoadState('networkidle', { timeout: 5000 });
     await expect(page.locator('.calendar-view')).toBeVisible({ timeout: 60000 });
     
     // Click on a calendar day
@@ -181,7 +181,7 @@ test.describe('Appointment Management Tests', () => {
     
     if (await dayCell.count() > 0) {
       await dayCell.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300);
       
       // Check if modal or popup appeared
       const modalOpened = await page.locator('[role="dialog"], [class*="modal"]').isVisible().catch(() => false);
