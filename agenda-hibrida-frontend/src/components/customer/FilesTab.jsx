@@ -51,6 +51,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { RotateCcw } from 'lucide-react';
 
 const FilesTab = ({ customerId }) => {
   const [files, setFiles] = useState([]);
@@ -85,6 +87,10 @@ const FilesTab = ({ customerId }) => {
   const [uploadProgress, setUploadProgress] = useState({}); // { category: { percentage: 0, fileName: '' } }
   const [previewFile, setPreviewFile] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('files'); // 'files' | 'trash'
+  const [trashedFiles, setTrashedFiles] = useState([]);
+  const [trashedFilesCount, setTrashedFilesCount] = useState(0);
+  const [loadingTrash, setLoadingTrash] = useState(false);
 
   // Carregar categorias dinâmicas do backend
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
@@ -116,6 +122,29 @@ const FilesTab = ({ customerId }) => {
       setLoading(false);
     }
   }, [customerId, selectedCategory, API_URL]);
+
+  // Carregar arquivos deletados (lixeira)
+  const loadTrashedFiles = useCallback(async () => {
+    try {
+      setLoadingTrash(true);
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/trash`);
+      
+      if (!response.ok) {
+        throw new Error('Erro ao carregar arquivos deletados');
+      }
+      
+      const data = await response.json();
+      setTrashedFiles(data.files || []);
+      setTrashedFilesCount(data.count || 0);
+    } catch (err) {
+      console.error('Erro ao carregar lixeira:', err);
+      setError('Erro ao carregar lixeira. Tente novamente.');
+    } finally {
+      setLoadingTrash(false);
+    }
+  }, [customerId, API_URL]);
 
   // Carregar dados do cliente
   const loadCustomer = useCallback(async () => {
@@ -163,144 +192,171 @@ const FilesTab = ({ customerId }) => {
   const shouldPollRef = useRef(false);
   const previousDriveStatusRef = useRef(null);
   
+  // Refs para sempre ter a versão mais recente das funções (evita stale closures)
+  const loadFolderLinksRef = useRef(loadFolderLinks);
+  const setSuccessRef = useRef(setSuccess);
+  const setErrorRef = useRef(setError);
+  const setSyncStatusRef = useRef(setSyncStatus);
+  
+  // Atualizar refs quando as funções mudarem
   useEffect(() => {
+    loadFolderLinksRef.current = loadFolderLinks;
+  }, [loadFolderLinks]);
+  
+  useEffect(() => {
+    setSuccessRef.current = setSuccess;
+  }, [setSuccess]);
+  
+  useEffect(() => {
+    setErrorRef.current = setError;
+  }, [setError]);
+  
+  useEffect(() => {
+    setSyncStatusRef.current = setSyncStatus;
+  }, [setSyncStatus]);
+  
+  // Definir checkSyncStatus com useCallback para estabilizar a referência
+  const checkSyncStatus = useCallback(async () => {
     if (!customerId) return;
     
-    const checkSyncStatus = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/clients/${customerId}/sync-status`);
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Capturar estado anterior antes da atualização
-          const wasPreviouslyPending = previousDriveStatusRef.current === 'pending';
-          
-          // Determinar o novo status baseado na resposta (sem side effects)
-          let newDriveStatus = null;
-          switch (data.status) {
-            case 'pending':
-            case 'syncing':
-              newDriveStatus = 'pending';
-              break;
-            case 'completed':
-              newDriveStatus = 'synced';
-              break;
-            case 'error':
-              newDriveStatus = 'error';
-              break;
-            case 'idle':
-            default:
-              // Se estava pending e agora está idle, consideramos synced
-              newDriveStatus = wasPreviouslyPending ? 'synced' : previousDriveStatusRef.current;
-              break;
-          }
-          
-          // Determinar ações necessárias baseado no status
-          let needsPolling = false;
-          let shouldShowSuccess = false;
-          let shouldShowError = false;
-          let errorMessage = '';
-          let shouldReloadFolders = false;
-          
-          switch (data.status) {
-            case 'pending':
-            case 'syncing':
-              needsPolling = true;
-              break;
-                
-            case 'completed':
-              needsPolling = false;
-              shouldShowSuccess = true;
-              shouldReloadFolders = true;
-              break;
-                
-            case 'error':
-              needsPolling = false;
-              shouldShowError = true;
-              errorMessage = data.error || 'Erro desconhecido';
-              break;
-                
-            case 'idle':
-            default:
-              needsPolling = false;
-              // Se estava pending e agora está idle, mostrar sucesso
-              if (wasPreviouslyPending) {
-                shouldShowSuccess = true;
-                shouldReloadFolders = true;
-              }
-              break;
-          }
-          
-          // Atualizar status de sincronização (função pura - apenas retorna novo estado)
-          setSyncStatus(prev => {
-            const newStatus = { ...prev };
-            
-            switch (data.status) {
-              case 'pending':
-              case 'syncing':
-                newStatus.drive = 'pending';
-                break;
-                
-              case 'completed':
-                newStatus.drive = 'synced';
-                break;
-                
-              case 'error':
-                newStatus.drive = 'error';
-                break;
-                
-              case 'idle':
-              default:
-                // Se estava pending e agora está idle, consideramos synced
-                if (prev.drive === 'pending') {
-                  newStatus.drive = 'synced';
-                }
-                break;
-            }
-            
-            return newStatus;
-          });
-          
-          // Atualizar ref com o novo status para a próxima iteração (fora do updater)
-          previousDriveStatusRef.current = newDriveStatus;
-          
-          // Side effects executados APÓS a atualização de estado
-          if (shouldShowSuccess) {
-            setSuccess('Sincronização com Google Drive concluída!');
-            setTimeout(() => setSuccess(null), 5000);
-          }
-          
-          if (shouldShowError) {
-            setError(`Erro na sincronização: ${errorMessage}`);
-            setTimeout(() => setError(null), 10000);
-          }
-          
-          if (shouldReloadFolders) {
-            loadFolderLinks();
-          }
-          
-          // Atualizar ref de polling
-          shouldPollRef.current = needsPolling;
-          
-          // Configurar ou limpar polling baseado no status
-          if (needsPolling && !pollIntervalRef.current) {
-            // Iniciar polling
-            pollIntervalRef.current = setInterval(checkSyncStatus, 3000);
-          } else if (!needsPolling && pollIntervalRef.current) {
-            // Parar polling
-            clearInterval(pollIntervalRef.current);
-            pollIntervalRef.current = null;
-          }
-        }
-      } catch (err) {
-        console.error('Erro ao verificar status de sincronização:', err);
+    try {
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/sync-status`);
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      
+      // Capturar estado anterior antes da atualização
+      const wasPreviouslyPending = previousDriveStatusRef.current === 'pending';
+      
+      // Determinar o novo status baseado na resposta (sem side effects)
+      let newDriveStatus = null;
+      switch (data.status) {
+        case 'pending':
+        case 'syncing':
+          newDriveStatus = 'pending';
+          break;
+        case 'completed':
+          newDriveStatus = 'synced';
+          break;
+        case 'error':
+          newDriveStatus = 'error';
+          break;
+        case 'idle':
+        default:
+          // Se estava pending e agora está idle, consideramos synced
+          newDriveStatus = wasPreviouslyPending ? 'synced' : previousDriveStatusRef.current;
+          break;
       }
-    };
+      
+      // Determinar ações necessárias baseado no status
+      let needsPolling = false;
+      let shouldShowSuccess = false;
+      let shouldShowError = false;
+      let errorMessage = '';
+      let shouldReloadFolders = false;
+      
+      switch (data.status) {
+        case 'pending':
+        case 'syncing':
+          needsPolling = true;
+          break;
+            
+        case 'completed':
+          needsPolling = false;
+          shouldShowSuccess = true;
+          shouldReloadFolders = true;
+          break;
+            
+        case 'error':
+          needsPolling = false;
+          shouldShowError = true;
+          errorMessage = data.error || 'Erro desconhecido';
+          break;
+            
+        case 'idle':
+        default:
+          needsPolling = false;
+          // Se estava pending e agora está idle, mostrar sucesso
+          if (wasPreviouslyPending) {
+            shouldShowSuccess = true;
+            shouldReloadFolders = true;
+          }
+          break;
+      }
+      
+      // Atualizar status de sincronização (função pura - apenas retorna novo estado)
+      setSyncStatusRef.current(prev => {
+        const newStatus = { ...prev };
+        
+        switch (data.status) {
+          case 'pending':
+          case 'syncing':
+            newStatus.drive = 'pending';
+            break;
+            
+          case 'completed':
+            newStatus.drive = 'synced';
+            break;
+            
+          case 'error':
+            newStatus.drive = 'error';
+            break;
+            
+          case 'idle':
+          default:
+            // Se estava pending e agora está idle, consideramos synced
+            if (prev.drive === 'pending') {
+              newStatus.drive = 'synced';
+            }
+            break;
+        }
+        
+        return newStatus;
+      });
+      
+      // Atualizar ref com o novo status para a próxima iteração (fora do updater)
+      previousDriveStatusRef.current = newDriveStatus;
+      
+      // Side effects executados APÓS a atualização de estado (usando refs para sempre ter versão atual)
+      if (shouldShowSuccess) {
+        setSuccessRef.current('Sincronização com Google Drive concluída!');
+        setTimeout(() => setSuccessRef.current(null), 5000);
+      }
+      
+      if (shouldShowError) {
+        setErrorRef.current(`Erro na sincronização: ${errorMessage}`);
+        setTimeout(() => setErrorRef.current(null), 10000);
+      }
+      
+      if (shouldReloadFolders) {
+        loadFolderLinksRef.current();
+      }
+      
+      // Atualizar ref de polling
+      shouldPollRef.current = needsPolling;
+      
+      // Configurar ou limpar polling baseado no status
+      if (needsPolling && !pollIntervalRef.current) {
+        // Iniciar polling
+        pollIntervalRef.current = setInterval(checkSyncStatus, 3000);
+      } else if (!needsPolling && pollIntervalRef.current) {
+        // Parar polling
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    } catch (err) {
+      console.error('Erro ao verificar status de sincronização:', err);
+    }
+  }, [customerId, API_URL]); // Dependências mínimas - apenas valores primitivos
+  
+  // Effect para iniciar o polling
+  useEffect(() => {
+    if (!customerId) return;
     
     // Verificação inicial
     checkSyncStatus();
     
-    // Cleanup
+    // Cleanup - garantir que intervalos são sempre limpos
     return () => {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
@@ -308,7 +364,7 @@ const FilesTab = ({ customerId }) => {
       }
       shouldPollRef.current = false;
     };
-  }, [customerId, API_URL, loadFolderLinks]);
+  }, [customerId, checkSyncStatus]);
 
   // Upload de arquivos
   const handleFileUpload = async (uploadFiles, category) => {
@@ -549,6 +605,61 @@ const FilesTab = ({ customerId }) => {
     } catch (err) {
       console.error('Erro ao copiar arquivo:', err);
       setError(err.message || 'Erro ao copiar arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Restaurar arquivo da lixeira
+  const handleRestoreFile = async (fileId) => {
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${fileId}/restore`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao restaurar arquivo');
+      }
+
+      setSuccess('Arquivo restaurado com sucesso!');
+      
+      // Recarregar ambas listas
+      await loadFiles();
+      await loadTrashedFiles();
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao restaurar arquivo:', err);
+      setError('Erro ao restaurar arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Deletar arquivo permanentemente
+  const handleDeletePermanently = async (fileId) => {
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${fileId}?permanent=true`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao deletar arquivo permanentemente');
+      }
+
+      setSuccess('Arquivo deletado permanentemente!');
+      
+      // Recarregar lixeira
+      await loadTrashedFiles();
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao deletar arquivo:', err);
+      setError('Erro ao deletar arquivo. Tente novamente.');
       setTimeout(() => setError(null), 3000);
     }
   };

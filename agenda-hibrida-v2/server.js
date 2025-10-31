@@ -2163,33 +2163,52 @@ app.get('/api/clients/:clientId/files', (req, res) => {
   }
   
   query += " ORDER BY uploaded_at DESC";
-  
+
   db.all(query, params, (err, files) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    
-    // Adicionar thumbnail_url para cada arquivo
-    const filesWithThumbnails = files.map(file => {
-      // Garantir que mime_type está presente (compatibilidade com dados antigos)
-      const mimeType = file.mime_type || file.file_type || '';
-      const fileExt = path.extname(file.original_name || '').toLowerCase();
-      const isPsd = fileExt === '.psd' || mimeType === 'image/vnd.adobe.photoshop';
-      const isImage = mimeType.startsWith('image/') || isPsd;
-      
-      return {
-        ...file,
-        // Garantir que ambos os campos existem para compatibilidade
-        file_type: file.file_type || file.mime_type,
-        mime_type: file.mime_type || file.file_type,
-        thumbnail_url: isImage ? `/api/files/${file.id}/thumbnail?size=300` : null
-      };
-    });
-    
-    const categoryInfo = category && category !== 'all' ? ` (categoria: ${category})` : '';
-    console.log(`📋 [FILES] Listando ${filesWithThumbnails.length} arquivos do cliente ${clientId}${categoryInfo}`);
-    res.json(filesWithThumbnails);
+    res.json(files);
   });
+});
+
+// Listar arquivos deletados (lixeira) do cliente
+app.get('/api/clients/:clientId/trash', (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const clientIdInt = parseInt(clientId, 10);
+    
+    // Validar ID do cliente
+    if (isNaN(clientIdInt) || clientIdInt <= 0) {
+      return res.status(400).json({ error: 'ID de cliente inválido' });
+    }
+    
+    // Buscar arquivos deletados
+    const query = `
+      SELECT 
+        *,
+        datetime(deleted_at) as deleted_at_formatted
+      FROM files 
+      WHERE client_id = ? 
+        AND deleted_at IS NOT NULL 
+      ORDER BY deleted_at DESC
+    `;
+    
+    db.all(query, [clientIdInt], (err, files) => {
+      if (err) {
+        console.error('Erro ao buscar arquivos deletados:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      res.json({
+        count: files.length,
+        files: files
+      });
+    });
+  } catch (error) {
+    console.error('Erro ao processar requisição de lixeira:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Servir arquivos com otimização e cache de thumbnails
