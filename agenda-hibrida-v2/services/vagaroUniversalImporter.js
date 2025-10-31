@@ -27,7 +27,7 @@ class VagaroUniversalImporter {
    * Detecta tipo de arquivo automaticamente
    */
   detectFileType(headers, fileName) {
-    const headerStr = headers.join(',').toLowerCase();
+    // const headerStr = headers.join(',').toLowerCase(); // Removido - não utilizado
     const fileNameLower = fileName.toLowerCase();
     
     if (headers.includes('Customer Since') || fileNameLower.includes('customerslist')) {

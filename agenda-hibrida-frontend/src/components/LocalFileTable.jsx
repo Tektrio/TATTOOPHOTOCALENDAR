@@ -34,7 +34,7 @@ const getParentFolder = (filePath, fileName) => {
  */
 export default function LocalFileTable({ 
   files = [], 
-  destinations = [],
+  destinations: _destinations = [],
   onSync,
   onView,
   onDownload,

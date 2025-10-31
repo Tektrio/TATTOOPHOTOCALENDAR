@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const { calculateMD5 } = require('../utils/fileHasher');
-const { parseFilePath, identifyClientFromFolderName, isPathInBase } = require('../utils/pathParser');
+const { parseFilePath, identifyClientFromFolderName } = require('../utils/pathParser');
 
 /**
  * Serviço de gerenciamento de armazenamento local

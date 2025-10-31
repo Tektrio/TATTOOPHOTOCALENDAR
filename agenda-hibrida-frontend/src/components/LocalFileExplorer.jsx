@@ -61,7 +61,7 @@ const buildFolderTree = (files, basePath) => {
     // Remove base path e divide em partes
     const relativePath = file.file_path.replace(basePath, '').replace(/^\//, '');
     const parts = relativePath.split('/');
-    const fileName = parts.pop();
+    parts.pop(); // Remove fileName (não utilizado)
     
     let currentNode = tree;
     

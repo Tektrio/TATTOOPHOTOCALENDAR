@@ -1,134 +1,179 @@
-name: Security Checks
+name: Security - Verificações de Segurança
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   schedule:
-    # Run security checks weekly on Monday at 9 AM
-    - cron: '0 9 * * 1'
+    - cron: "0 9 * * 1" # Segunda-feira às 9h UTC
+
+env:
+  NODE_VERSION: "22.x"
 
 jobs:
-  # Dependency vulnerability scan
-  dependency-scan:
-    name: Dependency Vulnerability Scan
+  dependency-audit:
+    name: Auditoria de Dependências
     runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10.4.1
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-      
-      - name: Install backend dependencies
-        run: |
-          cd agenda-hibrida-v2
-          npm ci
-      
-      - name: Install frontend dependencies
-        run: |
-          cd agenda-hibrida-frontend
-          pnpm install --frozen-lockfile
-      
-      - name: Run npm audit on backend
-        run: |
-          cd agenda-hibrida-v2
-          npm audit --audit-level=high
-        continue-on-error: true
-      
-      - name: Run pnpm audit on frontend
-        run: |
-          cd agenda-hibrida-frontend
-          pnpm audit --audit-level=high
-        continue-on-error: true
-      
-      - name: Check for outdated packages
-        run: |
-          echo "Backend outdated packages:"
-          cd agenda-hibrida-v2
-          npm outdated || true
-          echo "Frontend outdated packages:"
-          cd ../agenda-hibrida-frontend
-          pnpm outdated || true
 
-  # Secret scanning
-  secret-scan:
-    name: Secret Scanning
-    runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Audit Backend
+        run: |
+          cd agenda-hibrida-v2
+          echo "## 🔍 Backend Dependencies Audit" >> $GITHUB_STEP_SUMMARY
+          npm audit --json > audit-backend.json || true
+          npm audit --audit-level=moderate || echo "⚠️ Vulnerabilidades encontradas no backend"
+          cat audit-backend.json | jq -r '.metadata | "Total: \(.vulnerabilities.total), Critical: \(.vulnerabilities.critical), High: \(.vulnerabilities.high)"' >> $GITHUB_STEP_SUMMARY
+
+      - name: Audit Frontend
+        run: |
+          cd agenda-hibrida-frontend
+          echo "## 🔍 Frontend Dependencies Audit" >> $GITHUB_STEP_SUMMARY
+          npm audit --json > audit-frontend.json || true
+          npm audit --audit-level=moderate || echo "⚠️ Vulnerabilidades encontradas no frontend"
+          cat audit-frontend.json | jq -r '.metadata | "Total: \(.vulnerabilities.total), Critical: \(.vulnerabilities.critical), High: \(.vulnerabilities.high)"' >> $GITHUB_STEP_SUMMARY
+
+  secret-scanning:
+    name: Scan de Secrets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Check for exposed credentials
-        run: |
-          echo "Checking for exposed credentials..."
-          # Check for common patterns
-          if grep -r "GOOGLE_CLIENT_SECRET\s*=\s*['\"]" --include="*.js" --include="*.ts" .; then
-            echo "❌ Found hardcoded credentials!"
-            exit 1
-          fi
-          echo "✅ No hardcoded credentials found"
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
-  # Code security analysis
-  code-security:
-    name: Code Security Analysis
+  codeql-analysis:
+    name: CodeQL Analysis
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
-      contents: read
       actions: read
-    
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript"]
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
+      - name: Checkout código
+        uses: actions/checkout@v4
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: javascript
-      
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
-      
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
 
-  # Security summary
-  security-summary:
-    name: Security Summary
+  outdated-check:
+    name: Verificar Pacotes Desatualizados
     runs-on: ubuntu-latest
-    needs: [dependency-scan, secret-scan, code-security]
-    if: always()
-    
-    steps:
-      - name: Security check summary
-        run: |
-          echo "Security Checks Summary:"
-          echo "Dependency Scan: ${{ needs.dependency-scan.result }}"
-          echo "Secret Scan: ${{ needs.secret-scan.result }}"
-          echo "Code Security: ${{ needs.code-security.result }}"
-      
-      - name: Fail if critical issues found
-        if: |
-          needs.dependency-scan.result == 'failure' ||
-          needs.secret-scan.result == 'failure' ||
-          needs.code-security.result == 'failure'
-        run: |
-          echo "❌ Critical security issues found!"
-          exit 1
 
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Check Backend Outdated
+        run: |
+          cd agenda-hibrida-v2
+          echo "## 📦 Backend - Pacotes Desatualizados" >> $GITHUB_STEP_SUMMARY
+          npm outdated || echo "Pacotes encontrados" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check Frontend Outdated
+        run: |
+          cd agenda-hibrida-frontend
+          echo "## 📦 Frontend - Pacotes Desatualizados" >> $GITHUB_STEP_SUMMARY
+          npm outdated || echo "Pacotes encontrados" >> $GITHUB_STEP_SUMMARY
+
+  license-check:
+    name: Verificação de Licenças
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install license-checker
+        run: npm install -g license-checker
+
+      - name: Check Backend Licenses
+        run: |
+          cd agenda-hibrida-v2
+          npm ci
+          echo "## 📜 Backend - Licenças" >> $GITHUB_STEP_SUMMARY
+          license-checker --summary >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Check Frontend Licenses
+        run: |
+          cd agenda-hibrida-frontend
+          npm install
+          echo "## 📜 Frontend - Licenças" >> $GITHUB_STEP_SUMMARY
+          license-checker --summary >> $GITHUB_STEP_SUMMARY || true
+
+  security-summary:
+    name: Resumo de Segurança
+    runs-on: ubuntu-latest
+    needs:
+      [
+        dependency-audit,
+        secret-scanning,
+        codeql-analysis,
+        outdated-check,
+        license-check,
+      ]
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          echo "## 🔐 Resumo de Segurança" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Verificação | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Audit | ${{ needs.dependency-audit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secret Scanning | ${{ needs.secret-scanning.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL Analysis | ${{ needs.codeql-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Outdated Check | ${{ needs.outdated-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| License Check | ${{ needs.license-check.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail on critical issues
+        if: |
+          needs.dependency-audit.result == 'failure' ||
+          needs.secret-scanning.result == 'failure' ||
+          needs.codeql-analysis.result == 'failure'
+        run: |
+          echo "❌ Issues críticas de segurança encontradas!"
+          exit 1

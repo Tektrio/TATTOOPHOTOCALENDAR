@@ -3,7 +3,7 @@
  * Implementa regras para evitar duplicatas em clientes e agendamentos
  */
 
-const { normalizePhone, comparePhones } = require('./phoneNormalizer');
+const { normalizePhone } = require('./phoneNormalizer');
 const crypto = require('crypto');
 
 /**
@@ -252,7 +252,7 @@ async function findDuplicateAppointment(db, appointmentData) {
 
   // 4. Tentar por hash (cliente + data + horário)
   if (appointmentData.client_id || appointmentData.client_name) {
-    const hash = generateAppointmentHash(appointmentData);
+    // const hash = generateAppointmentHash(appointmentData); // Removido - não utilizado
     const byHash = await new Promise((resolve, reject) => {
       db.get(
         `SELECT * FROM appointments 

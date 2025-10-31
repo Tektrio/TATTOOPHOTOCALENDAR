@@ -1,179 +1,289 @@
-import { useState, useEffect } from 'react';
-import { X, Download, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { formatFileSize } from '../utils/syncHelpers';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { Download, X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 
-/**
- * Modal de preview de arquivos
- * Suporta visualização de imagens e PDFs
- */
-export default function FilePreviewModal({ file, files = [], onClose, onDownload }) {
-  const [currentIndex, setCurrentIndex] = useState(() => {
-    return files.findIndex(f => f.id === file?.id) || 0;
-  });
+const FilePreviewModal = ({ 
+  file, 
+  isOpen, 
+  onClose, 
+  allFiles = [], 
+  onNavigate 
+}) => {
+  const [zoom, setZoom] = useState(100);
+  const [error, setError] = useState(null);
+  const [pdfLoadError, setPdfLoadError] = useState(false);
 
-  if (!file) return null;
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-  const currentFile = files[currentIndex] || file;
-  const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < files.length - 1;
-
-  const handlePrevious = () => {
-    if (hasPrevious) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (hasNext) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  // Adicionar event listener para atalhos de teclado
+  // Reset zoom quando mudar de arquivo
   useEffect(() => {
+    setZoom(100);
+    setError(null);
+    setPdfLoadError(false);
+  }, [file?.id]);
+
+  // Handlers com useCallback ANTES do early return
+  const handlePrevious = useCallback(() => {
+    if (!onNavigate || !file) return;
+    
+    const previewable = allFiles.filter(f => 
+      f.mime_type?.startsWith('image/') || f.mime_type === 'application/pdf'
+    );
+    const idx = previewable.findIndex(f => f.id === file.id);
+    
+    if (idx > 0) {
+      onNavigate(previewable[idx - 1]);
+    }
+  }, [onNavigate, allFiles, file]);
+
+  const handleNext = useCallback(() => {
+    if (!onNavigate || !file) return;
+    
+    const previewable = allFiles.filter(f => 
+      f.mime_type?.startsWith('image/') || f.mime_type === 'application/pdf'
+    );
+    const idx = previewable.findIndex(f => f.id === file.id);
+    
+    if (idx >= 0 && idx < previewable.length - 1) {
+      onNavigate(previewable[idx + 1]);
+    }
+  }, [onNavigate, allFiles, file]);
+
+  // Listener de teclado para atalhos
+  useEffect(() => {
+    if (!isOpen) return;
+
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        handlePrevious();
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        handleNext();
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          handlePrevious();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          handleNext();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onClose();
+          break;
+        default:
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, hasPrevious, hasNext, onClose]);
+  }, [isOpen, handlePrevious, handleNext, onClose]);
 
-  const isImage = () => {
-    const ext = currentFile.file_type?.toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'].includes(ext);
+  // Early return DEPOIS de todos os hooks
+  if (!file) return null;
+
+  const isImage = file.mime_type?.startsWith('image/');
+  const isPDF = file.mime_type === 'application/pdf';
+  const canPreview = isImage || isPDF;
+
+  // URL do preview
+  const previewUrl = `${API_URL}/api/files/${file.id}/preview`;
+  const downloadUrl = `${API_URL}/api/files/${file.id}/download`;
+
+  // Encontrar índice atual e arquivos do mesmo tipo
+  const previewableFiles = allFiles.filter(f => 
+    f.mime_type?.startsWith('image/') || f.mime_type === 'application/pdf'
+  );
+  const currentIndex = previewableFiles.findIndex(f => f.id === file.id);
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < previewableFiles.length - 1;
+
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 25, 200));
   };
 
-  const isPDF = () => {
-    return currentFile.file_type?.toLowerCase() === '.pdf';
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 25, 50));
   };
 
-  const getPreviewUrl = () => {
-    // Para demonstração, retornamos um placeholder
-    // Em produção, isso deveria retornar a URL real do arquivo
-    if (isImage()) {
-      return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="%23334155" width="400" height="400"/><text x="50%" y="50%" font-size="20" fill="%23fff" text-anchor="middle" dy=".3em">Preview: ${currentFile.file_name}</text></svg>`;
-    }
-    return null;
+  const handleDownload = () => {
+    window.open(downloadUrl, '_blank');
+  };
+
+  const handleImageError = () => {
+    setError('Erro ao carregar imagem. Arquivo pode estar corrompido ou inacessível.');
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-6xl h-[90vh] bg-gray-900 rounded-lg shadow-2xl flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-white truncate">{currentFile.file_name}</h3>
-            <p className="text-sm text-gray-400">
-              {formatFileSize(currentFile.file_size)} • {currentFile.file_type}
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-2 ml-4">
-            {onDownload && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDownload(currentFile)}
-                className="text-white hover:bg-gray-700"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </Button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>{file.original_name || file.filename}</DialogTitle>
+          <DialogDescription>
+            {file.mime_type} • {file.file_size ? `${(file.file_size / 1024).toFixed(1)} KB` : 'Tamanho desconhecido'}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Toolbar */}
+        <div className="flex items-center justify-between border-b pb-3">
+          <div className="flex items-center gap-2">
+            {/* Navegação */}
+            {previewableFiles.length > 1 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevious}
+                  disabled={!hasPrevious}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-gray-600">
+                  {currentIndex + 1} / {previewableFiles.length}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNext}
+                  disabled={!hasNext}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <div className="h-6 w-px bg-gray-300 mx-2" />
+              </>
             )}
-            
+
+            {/* Zoom (apenas para imagens) */}
+            {isImage && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleZoomOut}
+                  disabled={zoom <= 50}
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-gray-600 min-w-[60px] text-center">
+                  {zoom}%
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleZoomIn}
+                  disabled={zoom >= 200}
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownload}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Baixar
+            </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-gray-400 hover:text-white hover:bg-gray-700"
             >
-              <X className="w-5 h-5" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
-          {isImage() ? (
-            <img
-              src={getPreviewUrl()}
-              alt={currentFile.file_name}
-              className="max-w-full max-h-full object-contain rounded"
-            />
-          ) : isPDF() ? (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-              <div className="text-6xl">📄</div>
-              <p className="text-white text-lg">{currentFile.file_name}</p>
-              <p className="text-gray-400">Preview de PDF não disponível no momento</p>
-              {onDownload && (
-                <Button
-                  variant="default"
-                  onClick={() => onDownload(currentFile)}
-                  className="mt-4"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Baixar PDF
-                </Button>
+        {/* Preview Area */}
+        <div className="flex-1 overflow-auto bg-gray-100 rounded-lg flex items-center justify-center p-4">
+          {!canPreview && (
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">
+                Preview não disponível para este tipo de arquivo
+              </p>
+              <Button onClick={handleDownload}>
+                <Download className="h-4 w-4 mr-2" />
+                Baixar Arquivo
+              </Button>
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={handleDownload}>
+                <Download className="h-4 w-4 mr-2" />
+                Baixar Arquivo
+              </Button>
+            </div>
+          )}
+
+          {!error && isImage && (
+            <div className="overflow-auto w-full h-full flex items-center justify-center">
+              <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'center' }}>
+                <img
+                  src={previewUrl}
+                  alt={file.original_name || file.filename}
+                  style={{ 
+                    display: 'block',
+                    maxWidth: '100%',
+                    height: 'auto'
+                  }}
+                  onError={handleImageError}
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
+
+          {!error && isPDF && (
+            <>
+              {pdfLoadError ? (
+                <div className="text-center">
+                  <p className="text-red-600 mb-4">Erro ao carregar PDF. Tente fazer o download do arquivo.</p>
+                  <Button onClick={handleDownload}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar Arquivo
+                  </Button>
+                </div>
+              ) : (
+                <iframe
+                  src={previewUrl}
+                  title={file.original_name || file.filename}
+                  className="w-full h-full border-0 rounded"
+                  onLoad={(e) => {
+                    // Tentar detectar erro de carregamento
+                    try {
+                      const iframeDoc = e.target.contentDocument || e.target.contentWindow?.document;
+                      if (!iframeDoc || iframeDoc.body?.textContent?.includes('error')) {
+                        setPdfLoadError(true);
+                      }
+                    } catch (err) {
+                      // Erro de CORS esperado, PDF provavelmente carregou corretamente
+                      console.debug('CORS esperado ao verificar iframe', err);
+                    }
+                  }}
+                />
               )}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="text-6xl">📄</div>
-              <p className="text-white text-lg">{currentFile.file_name}</p>
-              <p className="text-gray-400">Preview não disponível para este tipo de arquivo</p>
-            </div>
+            </>
           )}
         </div>
 
-        {/* Navigation */}
-        {files.length > 1 && (
-          <div className="flex items-center justify-between p-4 border-t border-gray-700">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevious}
-              disabled={!hasPrevious}
-              className="text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Anterior
-            </Button>
-            
-            <span className="text-sm text-gray-400">
-              {currentIndex + 1} de {files.length}
-            </span>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNext}
-              disabled={!hasNext}
-              className="text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Próximo
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+        {/* Keyboard shortcuts hint */}
+        <div className="text-xs text-gray-500 text-center pt-2 border-t">
+          Atalhos: ← Anterior | → Próximo | ESC Fechar
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-}
+};
 
+export default FilePreviewModal;

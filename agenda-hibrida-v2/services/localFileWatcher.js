@@ -29,7 +29,7 @@ class LocalFileWatcher {
     console.log(`👁️ Iniciando monitoramento de: ${basePath}`);
 
     this.watcher = chokidar.watch(basePath, {
-      ignored: /(^|[\/\\])\../, // Ignora arquivos/pastas ocultos
+      ignored: /(^|[/\\])\../, // Ignora arquivos/pastas ocultos
       persistent: true,
       ignoreInitial: true, // Não processa arquivos existentes no start
       awaitWriteFinish: {
@@ -136,7 +136,7 @@ class LocalFileWatcher {
    * @param {string} filePath 
    * @param {string} basePath 
    */
-  async _handleFileDeleted(filePath, basePath) {
+  async _handleFileDeleted(filePath, _basePath) {
     try {
       console.log(`🗑️ Arquivo deletado: ${path.basename(filePath)}`);
 

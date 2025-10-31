@@ -1,90 +1,96 @@
-# Pull Request
-
 ## 📝 Descrição
 
-<!-- Descreva de forma clara e concisa o que este PR faz -->
+<!-- Descreva suas mudanças em detalhes -->
 
 ## 🎯 Tipo de Mudança
 
-<!-- Marque com um [x] o tipo de mudança -->
+<!-- Marque com X as opções aplicáveis -->
 
-- [ ] 🐛 Bug fix (mudança que corrige um problema)
-- [ ] ✨ Nova funcionalidade (mudança que adiciona funcionalidade)
-- [ ] 💥 Breaking change (correção ou funcionalidade que causaria quebra de funcionalidade existente)
-- [ ] 📚 Documentação (mudança apenas em documentação)
-- [ ] 🎨 Refatoração (mudança de código que não corrige bug nem adiciona funcionalidade)
-- [ ] ⚡ Performance (mudança que melhora performance)
-- [ ] ✅ Testes (adicionar testes faltando ou corrigir testes existentes)
-- [ ] 🔧 Configuração (mudanças em arquivos de configuração)
+- [ ] 🐛 Bug fix (correção de bug)
+- [ ] ✨ Feature (nova funcionalidade)
+- [ ] 🔨 Refactor (refatoração de código sem mudança de funcionalidade)
+- [ ] 📚 Docs (alterações na documentação)
+- [ ] 🧪 Tests (adição ou correção de testes)
+- [ ] 🔧 Chore (mudanças de build, configuração, etc)
+- [ ] ⚡ Performance (melhorias de performance)
+- [ ] 🎨 Style (mudanças de formatação/estilo)
 
 ## 🔗 Issue Relacionada
 
-<!-- Se este PR resolve uma issue, referencie-a aqui -->
+<!-- Se existe uma issue relacionada, mencione aqui -->
 
-Closes #(issue)
+Closes #(número da issue)
 
-## 📸 Screenshots
+## 📸 Screenshots / Vídeos
 
-<!-- Se aplicável, adicione screenshots para ajudar a explicar as mudanças -->
+<!-- Se as mudanças afetam a UI, adicione screenshots ou vídeos -->
 
-## ✅ Checklist
+| Antes | Depois |
+| ----- | ------ |
+| ...   | ...    |
 
-<!-- Marque com um [x] quando completo -->
+## ✅ Checklist Geral
 
-### Geral
-- [ ] Meu código segue o guia de estilo do projeto
-- [ ] Fiz uma auto-revisão do meu código
-- [ ] Comentei meu código, especialmente em áreas difíceis de entender
-- [ ] Fiz mudanças correspondentes na documentação
+- [ ] Meu código segue os padrões de estilo deste projeto
+- [ ] Revisei meu próprio código
+- [ ] Comentei partes complexas do código
 - [ ] Minhas mudanças não geram novos warnings
-- [ ] Removi console.logs e código de debug
+- [ ] A build local passa sem erros (`npm run build`)
 
-### Testes
-- [ ] Adicionei testes que provam que minha correção é efetiva ou que minha funcionalidade funciona
+## 🧪 Checklist de Testes
+
+- [ ] Adicionei testes que provam que minha correção funciona
+- [ ] Adicionei testes que provam que minha feature funciona
 - [ ] Testes unitários novos e existentes passam localmente
-- [ ] Testes de integração passam localmente
-- [ ] Testei manualmente as mudanças no navegador
+- [ ] Testes E2E passam localmente (`pnpm run test:e2e`)
+- [ ] Cobertura de testes mantida ou melhorada
 
-### Backend
-- [ ] Atualizei o schema do banco de dados (se aplicável)
-- [ ] Criei migration de banco de dados (se aplicável)
-- [ ] Atualizei a documentação da API (se aplicável)
-- [ ] Adicionei validação de inputs
-- [ ] Adicionei tratamento de erros apropriado
+## 🔧 Checklist Backend
 
-### Frontend
-- [ ] Testei em múltiplos navegadores (Chrome, Firefox, Safari)
-- [ ] Testei responsividade (mobile, tablet, desktop)
-- [ ] Adicionei loading states onde apropriado
-- [ ] Adicionei mensagens de erro amigáveis
-- [ ] Verificado acessibilidade básica
+<!-- Se suas mudanças afetam o backend, marque os itens aplicáveis -->
 
-### Segurança
-- [ ] Não expus credenciais ou secrets
-- [ ] Validei inputs do usuário
-- [ ] Sanitizei dados onde necessário
-- [ ] Revisei permissões de acesso
+- [ ] Migrations de banco de dados criadas (se necessário)
+- [ ] API documentada ou atualizada
+- [ ] Validações de entrada implementadas
+- [ ] Tratamento de erros adequado
+- [ ] Logs apropriados adicionados
+- [ ] Testes de integração criados/atualizados
 
-## 📋 Como Testar
+## 🎨 Checklist Frontend
 
-<!-- Descreva os passos para testar as mudanças -->
+<!-- Se suas mudanças afetam o frontend, marque os itens aplicáveis -->
 
-1. 
-2. 
-3. 
+- [ ] Componentes são responsivos (mobile, tablet, desktop)
+- [ ] Acessibilidade considerada (a11y)
+- [ ] Carregamento/estados de erro tratados
+- [ ] Performance verificada (bundle size, re-renders)
+- [ ] Testes de componentes criados/atualizados
+
+## 🔐 Checklist de Segurança
+
+- [ ] Nenhum secret, token ou credencial hardcoded
+- [ ] Inputs do usuário validados e sanitizados
+- [ ] Proteção contra XSS/SQL injection verificada
+- [ ] Autenticação/autorização adequada
+- [ ] Dados sensíveis não expostos em logs
+
+## 📝 Instruções de Teste
+
+<!-- Descreva como testar suas mudanças -->
+
+1.
+2.
+3.
 
 ## 📌 Notas Adicionais
 
 <!-- Qualquer informação adicional relevante para os revisores -->
 
-## 🔄 Dependências
+## 🔍 Checklist do Revisor
 
-<!-- Liste PRs ou issues que este PR depende -->
+<!-- Para ser preenchido pelo revisor -->
 
-- Depende de: #
-- Bloqueado por: #
-
----
-
-**Revisores**: @seu-time <!-- Adicione revisores específicos se necessário -->
-
+- [ ] Código revisado e aprovado
+- [ ] Testes passam no CI
+- [ ] Documentação adequada
+- [ ] Sem conflitos de merge

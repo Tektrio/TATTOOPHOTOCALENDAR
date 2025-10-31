@@ -1,29 +1,29 @@
 # Gitleaks Ignore File
-# Ignorar falsos positivos em arquivos de documentação e exemplos
-# Estes arquivos contêm exemplos e placeholders, não segredos reais
+# Use este arquivo para ignorar falsos positivos do Gitleaks
+# Formato: <fingerprint>:<filename>:<linenumber>
 
-# Arquivos de documentação com exemplos de configuração
-1-configuracao_total_novo_gmail.md
-1OPLANO_TOTAL.md
-TESTE_GALERIA_COMPLETO.md
-TESTE_IMPORTACAO_EXCEL_ICS.md
-[INICIO]_RESUMO_FINAL_COMPLETO.md
-[LISTA]_RESUMO_FINAL_COMPLETO.md
-[CHAVES]_CHAVES_API_REFERENCIA.md
-[OK]_CORRECOES_FINAIS_MCP.md
-[RAPIDO]_INICIO_RAPIDO_GOOGLE_API.md
-[STATUS]_RELATORIO_TESTES_COMPLETO.md
-[SUCESSO]_CREDENCIAIS_GOOGLE_COMPLETAS.md
-[URGENTE]_COMANDOS_FINAIS_GOOGLE.sh
+# Exemplos de tokens de desenvolvimento/teste (NÃO USE EM PRODUÇÃO)
+# Descomente e adicione fingerprints específicos conforme necessário
 
-# Arquivos de teste e exemplo (contêm exemplos, não credenciais reais)
-agenda-hibrida-v2/test-create-gdrive-folder.js
-agenda-hibrida-v2/test-gdrive-connection.js
-agenda-hibrida-v2/test-gdrive-psd-thumbnail.js
-agenda-hibrida-v2/.env.example
-agenda-hibrida-v2/google-credentials.json
-agenda-hibrida-v2/ONDE_ENCONTRAR_CLIENT_SECRET.md
+# Exemplo:
+# 1234567890abcdef:agenda-hibrida-v2/.env.example:5
 
-# Pasta de lixeira/documentação antiga
-lixeira/**
+# Arquivos de documentação que podem conter exemplos de tokens
+*:README.md:*
+*:docs/**/*.md:*
+*:CONTRIBUTING.md:*
 
+# Arquivos .env.example (são templates, não secrets reais)
+*:.env.example:*
+*:env.example:*
+
+# Test fixtures que podem ter dados fake
+*:tests/fixtures/**/*:*
+*:__tests__/fixtures/**/*:*
+
+# Comentários explicativos sobre configuração
+*:GOOGLE_OAUTH_SOLUCAO_COMPLETA.md:*
+*:CORRECAO_ERRO_GOOGLE_OAUTH.md:*
+
+# Adicione seus próprios ignores abaixo
+# fingerprint:arquivo:linha

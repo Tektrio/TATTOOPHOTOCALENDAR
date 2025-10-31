@@ -3,9 +3,9 @@
  * Valida telefones, emails, datas e detecta duplicatas
  */
 
-const { normalizePhone, comparePhones } = require('./phoneNormalizer');
+const { normalizePhone } = require('./phoneNormalizer');
 const { findDuplicateClient, findDuplicateAppointment } = require('./dedupService');
-const { parse, isValid, isFuture, parseISO, format } = require('date-fns');
+const { parse, isValid, parseISO, format } = require('date-fns');
 
 /**
  * Validar formato de email

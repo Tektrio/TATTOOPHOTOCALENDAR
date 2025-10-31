@@ -167,7 +167,7 @@ class SystemTester {
 
       // Teste de espaço em disco
       try {
-        const stats = await fs.stat('./uploads');
+        await fs.stat('./uploads');
         this.testResults.storage.details.push('✅ Acesso ao diretório de uploads: OK');
       } catch (error) {
         this.testResults.storage.details.push(`❌ Acesso ao diretório de uploads: ${error.message}`);
@@ -189,8 +189,8 @@ class SystemTester {
     try {
       // Teste de conectividade do servidor
       try {
-        const response = await axios.get(`${this.serverUrl}/health`, { timeout: 5000 });
-        if (response.status === 200) {
+        const healthResponse = await axios.get(`${this.serverUrl}/health`, { timeout: 5000 });
+        if (healthResponse.status === 200) {
           this.testResults.apis.details.push('✅ Servidor backend: Online');
         }
       } catch (error) {
@@ -219,7 +219,7 @@ class SystemTester {
 
       // Teste de CORS
       try {
-        const response = await axios.options(`${this.serverUrl}/api/clients`, {
+        await axios.options(`${this.serverUrl}/api/clients`, {
           headers: {
             'Origin': this.frontendUrl,
             'Access-Control-Request-Method': 'GET'
@@ -283,7 +283,7 @@ class SystemTester {
       // Teste QNAP
       if (process.env.QNAP_HOST) {
         try {
-          const response = await axios.get(`http://${process.env.QNAP_HOST}:8080/cgi-bin/authLogin.cgi`, {
+          await axios.get(`http://${process.env.QNAP_HOST}:8080/cgi-bin/authLogin.cgi`, {
             timeout: 5000
           });
           this.testResults.integrations.details.push('✅ QNAP: Acessível');
@@ -391,7 +391,7 @@ class SystemTester {
         'QNAP_PASSWORD'
       ];
 
-      let exposedVars = 0;
+      // let exposedVars = 0; // Removido - não utilizado
       for (const varName of sensitiveVars) {
         if (process.env[varName]) {
           // Verificar se não está exposta no código
@@ -403,7 +403,7 @@ class SystemTester {
 
       // Verificar permissões de arquivos
       try {
-        const envStats = await fs.stat('./.env');
+        await fs.stat('./.env');
         this.testResults.security.details.push('✅ Arquivo .env: Existe');
       } catch (error) {
         this.testResults.security.details.push('⚠️ Arquivo .env: Não encontrado');
@@ -578,7 +578,7 @@ class SystemTester {
     const recommendations = [];
 
     // Verificar problemas comuns e gerar recomendações
-    for (const [category, result] of Object.entries(this.testResults)) {
+    for (const result of Object.values(this.testResults)) {
       for (const detail of result.details) {
         if (detail.includes('❌') || detail.includes('⚠️')) {
           if (detail.includes('Google Calendar: Autenticação necessária')) {

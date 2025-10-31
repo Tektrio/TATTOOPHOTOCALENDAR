@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+// TODO: Migrar para @dnd-kit
+// import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -195,100 +196,77 @@ function WaitingListTab({ clientId }) {
         </div>
       )}
 
-      {/* Drag and Drop List */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="waiting-list">
-          {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="space-y-3"
+      {/* List without drag-and-drop (TODO: Migrar para @dnd-kit) */}
+      <div className="space-y-3">
+        {items.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <p className="text-gray-500">Nenhum projeto na fila de espera</p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="mt-3 text-blue-600 hover:text-blue-800"
             >
-              {items.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <p className="text-gray-500">Nenhum projeto na fila de espera</p>
+              Adicionar primeiro projeto
+            </button>
+          </div>
+        ) : (
+          items.map((item) => (
+            <div
+              key={item.id}
+              className={`bg-white p-4 rounded-lg shadow border-2 ${priorityColors[item.priority]}`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">{priorityIcons[item.priority]}</span>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      {item.project_name}
+                    </h3>
+                    <span className="px-2 py-1 text-xs bg-gray-700 text-white rounded">
+                      {item.session_type}
+                    </span>
+                  </div>
+                  
+                  {item.description && (
+                    <p className="text-sm text-gray-700 mb-2">{item.description}</p>
+                  )}
+                  
+                  <div className="flex gap-4 text-sm text-gray-600">
+                    {item.body_location && (
+                      <span>📍 {item.body_location}</span>
+                    )}
+                    <span>🎨 {item.estimated_sessions} sessões</span>
+                    <span>⏱️ {item.estimated_hours_total}h</span>
+                    {item.estimated_cost > 0 && (
+                      <span>💰 ${item.estimated_cost}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 ml-4">
                   <button
-                    onClick={() => setShowAddModal(true)}
-                    className="mt-3 text-blue-600 hover:text-blue-800"
+                    onClick={() => handleSchedule(item.id)}
+                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
                   >
-                    Adicionar primeiro projeto
+                    📅 Agendar
+                  </button>
+                  <button
+                    onClick={() => editItem(item)}
+                    className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                  >
+                    🗑️
                   </button>
                 </div>
-              ) : (
-                items.map((item, index) => (
-                  <Draggable
-                    key={item.id}
-                    draggableId={String(item.id)}
-                    index={index}
-                  >
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className={`bg-white p-4 rounded-lg shadow border-2 ${
-                          priorityColors[item.priority]
-                        } ${snapshot.isDragging ? 'shadow-xl' : ''}`}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-2xl">{priorityIcons[item.priority]}</span>
-                              <h3 className="text-lg font-bold text-gray-900">
-                                {item.project_name}
-                              </h3>
-                              <span className="px-2 py-1 text-xs bg-gray-700 text-white rounded">
-                                {item.session_type}
-                              </span>
-                            </div>
-                            
-                            {item.description && (
-                              <p className="text-sm text-gray-700 mb-2">{item.description}</p>
-                            )}
-                            
-                            <div className="flex gap-4 text-sm text-gray-600">
-                              {item.body_location && (
-                                <span>📍 {item.body_location}</span>
-                              )}
-                              <span>🎨 {item.estimated_sessions} sessões</span>
-                              <span>⏱️ {item.estimated_hours_total}h</span>
-                              {item.estimated_cost > 0 && (
-                                <span>💰 ${item.estimated_cost}</span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2 ml-4">
-                            <button
-                              onClick={() => handleSchedule(item.id)}
-                              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                            >
-                              📅 Agendar
-                            </button>
-                            <button
-                              onClick={() => editItem(item)}
-                              className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
-                            >
-                              ✏️
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                ))
-              )}
-              {provided.placeholder}
+              </div>
             </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+          ))
+        )}
+      </div>
 
       {/* Modal Add/Edit */}
       {showAddModal && (

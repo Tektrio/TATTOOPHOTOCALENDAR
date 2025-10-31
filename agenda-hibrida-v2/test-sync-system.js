@@ -7,8 +7,8 @@
  */
 
 const fs = require('fs-extra');
-const path = require('path');
-const { spawn } = require('child_process');
+// const path = require('path'); // Removido - não utilizado
+// const { spawn } = require('child_process'); // Removido - não utilizado
 
 console.log('🧪 INICIANDO TESTES DO SISTEMA DE SINCRONIZAÇÃO\n');
 console.log('═'.repeat(60));

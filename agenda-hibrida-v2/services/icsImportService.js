@@ -5,7 +5,7 @@
 
 const ical = require('node-ical');
 const { format, parseISO } = require('date-fns');
-const { zonedTimeToUtc, utcToZonedTime } = require('date-fns-tz');
+const { utcToZonedTime } = require('date-fns-tz');
 const { findDuplicateAppointment } = require('./dedupService');
 
 /**

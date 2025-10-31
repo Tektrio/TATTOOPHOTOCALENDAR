@@ -21,9 +21,10 @@ function setDatabase(database) {
 async function getClientMetrics(clientId) {
   if (!db) throw new Error('Database not initialized');
   
-  return new Promise(async (resolve, reject) => {
-    try {
-      const metrics = {};
+  return new Promise((resolve, reject) => {
+    (async () => {
+      try {
+        const metrics = {};
 
       // 1. Total de sessões realizadas
       metrics.total_sessions = await getTotalSessions(clientId);
@@ -53,11 +54,12 @@ async function getClientMetrics(clientId) {
       // 9. Cliente desde
       metrics.client_since = await getClientSince(clientId);
 
-      resolve(metrics);
-    } catch (error) {
-      console.error('Error getting client metrics:', error);
-      reject(error);
-    }
+        resolve(metrics);
+      } catch (error) {
+        console.error('Error getting client metrics:', error);
+        reject(error);
+      }
+    })();
   });
 }
 

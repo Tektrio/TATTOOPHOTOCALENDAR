@@ -65,7 +65,7 @@ router.get('/form-templates/:id', (req, res) => {
 
 // POST /api/form-templates - Criar novo template
 router.post('/form-templates', (req, res) => {
-  const { name, description, type, fields } = req.body;
+  const { name, description, fields } = req.body; // type não utilizado
   
   if (!name || !fields) {
     return res.status(400).json({ error: 'Nome e campos são obrigatórios' });
@@ -96,7 +96,7 @@ router.post('/form-templates', (req, res) => {
 // GET /api/customers/:id/forms - Listar formulários do cliente
 router.get('/:id/forms', (req, res) => {
   const { id } = req.params;
-  const { template_id, status } = req.query;
+  const { template_id } = req.query; // status não utilizado
   
   let query = `
     SELECT 

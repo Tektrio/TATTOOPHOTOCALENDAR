@@ -8,14 +8,14 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   
-  /* Maximum time one test can run for - aumentado para 60s */
-  timeout: 60 * 1000,
+  /* Maximum time one test can run for - otimizado para CI */
+  timeout: 45 * 1000,
   
   /* Test artifacts */
-  fullyParallel: false, // Evitar race conditions
+  fullyParallel: true, // Habilitar paralelização para performance
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 2 : undefined,
   
   /* Reporter to use */
   reporter: [
@@ -38,9 +38,9 @@ export default defineConfig({
     /* Collect trace when retrying the failed test */
     trace: 'retain-on-failure',
     
-    /* Timeouts aumentados */
-    actionTimeout: 15 * 1000,
-    navigationTimeout: 30 * 1000,
+    /* Timeouts otimizados para CI */
+    actionTimeout: 10 * 1000,
+    navigationTimeout: 20 * 1000,
   },
   
   /* Configure projects for major browsers */

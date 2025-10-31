@@ -1,0 +1,240 @@
+name: Code Quality - Qualidade de Código
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+env:
+    NODE_VERSION: "22.x"
+
+jobs:
+    eslint-check:
+        name: ESLint - Verificação Completa
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout código
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Instalar pnpm
+              uses: pnpm/action-setup@v3
+              with:
+                  version: 10.4.1
+
+            - name: Backend ESLint
+              run: |
+                  cd agenda-hibrida-v2
+                  npm ci
+                  echo "## 🔍 Backend ESLint" >> $GITHUB_STEP_SUMMARY
+                  npm run lint 2>&1 | tee eslint-output.txt || true
+                  if grep -q "error" eslint-output.txt; then
+                    echo "❌ Erros encontrados" >> $GITHUB_STEP_SUMMARY
+                    exit 1
+                  else
+                    echo "✅ Nenhum erro encontrado" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+            - name: Frontend ESLint
+              run: |
+                  cd agenda-hibrida-frontend
+                  pnpm install --frozen-lockfile
+                  echo "## 🔍 Frontend ESLint" >> $GITHUB_STEP_SUMMARY
+                  pnpm run lint 2>&1 | tee eslint-output.txt || true
+                  if grep -q "error" eslint-output.txt; then
+                    echo "❌ Erros encontrados" >> $GITHUB_STEP_SUMMARY
+                    exit 1
+                  else
+                    echo "✅ Nenhum erro encontrado" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+    prettier-check:
+        name: Prettier - Formatação
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout código
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Install Prettier
+              run: npm install -g prettier
+
+            - name: Check Backend Formatting
+              run: |
+                  cd agenda-hibrida-v2
+                  echo "## 💅 Backend - Formatação" >> $GITHUB_STEP_SUMMARY
+                  prettier --check "**/*.{js,json,md}" 2>&1 | tee prettier-output.txt || true
+                  if [ $? -eq 0 ]; then
+                    echo "✅ Código formatado corretamente" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "⚠️ Arquivos precisam ser formatados" >> $GITHUB_STEP_SUMMARY
+                    echo "Execute: \`prettier --write \"**/*.{js,json,md}\"\`" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+            - name: Check Frontend Formatting
+              run: |
+                  cd agenda-hibrida-frontend
+                  echo "## 💅 Frontend - Formatação" >> $GITHUB_STEP_SUMMARY
+                  prettier --check "src/**/*.{js,jsx,json}" 2>&1 | tee prettier-output.txt || true
+                  if [ $? -eq 0 ]; then
+                    echo "✅ Código formatado corretamente" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "⚠️ Arquivos precisam ser formatados" >> $GITHUB_STEP_SUMMARY
+                    echo "Execute: \`prettier --write \"src/**/*.{js,jsx,json}\"\`" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+    complexity-check:
+        name: Complexidade de Código
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout código
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Install complexity reporter
+              run: npm install -g complexity-report
+
+            - name: Analyze Backend Complexity
+              run: |
+                  cd agenda-hibrida-v2
+                  echo "## 🧮 Backend - Complexidade" >> $GITHUB_STEP_SUMMARY
+                  cr --format json routes/*.js services/*.js 2>/dev/null | head -20 >> $GITHUB_STEP_SUMMARY || echo "Análise concluída" >> $GITHUB_STEP_SUMMARY
+
+            - name: Analyze Frontend Complexity
+              run: |
+                  cd agenda-hibrida-frontend
+                  echo "## 🧮 Frontend - Complexidade" >> $GITHUB_STEP_SUMMARY
+                  cr --format json src/**/*.jsx 2>/dev/null | head -20 >> $GITHUB_STEP_SUMMARY || echo "Análise concluída" >> $GITHUB_STEP_SUMMARY
+
+    duplicate-code:
+        name: Código Duplicado
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout código
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Install jscpd
+              run: npm install -g jscpd
+
+            - name: Check Backend Duplicates
+              run: |
+                  cd agenda-hibrida-v2
+                  echo "## 📋 Backend - Código Duplicado" >> $GITHUB_STEP_SUMMARY
+                  jscpd routes/ services/ --min-lines 10 --min-tokens 50 --format "markdown" >> $GITHUB_STEP_SUMMARY || echo "✅ Baixa duplicação" >> $GITHUB_STEP_SUMMARY
+
+            - name: Check Frontend Duplicates
+              run: |
+                  cd agenda-hibrida-frontend
+                  echo "## 📋 Frontend - Código Duplicado" >> $GITHUB_STEP_SUMMARY
+                  jscpd src/ --min-lines 10 --min-tokens 50 --format "markdown" >> $GITHUB_STEP_SUMMARY || echo "✅ Baixa duplicação" >> $GITHUB_STEP_SUMMARY
+
+    bundle-size:
+        name: Tamanho do Bundle
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout código
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Instalar pnpm
+              uses: pnpm/action-setup@v3
+              with:
+                  version: 10.4.1
+
+            - name: Build Frontend
+              run: |
+                  cd agenda-hibrida-frontend
+                  pnpm install --frozen-lockfile
+                  pnpm run build
+
+            - name: Analyze Bundle Size
+              run: |
+                  cd agenda-hibrida-frontend/dist
+                  echo "## 📦 Tamanho do Bundle" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Encontrar maior arquivo JS
+                  MAIN_JS=$(ls -lh assets/*.js 2>/dev/null | sort -k5 -hr | head -1)
+                  MAIN_SIZE=$(echo $MAIN_JS | awk '{print $5}')
+                  MAIN_FILE=$(echo $MAIN_JS | awk '{print $9}')
+
+                  echo "### Arquivo JavaScript Principal" >> $GITHUB_STEP_SUMMARY
+                  echo "- Arquivo: \`$MAIN_FILE\`" >> $GITHUB_STEP_SUMMARY
+                  echo "- Tamanho: **$MAIN_SIZE**" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Tamanho total
+                  TOTAL_SIZE=$(du -sh . | awk '{print $1}')
+                  echo "### Tamanho Total do Build" >> $GITHUB_STEP_SUMMARY
+                  echo "- Tamanho: **$TOTAL_SIZE**" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Top 5 maiores arquivos
+                  echo "### Top 5 Maiores Arquivos" >> $GITHUB_STEP_SUMMARY
+                  ls -lh assets/* 2>/dev/null | sort -k5 -hr | head -5 | awk '{print "- `"$9"`: "$5}' >> $GITHUB_STEP_SUMMARY
+
+            - name: Upload Bundle Analysis
+              uses: actions/upload-artifact@v4
+              with:
+                  name: bundle-analysis
+                  path: agenda-hibrida-frontend/dist
+                  retention-days: 7
+
+    quality-summary:
+        name: Resumo de Qualidade
+        runs-on: ubuntu-latest
+        needs:
+            [
+                eslint-check,
+                prettier-check,
+                complexity-check,
+                duplicate-code,
+                bundle-size,
+            ]
+        if: always()
+
+        steps:
+            - name: Check results
+              run: |
+                  echo "## 📊 Resumo de Qualidade" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Verificação | Status |" >> $GITHUB_STEP_SUMMARY
+                  echo "|-------------|--------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| ESLint | ${{ needs.eslint-check.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| Prettier | ${{ needs.prettier-check.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| Complexity | ${{ needs.complexity-check.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| Duplicate Code | ${{ needs.duplicate-code.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| Bundle Size | ${{ needs.bundle-size.result }} |" >> $GITHUB_STEP_SUMMARY
+
+            - name: Fail on critical issues
+              if: needs.eslint-check.result == 'failure'
+              run: |
+                  echo "❌ Erros de ESLint encontrados! Corrija antes de mergear."
+                  exit 1

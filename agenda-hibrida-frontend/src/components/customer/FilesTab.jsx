@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -22,12 +22,17 @@ import {
   FolderPlus,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Edit,
+  FolderInput,
+  Copy
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { Input } from '../ui/input';
 import { Alert, AlertDescription } from '../ui/alert';
+import { Progress } from '../ui/progress';
 import SyncStatusIndicator from '../SyncStatusIndicator';
+import FilePreviewModal from '../FilePreviewModal';
 import { useCategories } from '../../hooks/useCategories';
 import {
   Select,
@@ -46,6 +51,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { RotateCcw } from 'lucide-react';
 
 const FilesTab = ({ customerId }) => {
   const [files, setFiles] = useState([]);
@@ -58,7 +65,9 @@ const FilesTab = ({ customerId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, file: null });
-  const [previewImage, setPreviewImage] = useState(null);
+  const [renameDialog, setRenameDialog] = useState({ open: false, file: null, newName: '' });
+  const [moveDialog, setMoveDialog] = useState({ open: false, file: null, targetCategory: '' });
+  const [copyDialog, setCopyDialog] = useState({ open: false, file: null, targetCategory: '' });
   const [customer, setCustomer] = useState(null);
   const [folderLinks, setFolderLinks] = useState({
     local: { available: false, path: '', exists: false },
@@ -75,6 +84,13 @@ const FilesTab = ({ customerId }) => {
     drive: null,
     qnap: null
   });
+  const [uploadProgress, setUploadProgress] = useState({}); // { category: { percentage: 0, fileName: '' } }
+  const [previewFile, setPreviewFile] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('files'); // 'files' | 'trash'
+  const [trashedFiles, setTrashedFiles] = useState([]);
+  const [trashedFilesCount, setTrashedFilesCount] = useState(0);
+  const [loadingTrash, setLoadingTrash] = useState(false);
 
   // Carregar categorias dinâmicas do backend
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
@@ -88,8 +104,8 @@ const FilesTab = ({ customerId }) => {
       setError(null);
       
       const url = selectedCategory === 'all' 
-        ? `${API_URL}/api/customers/${customerId}/files`
-        : `${API_URL}/api/customers/${customerId}/files?category=${selectedCategory}`;
+        ? `${API_URL}/api/clients/${customerId}/files`
+        : `${API_URL}/api/clients/${customerId}/files?category=${selectedCategory}`;
       
       const response = await fetch(url);
       
@@ -98,7 +114,8 @@ const FilesTab = ({ customerId }) => {
       }
       
       const data = await response.json();
-      setFiles(data);
+      // Suportar tanto formato antigo (array direto) quanto novo (objeto com files)
+      setFiles(data.files || data || []);
     } catch (err) {
       console.error('Erro ao carregar arquivos:', err);
       setError('Erro ao carregar arquivos. Tente novamente.');
@@ -106,6 +123,29 @@ const FilesTab = ({ customerId }) => {
       setLoading(false);
     }
   }, [customerId, selectedCategory, API_URL]);
+
+  // Carregar arquivos deletados (lixeira)
+  const loadTrashedFiles = useCallback(async () => {
+    try {
+      setLoadingTrash(true);
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/trash`);
+      
+      if (!response.ok) {
+        throw new Error('Erro ao carregar arquivos deletados');
+      }
+      
+      const data = await response.json();
+      setTrashedFiles(data.files || []);
+      setTrashedFilesCount(data.count || 0);
+    } catch (err) {
+      console.error('Erro ao carregar lixeira:', err);
+      setError('Erro ao carregar lixeira. Tente novamente.');
+    } finally {
+      setLoadingTrash(false);
+    }
+  }, [customerId, API_URL]);
 
   // Carregar dados do cliente
   const loadCustomer = useCallback(async () => {
@@ -148,6 +188,192 @@ const FilesTab = ({ customerId }) => {
     }
   }, [customerId, loadFiles, loadCustomer, loadFolderLinks]);
 
+  // Polling do status de sincronização do Google Drive
+  const pollIntervalRef = useRef(null);
+  const shouldPollRef = useRef(false);
+  const previousDriveStatusRef = useRef(null);
+  
+  // Refs para sempre ter a versão mais recente das funções (evita stale closures)
+  const loadFolderLinksRef = useRef(loadFolderLinks);
+  const setSuccessRef = useRef(setSuccess);
+  const setErrorRef = useRef(setError);
+  const setSyncStatusRef = useRef(setSyncStatus);
+  
+  // Atualizar refs quando as funções mudarem
+  useEffect(() => {
+    loadFolderLinksRef.current = loadFolderLinks;
+  }, [loadFolderLinks]);
+  
+  useEffect(() => {
+    setSuccessRef.current = setSuccess;
+  }, [setSuccess]);
+  
+  useEffect(() => {
+    setErrorRef.current = setError;
+  }, [setError]);
+  
+  useEffect(() => {
+    setSyncStatusRef.current = setSyncStatus;
+  }, [setSyncStatus]);
+  
+  // Definir checkSyncStatus com useCallback para estabilizar a referência
+  const checkSyncStatus = useCallback(async () => {
+    if (!customerId) return;
+    
+    try {
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/sync-status`);
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      
+      // Capturar estado anterior antes da atualização
+      const wasPreviouslyPending = previousDriveStatusRef.current === 'pending';
+      
+      // Determinar o novo status baseado na resposta (sem side effects)
+      let newDriveStatus = null;
+      switch (data.status) {
+        case 'pending':
+        case 'syncing':
+          newDriveStatus = 'pending';
+          break;
+        case 'completed':
+          newDriveStatus = 'synced';
+          break;
+        case 'error':
+          newDriveStatus = 'error';
+          break;
+        case 'idle':
+        default:
+          // Se estava pending e agora está idle, consideramos synced
+          newDriveStatus = wasPreviouslyPending ? 'synced' : previousDriveStatusRef.current;
+          break;
+      }
+      
+      // Determinar ações necessárias baseado no status
+      let needsPolling = false;
+      let shouldShowSuccess = false;
+      let shouldShowError = false;
+      let errorMessage = '';
+      let shouldReloadFolders = false;
+      
+      switch (data.status) {
+        case 'pending':
+        case 'syncing':
+          needsPolling = true;
+          break;
+            
+        case 'completed':
+          needsPolling = false;
+          shouldShowSuccess = true;
+          shouldReloadFolders = true;
+          break;
+            
+        case 'error':
+          needsPolling = false;
+          shouldShowError = true;
+          errorMessage = data.error || 'Erro desconhecido';
+          break;
+            
+        case 'idle':
+        default:
+          needsPolling = false;
+          // Se estava pending e agora está idle, mostrar sucesso
+          if (wasPreviouslyPending) {
+            shouldShowSuccess = true;
+            shouldReloadFolders = true;
+          }
+          break;
+      }
+      
+      // Atualizar status de sincronização (função pura - apenas retorna novo estado)
+      setSyncStatusRef.current(prev => {
+        const newStatus = { ...prev };
+        
+        switch (data.status) {
+          case 'pending':
+          case 'syncing':
+            newStatus.drive = 'pending';
+            break;
+            
+          case 'completed':
+            newStatus.drive = 'synced';
+            break;
+            
+          case 'error':
+            newStatus.drive = 'error';
+            break;
+            
+          case 'idle':
+          default:
+            // Se estava pending e agora está idle, consideramos synced
+            if (prev.drive === 'pending') {
+              newStatus.drive = 'synced';
+            }
+            break;
+        }
+        
+        return newStatus;
+      });
+      
+      // Atualizar ref com o novo status para a próxima iteração (fora do updater)
+      previousDriveStatusRef.current = newDriveStatus;
+      
+      // Side effects executados APÓS a atualização de estado (usando refs para sempre ter versão atual)
+      if (shouldShowSuccess) {
+        setSuccessRef.current('Sincronização com Google Drive concluída!');
+        setTimeout(() => setSuccessRef.current(null), 5000);
+      }
+      
+      if (shouldShowError) {
+        setErrorRef.current(`Erro na sincronização: ${errorMessage}`);
+        setTimeout(() => setErrorRef.current(null), 10000);
+      }
+      
+      if (shouldReloadFolders) {
+        loadFolderLinksRef.current();
+      }
+      
+      // Atualizar ref de polling
+      shouldPollRef.current = needsPolling;
+      
+      // Configurar ou limpar polling baseado no status
+      if (needsPolling && !pollIntervalRef.current) {
+        // Iniciar polling
+        pollIntervalRef.current = setInterval(checkSyncStatus, 3000);
+      } else if (!needsPolling && pollIntervalRef.current) {
+        // Parar polling
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    } catch (err) {
+      console.error('Erro ao verificar status de sincronização:', err);
+    }
+  }, [customerId, API_URL]); // Dependências mínimas - apenas valores primitivos
+  
+  // Effect para iniciar o polling
+  useEffect(() => {
+    if (!customerId) return;
+    
+    // Verificação inicial
+    checkSyncStatus();
+    
+    // Cleanup - garantir que intervalos são sempre limpos
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      shouldPollRef.current = false;
+    };
+  }, [customerId, checkSyncStatus]);
+
+  // Carregar lixeira quando tab ativa
+  useEffect(() => {
+    if (activeTab === 'trash') {
+      loadTrashedFiles();
+    }
+  }, [activeTab, loadTrashedFiles]);
+
   // Upload de arquivos
   const handleFileUpload = async (uploadFiles, category) => {
     if (!uploadFiles || uploadFiles.length === 0) return;
@@ -158,32 +384,82 @@ const FilesTab = ({ customerId }) => {
       setSuccess(null);
 
       const formData = new FormData();
-      Array.from(uploadFiles).forEach(file => {
+      const filesArray = Array.from(uploadFiles);
+      filesArray.forEach(file => {
         formData.append('files', file);
       });
       formData.append('category', category);
 
-      const response = await fetch(`${API_URL}/api/customers/${customerId}/files`, {
-        method: 'POST',
-        body: formData
+      // Inicializar progresso
+      const firstFileName = filesArray[0]?.name || 'arquivo';
+      setUploadProgress(prev => ({
+        ...prev,
+        [category]: { percentage: 0, fileName: firstFileName }
+      }));
+
+      // Usar XMLHttpRequest para ter acesso ao onUploadProgress
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        // Configurar evento de progresso
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(prev => ({
+              ...prev,
+              [category]: { 
+                percentage: percentComplete, 
+                fileName: firstFileName 
+              }
+            }));
+          }
+        });
+
+        // Configurar evento de conclusão
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const data = JSON.parse(xhr.responseText);
+            setSuccess(`${data.files.length} arquivo(s) enviado(s) com sucesso!`);
+            resolve(data);
+          } else {
+            const errorData = JSON.parse(xhr.responseText);
+            reject(new Error(errorData.error || 'Erro ao enviar arquivos'));
+          }
+        });
+
+        // Configurar evento de erro
+        xhr.addEventListener('error', () => {
+          reject(new Error('Erro de rede ao enviar arquivos'));
+        });
+
+        // Enviar requisição
+        xhr.open('POST', `${API_URL}/api/clients/${customerId}/upload/${category}`);
+        xhr.send(formData);
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao enviar arquivos');
-      }
-
-      const data = await response.json();
-      setSuccess(`${data.files.length} arquivo(s) enviado(s) com sucesso!`);
       
       // Recarregar lista de arquivos
       await loadFiles();
+      
+      // Limpar progresso após 2s
+      setTimeout(() => {
+        setUploadProgress(prev => {
+          const updated = { ...prev };
+          delete updated[category];
+          return updated;
+        });
+      }, 2000);
       
       // Limpar mensagem de sucesso após 3s
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Erro ao enviar arquivos:', err);
       setError(err.message || 'Erro ao enviar arquivos. Tente novamente.');
+      // Limpar progresso em caso de erro
+      setUploadProgress(prev => {
+        const updated = { ...prev };
+        delete updated[category];
+        return updated;
+      });
     } finally {
       setUploading(false);
     }
@@ -194,7 +470,7 @@ const FilesTab = ({ customerId }) => {
     try {
       setError(null);
       
-      const response = await fetch(`${API_URL}/api/customers/${customerId}/files/${fileId}`, {
+      const response = await fetch(`${API_URL}/api/files/${fileId}`, {
         method: 'DELETE'
       });
 
@@ -204,8 +480,9 @@ const FilesTab = ({ customerId }) => {
 
       setSuccess('Arquivo deletado com sucesso!');
       
-      // Recarregar lista
+      // Recarregar listas
       await loadFiles();
+      await loadTrashedFiles(); // Atualizar badge da lixeira
       
       // Fechar dialog
       setDeleteDialog({ open: false, file: null });
@@ -216,6 +493,199 @@ const FilesTab = ({ customerId }) => {
       console.error('Erro ao deletar arquivo:', err);
       setError('Erro ao deletar arquivo. Tente novamente.');
     }
+  };
+
+  // Renomear arquivo
+  const handleRenameFile = async () => {
+    if (!renameDialog.file || !renameDialog.newName.trim()) {
+      setError('Nome do arquivo não pode estar vazio');
+      return;
+    }
+
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${renameDialog.file.id}/rename`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newName: renameDialog.newName }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao renomear arquivo');
+      }
+
+      setSuccess(`Arquivo renomeado com sucesso: ${data.newName}`);
+      
+      // Recarregar lista
+      await loadFiles();
+      
+      // Fechar dialog
+      setRenameDialog({ open: false, file: null, newName: '' });
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao renomear arquivo:', err);
+      setError(err.message || 'Erro ao renomear arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Mover arquivo para outra categoria
+  const handleMoveFile = async () => {
+    if (!moveDialog.file || !moveDialog.targetCategory) {
+      setError('Selecione uma categoria de destino');
+      return;
+    }
+
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${moveDialog.file.id}/move`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newCategory: moveDialog.targetCategory }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao mover arquivo');
+      }
+
+      setSuccess(`Arquivo movido para "${data.newCategory}" com sucesso!`);
+      
+      // Recarregar lista
+      await loadFiles();
+      
+      // Fechar dialog
+      setMoveDialog({ open: false, file: null, targetCategory: '' });
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao mover arquivo:', err);
+      setError(err.message || 'Erro ao mover arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Copiar arquivo
+  const handleCopyFile = async () => {
+    if (!copyDialog.file) {
+      setError('Arquivo não selecionado');
+      return;
+    }
+
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${copyDialog.file.id}/copy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ targetCategory: copyDialog.targetCategory || copyDialog.file.category }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao copiar arquivo');
+      }
+
+      setSuccess(`Arquivo copiado: ${data.newFileName}`);
+      
+      // Recarregar lista
+      await loadFiles();
+      
+      // Fechar dialog
+      setCopyDialog({ open: false, file: null, targetCategory: '' });
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao copiar arquivo:', err);
+      setError(err.message || 'Erro ao copiar arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Restaurar arquivo da lixeira
+  const handleRestoreFile = async (fileId) => {
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${fileId}/restore`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao restaurar arquivo');
+      }
+
+      setSuccess('Arquivo restaurado com sucesso!');
+      
+      // Recarregar ambas listas
+      await loadFiles();
+      await loadTrashedFiles();
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao restaurar arquivo:', err);
+      setError('Erro ao restaurar arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Deletar arquivo permanentemente
+  const handleDeletePermanently = async (fileId) => {
+    try {
+      setError(null);
+      
+      const response = await fetch(`${API_URL}/api/files/${fileId}?permanent=true`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao deletar arquivo permanentemente');
+      }
+
+      setSuccess('Arquivo deletado permanentemente!');
+      
+      // Recarregar lixeira
+      await loadTrashedFiles();
+      
+      // Limpar mensagem após 3s
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erro ao deletar arquivo:', err);
+      setError('Erro ao deletar arquivo. Tente novamente.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Preview de arquivo
+  const handlePreview = (file) => {
+    setPreviewFile(file);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewFile(null);
+  };
+
+  const handleNavigatePreview = (file) => {
+    setPreviewFile(file);
   };
 
   // Drag and Drop handlers
@@ -355,9 +825,47 @@ const FilesTab = ({ customerId }) => {
     }
   };
 
-  const handleOpenQNAPFolder = () => {
-    setError('QNAP ainda não está configurado. Em breve!');
-    setTimeout(() => setError(null), 3000);
+  const handleOpenQNAPFolder = async () => {
+    if (!folderLinks.qnap.available) {
+      setError('QNAP não está disponível para este cliente');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    try {
+      setLoadingStates(prev => ({ ...prev, qnap: true }));
+      setError(null);
+
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/open-qnap-folder`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || 'Erro ao abrir QNAP');
+      }
+
+      const data = await response.json();
+
+      // Abrir QNAP em nova aba
+      window.open(data.url, '_blank');
+
+      // Mostrar mensagem com o caminho da pasta
+      setSuccess(`QNAP aberto! Navegue até: ${data.path}`);
+      setTimeout(() => setSuccess(null), 10000); // 10 segundos para dar tempo de ler
+
+    } catch (error) {
+      console.error('Erro ao abrir QNAP:', error);
+      setError(error.message || 'Erro ao abrir QNAP. Verifique se está configurado.');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setTimeout(() => {
+        setLoadingStates(prev => ({ ...prev, qnap: false }));
+      }, 500);
+    }
   };
 
   // Handler para criar pasta quando não existe
@@ -442,8 +950,24 @@ const FilesTab = ({ customerId }) => {
         </Alert>
       )}
 
-      {/* Header com controles */}
-      <Card>
+      {/* Tabs para Arquivos e Lixeira */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="files">Arquivos</TabsTrigger>
+          <TabsTrigger value="trash">
+            Lixeira
+            {trashedFilesCount > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {trashedFilesCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tab de Arquivos */}
+        <TabsContent value="files" className="space-y-4">
+          {/* Header com controles */}
+          <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -609,21 +1133,32 @@ const FilesTab = ({ customerId }) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!folderLinks.qnap.available}
-                    onClick={handleOpenQNAPFolder}
-                    className="flex items-center gap-2"
-                  >
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!folderLinks.qnap.available || loadingStates.qnap}
+                onClick={handleOpenQNAPFolder}
+                className="flex items-center gap-2"
+              >
+                {loadingStates.qnap ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Abrindo...
+                  </>
+                ) : (
+                  <>
                     <Server className="h-4 w-4" />
                     QNAP
                     {renderSyncStatusIcon(syncStatus.qnap)}
-                  </Button>
+                  </>
+                )}
+              </Button>
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                QNAP em desenvolvimento. Em breve!
+                {folderLinks.qnap.available
+                  ? "Abrir QNAP File Station (nova aba)"
+                  : "QNAP não configurado ou não disponível"}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -673,6 +1208,17 @@ const FilesTab = ({ customerId }) => {
                 onChange={(e) => handleFileUpload(e.target.files, category.value)}
                 accept="image/*,.pdf,.psd,.ai,.svg"
               />
+              
+              {/* Barra de progresso */}
+              {uploadProgress[category.value] && (
+                <div className="mt-3 space-y-1">
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span className="truncate max-w-[80%]">{uploadProgress[category.value].fileName}</span>
+                    <span className="font-medium">{uploadProgress[category.value].percentage}%</span>
+                  </div>
+                  <Progress value={uploadProgress[category.value].percentage} className="h-2" />
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -703,9 +1249,9 @@ const FilesTab = ({ customerId }) => {
                     {/* Preview */}
                     <div 
                       className="aspect-square bg-gray-100 relative cursor-pointer"
-                      onClick={() => isImage(file.file_type) && setPreviewImage(file)}
+                      onClick={() => isImage(file.mime_type) && handlePreview(file)}
                     >
-                      {isImage(file.file_type) ? (
+                      {isImage(file.mime_type) ? (
                         <img 
                           src={`${API_URL}${file.url}`}
                           alt={file.original_name}
@@ -718,29 +1264,56 @@ const FilesTab = ({ customerId }) => {
                       )}
                       
                       {/* Overlay com ações */}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                        {isImage(file.file_type) && (
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                        {(isImage(file.mime_type) || file.mime_type === 'application/pdf') && (
                           <Button
                             size="sm"
                             variant="secondary"
-                            onClick={() => setPreviewImage(file)}
+                            onClick={() => handlePreview(file)}
+                            title="Visualizar"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3 w-3" />
                           </Button>
                         )}
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={() => window.open(`${API_URL}/api/customers/${customerId}/files/${file.id}/download`, '_blank')}
+                          onClick={() => window.open(`${API_URL}/api/files/${file.id}/download`, '_blank')}
+                          title="Baixar"
                         >
-                          <Download className="h-4 w-4" />
+                          <Download className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setRenameDialog({ open: true, file, newName: file.original_name || file.filename })}
+                          title="Renomear"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setMoveDialog({ open: true, file, targetCategory: '' })}
+                          title="Mover"
+                        >
+                          <FolderInput className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setCopyDialog({ open: true, file, targetCategory: '' })}
+                          title="Copiar"
+                        >
+                          <Copy className="h-3 w-3" />
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
                           onClick={() => setDeleteDialog({ open: true, file })}
+                          title="Deletar"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
@@ -775,15 +1348,15 @@ const FilesTab = ({ customerId }) => {
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {isImage(file.file_type) ? (
+                      {isImage(file.mime_type) ? (
                         <img 
                           src={`${API_URL}${file.url}`}
                           alt={file.original_name}
                           className="w-12 h-12 object-cover rounded cursor-pointer"
-                          onClick={() => setPreviewImage(file)}
+                          onClick={() => handlePreview(file)}
                         />
                       ) : (
-                        <FileText className="h-12 w-12 text-gray-400 flex-shrink-0" />
+                        <FileText className="h-12 w-12 text-gray-400 shrink-0" />
                       )}
                       
                       <div className="flex-1 min-w-0">
@@ -805,11 +1378,11 @@ const FilesTab = ({ customerId }) => {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      {isImage(file.file_type) && (
+                      {isImage(file.mime_type) && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setPreviewImage(file)}
+                          onClick={() => handlePreview(file)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -817,7 +1390,7 @@ const FilesTab = ({ customerId }) => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open(`${API_URL}/api/customers/${customerId}/files/${file.id}/download`, '_blank')}
+                        onClick={() => window.open(`${API_URL}/api/files/${file.id}/download`, '_blank')}
                       >
                         <Download className="h-4 w-4" />
                       </Button>
@@ -836,6 +1409,91 @@ const FilesTab = ({ customerId }) => {
           </CardContent>
         </Card>
       )}
+        </TabsContent>
+
+        {/* Tab de Lixeira */}
+        <TabsContent value="trash" className="space-y-4">
+          {loadingTrash ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Loader2 className="h-12 w-12 animate-spin mx-auto text-gray-400" />
+                <p className="mt-4 text-gray-600">Carregando lixeira...</p>
+              </CardContent>
+            </Card>
+          ) : trashedFiles.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Trash2 className="h-12 w-12 mx-auto text-gray-300" />
+                <p className="mt-4 text-gray-600">Lixeira vazia</p>
+                <p className="text-sm text-gray-400">Arquivos deletados aparecerão aqui</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trash2 className="h-5 w-5" />
+                    Lixeira ({trashedFilesCount} {trashedFilesCount === 1 ? 'arquivo' : 'arquivos'})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {trashedFiles.map((file) => (
+                      <Card key={file.id} className="opacity-60 hover:opacity-100 transition-opacity">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate text-gray-700">{file.original_name}</p>
+                              <Badge variant="outline" className="mt-2 text-xs">
+                                Deletado em {new Date(file.deleted_at).toLocaleDateString('pt-BR')}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 mt-4">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRestoreFile(file.id)}
+                                  className="flex-1"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-2" />
+                                  Restaurar
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Restaurar arquivo</TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (window.confirm('Deletar permanentemente? Esta ação não pode ser desfeita!')) {
+                                      handleDeletePermanently(file.id);
+                                    }
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Deletar permanentemente</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Dialog de confirmação de exclusão */}
       <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, file: null })}>
@@ -859,33 +1517,116 @@ const FilesTab = ({ customerId }) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Preview de imagem */}
-      {previewImage && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div className="relative max-w-6xl max-h-[90vh]">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="absolute top-4 right-4 z-10"
-              onClick={() => setPreviewImage(null)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <img 
-              src={`${API_URL}${previewImage.url}`}
-              alt={previewImage.original_name}
-              className="max-w-full max-h-[90vh] object-contain"
+      {/* Dialog para renomear arquivo */}
+      <AlertDialog open={renameDialog.open} onOpenChange={(open) => setRenameDialog({ open, file: null, newName: '' })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Renomear Arquivo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Digite o novo nome para o arquivo "{renameDialog.file?.original_name}"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input
+              value={renameDialog.newName}
+              onChange={(e) => setRenameDialog(prev => ({ ...prev, newName: e.target.value }))}
+              placeholder="Novo nome do arquivo"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleRenameFile();
+                }
+              }}
             />
-            <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-75 text-white p-4 rounded">
-              <p className="font-medium">{previewImage.original_name}</p>
-              <p className="text-sm text-gray-300">{formatFileSize(previewImage.file_size)}</p>
-            </div>
           </div>
-        </div>
-      )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRenameFile}>
+              Renomear
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog para mover arquivo */}
+      <AlertDialog open={moveDialog.open} onOpenChange={(open) => setMoveDialog({ open, file: null, targetCategory: '' })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mover Arquivo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Selecione a categoria de destino para o arquivo "{moveDialog.file?.original_name}"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Select 
+              value={moveDialog.targetCategory} 
+              onValueChange={(value) => setMoveDialog(prev => ({ ...prev, targetCategory: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.filter(cat => cat.value !== moveDialog.file?.category).map(cat => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleMoveFile}>
+              Mover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog para copiar arquivo */}
+      <AlertDialog open={copyDialog.open} onOpenChange={(open) => setCopyDialog({ open, file: null, targetCategory: '' })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Copiar Arquivo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Selecione a categoria de destino para a cópia de "{copyDialog.file?.original_name}"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Select 
+              value={copyDialog.targetCategory} 
+              onValueChange={(value) => setCopyDialog(prev => ({ ...prev, targetCategory: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Mesma categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Mesma categoria</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCopyFile}>
+              Copiar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Preview de arquivo (imagens e PDFs) */}
+      <FilePreviewModal
+        file={previewFile}
+        isOpen={isPreviewOpen}
+        onClose={handleClosePreview}
+        allFiles={activeTab === 'trash' ? trashedFiles : filteredFiles}
+        onNavigate={handleNavigatePreview}
+      />
     </div>
   );
 };

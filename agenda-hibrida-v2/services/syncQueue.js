@@ -81,6 +81,7 @@ class SyncQueue {
     let processedCount = 0;
 
     try {
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         const item = await this._getNextQueueItem();
         

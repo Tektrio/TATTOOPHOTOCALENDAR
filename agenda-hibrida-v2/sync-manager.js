@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
-const { google } = require('googleapis');
+// const { google } = require('googleapis'); // Removido - não utilizado
 
 /**
  * 📦 SYNC MANAGER - Gerenciador de Sincronização Híbrida
@@ -513,7 +513,7 @@ class SyncManager {
           await this.downloadFromDrive(conflict.drive, path.dirname(conflict.local.path));
           return { success: true, kept: 'drive' };
 
-        case 'keep_both':
+        case 'keep_both': {
           // Manter ambos, renomeando o local
           const timestamp = new Date().getTime();
           const ext = path.extname(conflict.local.name);
@@ -525,6 +525,7 @@ class SyncManager {
           await this.downloadFromDrive(conflict.drive, path.dirname(conflict.local.path));
           
           return { success: true, kept: 'both', renamedTo: newName };
+        }
 
         default:
           return { success: false, error: 'Resolução inválida' };

@@ -39,14 +39,6 @@ const Layout = ({ children, statusBar }) => {
     window.history.forward();
   };
 
-  // Menu de navegação principal
-  const menuItems = [
-    { path: '/', label: 'Dashboard', icon: Home },
-    { path: '/clients', label: 'Clientes', icon: Users },
-    { path: '/customers', label: 'Gestão de Clientes', icon: Briefcase },
-    // Adicione mais rotas conforme necessário
-  ];
-
   // Verificar se está na rota ativa
   const isActive = (path) => {
     return location.pathname === path;

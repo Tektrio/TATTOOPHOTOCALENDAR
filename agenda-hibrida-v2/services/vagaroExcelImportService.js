@@ -7,7 +7,7 @@ const XLSX = require('xlsx');
 const { normalizePhone } = require('./phoneNormalizer');
 const { findDuplicateClient, findDuplicateAppointment } = require('./dedupService');
 const { format, parse } = require('date-fns');
-const { zonedTimeToUtc } = require('date-fns-tz');
+// const { zonedTimeToUtc } = require('date-fns-tz'); // Removido - não utilizado
 
 /**
  * Lê arquivo Excel e retorna dados estruturados
@@ -153,7 +153,7 @@ function mapRowToClient(row, mapping) {
  * @param {string} timezone - Timezone padrão
  * @returns {object|null} - Objeto de agendamento ou null se inválido
  */
-function mapRowToAppointment(row, mapping, timezone = 'America/Sao_Paulo') {
+function mapRowToAppointment(row, mapping, _timezone = 'America/Sao_Paulo') {
   try {
     const appointment = {
       client_name: row[mapping.client_name] || null,

@@ -92,7 +92,7 @@ describe('Sync Flow Integration', () => {
 
   test('Should handle multiple destinations', async () => {
     // Add multiple destinations
-    const dest1 = await request(app)
+    await request(app)
       .post('/api/sync-destinations')
       .send({
         type: 'gdrive',
@@ -101,7 +101,7 @@ describe('Sync Flow Integration', () => {
       })
       .expect(201);
 
-    const dest2 = await request(app)
+    await request(app)
       .post('/api/sync-destinations')
       .send({
         type: 'gdrive',
