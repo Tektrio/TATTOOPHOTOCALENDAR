@@ -1043,7 +1043,7 @@ const FilesTab = ({ customerId }) => {
                     {/* Preview */}
                     <div 
                       className="aspect-square bg-gray-100 relative cursor-pointer"
-                      onClick={() => isImage(file.file_type) && setPreviewImage(file)}
+                      onClick={() => isImage(file.file_type) && handlePreview(file)}
                     >
                       {isImage(file.file_type) ? (
                         <img 
@@ -1147,7 +1147,7 @@ const FilesTab = ({ customerId }) => {
                           src={`${API_URL}${file.url}`}
                           alt={file.original_name}
                           className="w-12 h-12 object-cover rounded cursor-pointer"
-                          onClick={() => setPreviewImage(file)}
+                          onClick={() => handlePreview(file)}
                         />
                       ) : (
                         <FileText className="h-12 w-12 text-gray-400 shrink-0" />
@@ -1176,7 +1176,7 @@ const FilesTab = ({ customerId }) => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setPreviewImage(file)}
+                          onClick={() => handlePreview(file)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>

@@ -48,16 +48,30 @@ const FilePreviewModal = ({
   const hasNext = currentIndex < previewableFiles.length - 1;
 
   const handlePrevious = useCallback(() => {
-    if (hasPrevious && onNavigate) {
-      onNavigate(previewableFiles[currentIndex - 1]);
+    if (!onNavigate || !file) return;
+    
+    const previewable = allFiles.filter(f => 
+      f.mime_type?.startsWith('image/') || f.mime_type === 'application/pdf'
+    );
+    const idx = previewable.findIndex(f => f.id === file.id);
+    
+    if (idx > 0) {
+      onNavigate(previewable[idx - 1]);
     }
-  }, [hasPrevious, onNavigate, previewableFiles, currentIndex]);
+  }, [onNavigate, allFiles, file]);
 
   const handleNext = useCallback(() => {
-    if (hasNext && onNavigate) {
-      onNavigate(previewableFiles[currentIndex + 1]);
+    if (!onNavigate || !file) return;
+    
+    const previewable = allFiles.filter(f => 
+      f.mime_type?.startsWith('image/') || f.mime_type === 'application/pdf'
+    );
+    const idx = previewable.findIndex(f => f.id === file.id);
+    
+    if (idx >= 0 && idx < previewable.length - 1) {
+      onNavigate(previewable[idx + 1]);
     }
-  }, [hasNext, onNavigate, previewableFiles, currentIndex]);
+  }, [onNavigate, allFiles, file]);
 
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 25, 200));
