@@ -8,11 +8,11 @@ Sistema de Agenda Visual para Tatuadores com **Sincronização Bidirecional Goog
 [![Tests](https://img.shields.io/badge/tests-38%2B%20E2E-blue)](tests/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-<!-- Badges de CI/CD - Substitua SEU-USUARIO pelo seu usuário do GitHub -->
+<!-- Badges de CI/CD -->
 
-![CI](https://github.com/SEU-USUARIO/tattoo-scheduler/workflows/CI%20-%20Testes%20e%20Validações/badge.svg)
-![Security](https://github.com/SEU-USUARIO/tattoo-scheduler/workflows/Security%20-%20Verificações%20de%20Segurança/badge.svg)
-![Code Quality](https://github.com/SEU-USUARIO/tattoo-scheduler/workflows/Code%20Quality%20-%20Qualidade%20de%20Código/badge.svg)
+![CI](https://github.com/Tektrio/TATTOOPHOTOCALENDAR/workflows/CI%20-%20Testes%20e%20Validações/badge.svg)
+![Security](https://github.com/Tektrio/TATTOOPHOTOCALENDAR/workflows/Security%20-%20Verificações%20de%20Segurança/badge.svg)
+![Code Quality](https://github.com/Tektrio/TATTOOPHOTOCALENDAR/workflows/Code%20Quality%20-%20Qualidade%20de%20Código/badge.svg)
 
 ---
 

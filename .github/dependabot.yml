@@ -10,9 +10,9 @@ updates:
       timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 5
     reviewers:
-      - "seu-usuario"
+      - "Tektrio"
     assignees:
-      - "seu-usuario"
+      - "Tektrio"
     labels:
       - "dependencies"
       - "backend"
@@ -38,9 +38,9 @@ updates:
       timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 5
     reviewers:
-      - "seu-usuario"
+      - "Tektrio"
     assignees:
-      - "seu-usuario"
+      - "Tektrio"
     labels:
       - "dependencies"
       - "frontend"
