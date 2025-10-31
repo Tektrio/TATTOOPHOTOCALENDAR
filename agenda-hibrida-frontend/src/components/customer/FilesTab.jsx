@@ -299,7 +299,7 @@ const FilesTab = ({ customerId }) => {
         });
 
         // Enviar requisição
-        xhr.open('POST', `${API_URL}/api/clients/${customerId}/files`);
+        xhr.open('POST', `${API_URL}/api/clients/${customerId}/upload/${category}`);
         xhr.send(formData);
       });
       
