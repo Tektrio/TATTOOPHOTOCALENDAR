@@ -309,8 +309,11 @@ router.get('/:clientId/photos', async (req, res) => {
     console.error('[GET /clients/:clientId/photos] Erro:', error);
     console.error('Stack:', error.stack);
     
-    // Retornar array vazio em caso de erro ao invés de 500
-    res.json({ success: true, data: [], warning: 'Erro ao carregar fotos' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erro ao carregar fotos do cliente',
+      message: error.message 
+    });
   }
 });
 

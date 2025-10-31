@@ -96,7 +96,7 @@ class PhotoService {
           console.error('PhotoService: Erro na query:', err.message);
           console.error('SQL:', sql);
           console.error('Params:', params);
-          return resolve([]); // Retorna array vazio em vez de rejeitar
+          return reject(new Error(`Erro ao buscar fotos do cliente: ${err.message}`));
         }
         
         // Parse tags JSON com tratamento de erro
