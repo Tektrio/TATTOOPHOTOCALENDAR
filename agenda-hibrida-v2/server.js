@@ -1094,6 +1094,17 @@ app.get('/api/clients', (req, res) => {
   });
 });
 
+// Contar total de clientes
+app.get('/api/clients/count', (req, res) => {
+  db.get('SELECT COUNT(*) as total FROM clients', (err, row) => {
+    if (err) {
+      console.error('Erro ao contar clientes:', err);
+      return res.status(500).json({ error: 'Erro ao contar clientes' });
+    }
+    res.json({ total: row.total });
+  });
+});
+
 app.get('/api/clients/:id', (req, res) => {
   const { id } = req.params;
   
@@ -1112,6 +1123,186 @@ app.get('/api/clients/:id', (req, res) => {
     }
     res.json(row);
   });
+});
+
+// Obter informações das pastas do cliente (Local, Google Drive, QNAP)
+app.get('/api/clients/:id/folders', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validação: ID deve ser um número positivo
+    const clientId = parseInt(id, 10);
+    if (isNaN(clientId) || clientId <= 0) {
+      return res.status(400).json({ error: 'ID de cliente inválido' });
+    }
+    
+    // Buscar dados do cliente
+    const client = await new Promise((resolve, reject) => {
+      db.get('SELECT id, name, phone, folder_path, drive_root_id FROM clients WHERE id = ?', [clientId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!client) {
+      return res.status(404).json({ error: 'Cliente não encontrado' });
+    }
+    
+    // Validação: drive_root_id deve ser alfanumérico se existir
+    if (client.drive_root_id && !/^[a-zA-Z0-9_-]+$/.test(client.drive_root_id)) {
+      console.warn(`⚠️ drive_root_id inválido para cliente ${clientId}: ${client.drive_root_id}`);
+      client.drive_root_id = null; // Ignora ID inválido
+    }
+    
+    // Inicializar resposta
+    const folderInfo = {
+      local: { available: false, path: '', exists: false },
+      drive: { available: false, url: '', id: null },
+      qnap: { available: false, path: '' }
+    };
+    
+    // 1. Verificar pasta local
+    if (client.folder_path) {
+      // Validação: Path traversal protection
+      const normalizedPath = path.normalize(client.folder_path);
+      if (normalizedPath.includes('..') || path.isAbsolute(normalizedPath)) {
+        console.error(`⚠️ Tentativa de path traversal detectada: ${client.folder_path}`);
+        return res.status(400).json({ error: 'Caminho de pasta inválido' });
+      }
+      
+      const localPath = path.join(getClientsFolder(), normalizedPath);
+      folderInfo.local.path = normalizedPath;
+      
+      try {
+        const exists = await fs.pathExists(localPath);
+        folderInfo.local.exists = exists;
+        folderInfo.local.available = exists;
+      } catch (error) {
+        console.error('Erro ao verificar pasta local:', error);
+      }
+    }
+    
+    // 2. Verificar Google Drive
+    if (client.drive_root_id) {
+      folderInfo.drive.id = client.drive_root_id;
+      folderInfo.drive.url = `https://drive.google.com/drive/folders/${client.drive_root_id}`;
+      folderInfo.drive.available = true;
+    }
+    
+    // 3. QNAP - verificar se está configurado
+    const qnapEnabled = process.env.QNAP_ENABLED === 'true' || false;
+    if (qnapEnabled && process.env.QNAP_HOST && client.folder_path) {
+      const qnapPath = path.join(process.env.QNAP_SHARE_PATH || '/share/Tatuagens', client.folder_path);
+      folderInfo.qnap.path = qnapPath;
+      folderInfo.qnap.available = true;
+    }
+    
+    res.json(folderInfo);
+  } catch (error) {
+    console.error('Erro ao buscar informações de pastas:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Criar estrutura de pastas para cliente existente sem pasta
+app.post('/api/clients/:id/create-folders', async (req, res) => {
+  const { id } = req.params;
+  
+  // Validação: ID deve ser um número positivo
+  const clientId = parseInt(id, 10);
+  if (isNaN(clientId) || clientId <= 0) {
+    return res.status(400).json({ error: 'ID de cliente inválido' });
+  }
+  
+  try {
+    // 1. Buscar cliente
+    const client = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM clients WHERE id = ?', [clientId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!client) {
+      return res.status(404).json({ error: 'Cliente não encontrado' });
+    }
+    
+    // Validação: Cliente deve ter nome e telefone
+    if (!client.name || !client.phone) {
+      return res.status(400).json({ error: 'Cliente sem nome ou telefone configurado' });
+    }
+    
+    // 2. Verificar se já tem pasta
+    if (client.folder_path) {
+      const uploadsPath = getClientsFolder();
+      const existingPath = path.join(uploadsPath, client.folder_path);
+      const exists = await fs.pathExists(existingPath);
+      
+      if (exists) {
+        return res.status(400).json({ 
+          error: 'Cliente já possui pasta configurada',
+          folder_path: client.folder_path 
+        });
+      }
+    }
+    
+    // 3. Gerar nome da pasta
+    const slug = folderUtils.generateNameSlug(client.name);
+    const phoneClean = folderUtils.formatPhone(client.phone);
+    const folderName = folderUtils.generateFolderName(client.name, client.phone, id);
+    
+    // 4. Criar estrutura de pastas local
+    const uploadsPath = getClientsFolder();
+    await fs.ensureDir(uploadsPath);
+    
+    const folderPath = path.join(uploadsPath, folderName);
+    const folderStructure = categoryService.getFolderStructure();
+    
+    for (const folder of folderStructure) {
+      await fs.ensureDir(path.join(folderPath, folder));
+    }
+    
+    // 5. Atualizar banco de dados
+    await new Promise((resolve, reject) => {
+      db.run(
+        `UPDATE clients 
+         SET folder_path = ?, folder_created_at = CURRENT_TIMESTAMP 
+         WHERE id = ?`,
+        [folderName, id],
+        (err) => {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+    
+    // 6. Enfileirar criação no Drive (assíncrono)
+    const queueEnabled = process.env.FOLDER_OPERATION_QUEUE_ENABLED === 'true';
+    if (driveClient && queueEnabled && folderOperationService) {
+      try {
+        await folderOperationService.enqueue(id, 'create_drive_structure', {
+          folderName: folderName,
+          structure: folderStructure
+        });
+        console.log(`📥 Criação de estrutura no Drive enfileirada para cliente ${id}`);
+      } catch (queueErr) {
+        console.warn('⚠️ Erro ao enfileirar operação no Drive:', queueErr);
+      }
+    }
+    
+    console.log(`✅ Pasta criada com sucesso para cliente ${id}: ${folderName}`);
+    
+    res.json({
+      success: true,
+      message: 'Pasta criada com sucesso',
+      folder_path: folderName,
+      created_at: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao criar pastas do cliente:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/api/clients', async (req, res) => {

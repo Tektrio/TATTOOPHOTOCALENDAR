@@ -22,6 +22,7 @@ const Customers = () => {
   const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [totalCustomers, setTotalCustomers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
@@ -35,6 +36,7 @@ const Customers = () => {
   useEffect(() => {
     fetchCustomers();
     fetchTags();
+    fetchTotalCount();
   }, []);
 
   // Debounce da busca - aguardar 500ms após o usuário parar de digitar
@@ -126,6 +128,18 @@ const Customers = () => {
       */
     } catch (error) {
       console.error('Erro ao buscar tags:', error);
+    }
+  };
+
+  const fetchTotalCount = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/clients/count`);
+      if (response.ok) {
+        const data = await response.json();
+        setTotalCustomers(data.total);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar total de clientes:', error);
     }
   };
 
@@ -251,8 +265,10 @@ const Customers = () => {
           <div>
             <h1 className="text-xl font-bold text-white">Clientes</h1>
             <p className="text-xs text-gray-400">
-              {filteredCustomers.length} cliente{filteredCustomers.length !== 1 ? 's' : ''} 
-              {searchTerm || filterTag !== 'all' || filterDateRange !== 'all' ? ' (filtrado)' : ''}
+              {totalCustomers} cliente{totalCustomers !== 1 ? 's' : ''} 
+              {(searchTerm || filterTag !== 'all' || filterDateRange !== 'all') && filteredCustomers.length !== totalCustomers
+                ? ` (${filteredCustomers.length} exibido${filteredCustomers.length !== 1 ? 's' : ''})`
+                : ''}
             </p>
           </div>
         </div>

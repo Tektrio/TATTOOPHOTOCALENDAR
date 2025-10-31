@@ -13,8 +13,18 @@ import {
   List,
   Search,
   X,
-  Eye
+  Eye,
+  HardDrive,
+  FolderOpen,
+  Cloud,
+  Server,
+  Loader2,
+  FolderPlus,
+  CheckCircle,
+  Clock,
+  XCircle
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { Input } from '../ui/input';
 import { Alert, AlertDescription } from '../ui/alert';
 import SyncStatusIndicator from '../SyncStatusIndicator';
@@ -49,6 +59,22 @@ const FilesTab = ({ customerId }) => {
   const [dragActive, setDragActive] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, file: null });
   const [previewImage, setPreviewImage] = useState(null);
+  const [customer, setCustomer] = useState(null);
+  const [folderLinks, setFolderLinks] = useState({
+    local: { available: false, path: '', exists: false },
+    drive: { available: false, url: '', id: null },
+    qnap: { available: false, path: '' }
+  });
+  const [loadingStates, setLoadingStates] = useState({
+    local: false,
+    drive: false,
+    qnap: false
+  });
+  const [syncStatus, setSyncStatus] = useState({
+    local: 'synced', // 'synced' | 'pending' | 'error' | null
+    drive: null,
+    qnap: null
+  });
 
   // Carregar categorias dinâmicas do backend
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
@@ -81,11 +107,46 @@ const FilesTab = ({ customerId }) => {
     }
   }, [customerId, selectedCategory, API_URL]);
 
+  // Carregar dados do cliente
+  const loadCustomer = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/clients/${customerId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCustomer(data);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar dados do cliente:', err);
+    }
+  }, [customerId, API_URL]);
+
+  // Carregar informações das pastas (Local, Drive, QNAP)
+  const loadFolderLinks = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/folders`);
+      if (response.ok) {
+        const data = await response.json();
+        setFolderLinks(data);
+        
+        // Atualizar status de sincronização
+        setSyncStatus({
+          local: data.local.available && data.local.exists ? 'synced' : null,
+          drive: data.drive.available ? 'synced' : null,
+          qnap: data.qnap.available ? 'synced' : null
+        });
+      }
+    } catch (err) {
+      console.error('Erro ao carregar links de pastas:', err);
+    }
+  }, [customerId, API_URL]);
+
   useEffect(() => {
     if (customerId) {
       loadFiles();
+      loadCustomer();
+      loadFolderLinks();
     }
-  }, [customerId, loadFiles]);
+  }, [customerId, loadFiles, loadCustomer, loadFolderLinks]);
 
   // Upload de arquivos
   const handleFileUpload = async (uploadFiles, category) => {
@@ -209,6 +270,134 @@ const FilesTab = ({ customerId }) => {
     return cat ? cat.label : category;
   };
 
+  // Renderizar ícone de status de sincronização
+  const renderSyncStatusIcon = (status) => {
+    if (!status) return null;
+    
+    switch (status) {
+      case 'synced':
+        return <CheckCircle className="h-3 w-3 text-green-500" />;
+      case 'pending':
+        return <Clock className="h-3 w-3 text-yellow-500" />;
+      case 'error':
+        return <XCircle className="h-3 w-3 text-red-500" />;
+      default:
+        return null;
+    }
+  };
+
+  // Handlers para abrir pastas
+  const handleOpenLocalFolder = async () => {
+    if (!customer) {
+      setError('Dados do cliente não carregados');
+      return;
+    }
+
+    setLoadingStates(prev => ({ ...prev, local: true }));
+
+    try {
+      const response = await fetch(`${API_URL}/api/clients/open-folder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: customer.phone })
+      });
+      
+      if (response.ok) {
+        setSuccess('Pasta local aberta com sucesso!');
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        const data = await response.json();
+        // Mensagens específicas por tipo de erro
+        if (response.status === 404) {
+          setError('Cliente não encontrado');
+        } else if (data.error) {
+          setError(data.error);
+        } else {
+          setError('Erro ao abrir pasta local');
+        }
+        setTimeout(() => setError(null), 5000);
+      }
+    } catch (error) {
+      console.error('Erro ao abrir pasta local:', error);
+      
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        setError('Erro de conexão com o servidor');
+      } else {
+        setError(`Erro ao abrir pasta: ${error.message}`);
+      }
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, local: false }));
+    }
+  };
+
+  const handleOpenDriveFolder = () => {
+    if (!folderLinks.drive.url) {
+      setError('Pasta do Google Drive não disponível');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    setLoadingStates(prev => ({ ...prev, drive: true }));
+    
+    try {
+      window.open(folderLinks.drive.url, '_blank');
+      setSuccess('Abrindo Google Drive...');
+      setTimeout(() => setSuccess(null), 2000);
+    } catch (error) {
+      console.error('Erro ao abrir Google Drive:', error);
+      setError('Erro ao abrir Google Drive');
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setTimeout(() => {
+        setLoadingStates(prev => ({ ...prev, drive: false }));
+      }, 500);
+    }
+  };
+
+  const handleOpenQNAPFolder = () => {
+    setError('QNAP ainda não está configurado. Em breve!');
+    setTimeout(() => setError(null), 3000);
+  };
+
+  // Handler para criar pasta quando não existe
+  const handleCreateFolder = async () => {
+    if (!customer) {
+      setError('Dados do cliente não carregados');
+      return;
+    }
+
+    setLoadingStates(prev => ({ ...prev, local: true }));
+
+    try {
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/create-folders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSuccess('Pasta criada com sucesso!');
+        
+        // Recarregar dados das pastas
+        await loadFolderLinks();
+        await loadCustomer();
+        
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Erro ao criar pasta');
+        setTimeout(() => setError(null), 5000);
+      }
+    } catch (error) {
+      console.error('Erro ao criar pasta:', error);
+      setError(`Erro ao criar pasta: ${error.message}`);
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, local: false }));
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -306,6 +495,137 @@ const FilesTab = ({ customerId }) => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Acesso Rápido às Pastas */}
+      <Card>
+        <CardContent className="py-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+            <HardDrive className="h-4 w-4" />
+            <span className="font-medium">Acesso Rápido às Pastas</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {/* Botão Pasta Local */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!folderLinks.local.available || !customer || loadingStates.local}
+                    onClick={handleOpenLocalFolder}
+                    className="flex items-center gap-2"
+                  >
+                    {loadingStates.local ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Abrindo...
+                      </>
+                    ) : (
+                      <>
+                        <FolderOpen className="h-4 w-4" />
+                        Pasta Local
+                        {renderSyncStatusIcon(syncStatus.local)}
+                      </>
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {folderLinks.local.available 
+                  ? "Abrir pasta no explorador de arquivos" 
+                  : "Pasta local não configurada. Será criada ao adicionar arquivos"}
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Botão Criar Pasta (aparece quando não existe) */}
+            {!folderLinks.local.available && customer && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      disabled={loadingStates.local}
+                      onClick={handleCreateFolder}
+                      className="flex items-center gap-2"
+                    >
+                      {loadingStates.local ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Criando...
+                        </>
+                      ) : (
+                        <>
+                          <FolderPlus className="h-4 w-4" />
+                          Criar Pasta
+                        </>
+                      )}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Criar estrutura de pastas para este cliente
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Botão Google Drive */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!folderLinks.drive.available || loadingStates.drive}
+                    onClick={handleOpenDriveFolder}
+                    className="flex items-center gap-2"
+                  >
+                    {loadingStates.drive ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Abrindo...
+                      </>
+                    ) : (
+                      <>
+                        <Cloud className="h-4 w-4" />
+                        Google Drive
+                        {renderSyncStatusIcon(syncStatus.drive)}
+                      </>
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {folderLinks.drive.available 
+                  ? "Abrir pasta no Google Drive (nova aba)" 
+                  : "Pasta do Google Drive não sincronizada"}
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Botão QNAP */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!folderLinks.qnap.available}
+                    onClick={handleOpenQNAPFolder}
+                    className="flex items-center gap-2"
+                  >
+                    <Server className="h-4 w-4" />
+                    QNAP
+                    {renderSyncStatusIcon(syncStatus.qnap)}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                QNAP em desenvolvimento. Em breve!
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CardContent>
       </Card>

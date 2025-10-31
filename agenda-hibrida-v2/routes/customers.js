@@ -107,6 +107,20 @@ router.get('/', (req, res) => {
   });
 });
 
+// GET /api/customers/count - Contar total de clientes (sem filtros)
+router.get('/count', (req, res) => {
+  const query = 'SELECT COUNT(*) as total FROM clients';
+  
+  req.app.locals.db.get(query, [], (err, row) => {
+    if (err) {
+      console.error('Erro ao contar clientes:', err);
+      return res.status(500).json({ error: 'Erro ao contar clientes' });
+    }
+    
+    res.json({ total: row.total });
+  });
+});
+
 // GET /api/customers/:id - Buscar cliente específico
 router.get('/:id', (req, res) => {
   const { id } = req.params;
