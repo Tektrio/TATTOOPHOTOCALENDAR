@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog.jsx'
 import { Progress } from '@/components/ui/progress.jsx'
+import { useCategories } from '../hooks/useCategories'
 import { 
   Upload, 
   Download, 

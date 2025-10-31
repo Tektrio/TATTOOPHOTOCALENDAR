@@ -29,24 +29,7 @@ const FilePreviewModal = ({
     setPdfLoadError(false);
   }, [file?.id]);
 
-  if (!file) return null;
-
-  const isImage = file.mime_type?.startsWith('image/');
-  const isPDF = file.mime_type === 'application/pdf';
-  const canPreview = isImage || isPDF;
-
-  // URL do preview
-  const previewUrl = `${API_URL}/api/files/${file.id}/preview`;
-  const downloadUrl = `${API_URL}/api/files/${file.id}/download`;
-
-  // Encontrar índice atual e arquivos do mesmo tipo
-  const previewableFiles = allFiles.filter(f => 
-    f.mime_type?.startsWith('image/') || f.mime_type === 'application/pdf'
-  );
-  const currentIndex = previewableFiles.findIndex(f => f.id === file.id);
-  const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < previewableFiles.length - 1;
-
+  // Handlers com useCallback ANTES do early return
   const handlePrevious = useCallback(() => {
     if (!onNavigate || !file) return;
     
@@ -72,22 +55,6 @@ const FilePreviewModal = ({
       onNavigate(previewable[idx + 1]);
     }
   }, [onNavigate, allFiles, file]);
-
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 25, 200));
-  };
-
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 25, 50));
-  };
-
-  const handleDownload = () => {
-    window.open(downloadUrl, '_blank');
-  };
-
-  const handleImageError = () => {
-    setError('Erro ao carregar imagem. Arquivo pode estar corrompido ou inacessível.');
-  };
 
   // Listener de teclado para atalhos
   useEffect(() => {
@@ -115,6 +82,41 @@ const FilePreviewModal = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handlePrevious, handleNext, onClose]);
+
+  // Early return DEPOIS de todos os hooks
+  if (!file) return null;
+
+  const isImage = file.mime_type?.startsWith('image/');
+  const isPDF = file.mime_type === 'application/pdf';
+  const canPreview = isImage || isPDF;
+
+  // URL do preview
+  const previewUrl = `${API_URL}/api/files/${file.id}/preview`;
+  const downloadUrl = `${API_URL}/api/files/${file.id}/download`;
+
+  // Encontrar índice atual e arquivos do mesmo tipo
+  const previewableFiles = allFiles.filter(f => 
+    f.mime_type?.startsWith('image/') || f.mime_type === 'application/pdf'
+  );
+  const currentIndex = previewableFiles.findIndex(f => f.id === file.id);
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < previewableFiles.length - 1;
+
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 25, 200));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 25, 50));
+  };
+
+  const handleDownload = () => {
+    window.open(downloadUrl, '_blank');
+  };
+
+  const handleImageError = () => {
+    setError('Erro ao carregar imagem. Arquivo pode estar corrompido ou inacessível.');
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

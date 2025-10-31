@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Cloud, ExternalLink } from 'lucide-react';
+import { toast } from 'sonner';
 import { DESTINATION_COLORS } from '../utils/storageConfig';
 
 /**
@@ -26,7 +27,6 @@ export default function AddGoogleAccountModal({
 }) {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [oauthUrl, setOauthUrl] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -149,7 +149,7 @@ Consulte o guia "GOOGLE_OAUTH_SOLUCAO_COMPLETA.md" para resolver.
       }
 
       const data = await response.json();
-      setOauthUrl(data.authUrl);
+      // const oauthUrl = data.authUrl; // Removido - não necessário, URL já está em data
 
       // Abre OAuth em nova janela
       const width = 600;
@@ -182,7 +182,6 @@ Consulte o guia "GOOGLE_OAUTH_SOLUCAO_COMPLETA.md" para resolver.
 
   const handleClose = () => {
     setName('');
-    setOauthUrl(null);
     onOpenChange(false);
   };
 

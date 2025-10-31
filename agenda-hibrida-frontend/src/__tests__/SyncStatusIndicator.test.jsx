@@ -3,7 +3,7 @@
  * Testa exibição de status visual e tooltips
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import SyncStatusIndicator from '../components/SyncStatusIndicator';
 

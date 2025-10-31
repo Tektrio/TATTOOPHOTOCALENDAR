@@ -360,7 +360,7 @@ export default function LocalStorage() {
         toast.success(enabled ? 'Destino habilitado' : 'Destino desabilitado');
         loadDestinations();
       }
-    } catch (error) {
+    } catch {
       toast.error('Erro ao alterar status');
     }
   };
@@ -490,7 +490,7 @@ export default function LocalStorage() {
   // ============================================
 
   const googleAccounts = destinations.filter(d => d.type === 'gdrive');
-  const qnapDestinations = destinations.filter(d => d.type === 'qnap');
+  // const qnapDestinations = destinations.filter(d => d.type === 'qnap'); // Removido - não utilizado
 
   if (loading) {
     return (
