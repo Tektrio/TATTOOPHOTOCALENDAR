@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -159,11 +159,11 @@ const FilesTab = ({ customerId }) => {
   }, [customerId, loadFiles, loadCustomer, loadFolderLinks]);
 
   // Polling do status de sincronização do Google Drive
+  const pollIntervalRef = useRef(null);
+  const shouldPollRef = useRef(false);
+  
   useEffect(() => {
     if (!customerId) return;
-    
-    let pollInterval = null;
-    let shouldPoll = false;
     
     const checkSyncStatus = async () => {
       try {
@@ -171,7 +171,24 @@ const FilesTab = ({ customerId }) => {
         if (response.ok) {
           const data = await response.json();
           
-          // Atualizar status baseado na resposta
+          // Determinar se deve continuar polling baseado no status
+          let needsPolling = false;
+          
+          switch (data.status) {
+            case 'pending':
+            case 'syncing':
+              needsPolling = true;
+              break;
+                
+            case 'completed':
+            case 'error':
+            case 'idle':
+            default:
+              needsPolling = false;
+              break;
+          }
+          
+          // Atualizar status de sincronização
           setSyncStatus(prev => {
             const newStatus = { ...prev };
             
@@ -179,12 +196,10 @@ const FilesTab = ({ customerId }) => {
               case 'pending':
               case 'syncing':
                 newStatus.drive = 'pending';
-                shouldPoll = true;
                 break;
                 
               case 'completed':
                 newStatus.drive = 'synced';
-                shouldPoll = false;
                 // Mostrar notificação de sucesso
                 setSuccess('Sincronização com Google Drive concluída!');
                 setTimeout(() => setSuccess(null), 5000);
@@ -194,7 +209,6 @@ const FilesTab = ({ customerId }) => {
                 
               case 'error':
                 newStatus.drive = 'error';
-                shouldPoll = false;
                 // Mostrar erro
                 setError(`Erro na sincronização: ${data.error || 'Erro desconhecido'}`);
                 setTimeout(() => setError(null), 10000);
@@ -209,19 +223,23 @@ const FilesTab = ({ customerId }) => {
                   setTimeout(() => setSuccess(null), 5000);
                   loadFolderLinks();
                 }
-                shouldPoll = false;
                 break;
             }
             
             return newStatus;
           });
           
-          // Configurar próximo poll se necessário
-          if (shouldPoll && !pollInterval) {
-            pollInterval = setInterval(checkSyncStatus, 3000); // Poll a cada 3 segundos
-          } else if (!shouldPoll && pollInterval) {
-            clearInterval(pollInterval);
-            pollInterval = null;
+          // Atualizar ref de polling
+          shouldPollRef.current = needsPolling;
+          
+          // Configurar ou limpar polling baseado no status
+          if (needsPolling && !pollIntervalRef.current) {
+            // Iniciar polling
+            pollIntervalRef.current = setInterval(checkSyncStatus, 3000);
+          } else if (!needsPolling && pollIntervalRef.current) {
+            // Parar polling
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
           }
         }
       } catch (err) {
@@ -234,9 +252,11 @@ const FilesTab = ({ customerId }) => {
     
     // Cleanup
     return () => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
       }
+      shouldPollRef.current = false;
     };
   }, [customerId, API_URL, loadFolderLinks]);
 
