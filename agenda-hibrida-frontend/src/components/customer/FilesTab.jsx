@@ -1623,7 +1623,7 @@ const FilesTab = ({ customerId }) => {
         file={previewFile}
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
-        allFiles={filteredFiles}
+        allFiles={activeTab === 'trash' ? trashedFiles : filteredFiles}
         onNavigate={handleNavigatePreview}
       />
     </div>
