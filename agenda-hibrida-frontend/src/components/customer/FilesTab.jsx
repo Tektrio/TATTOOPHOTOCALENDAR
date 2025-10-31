@@ -479,8 +479,9 @@ const FilesTab = ({ customerId }) => {
 
       setSuccess('Arquivo deletado com sucesso!');
       
-      // Recarregar lista
+      // Recarregar listas
       await loadFiles();
+      await loadTrashedFiles(); // Atualizar badge da lixeira
       
       // Fechar dialog
       setDeleteDialog({ open: false, file: null });
