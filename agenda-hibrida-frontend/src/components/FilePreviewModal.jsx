@@ -122,7 +122,7 @@ const FilePreviewModal = ({
         <DialogHeader>
           <DialogTitle>{file.original_name || file.filename}</DialogTitle>
           <DialogDescription>
-            {file.mime_type} • {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Tamanho desconhecido'}
+            {file.mime_type} • {file.file_size ? `${(file.file_size / 1024).toFixed(1)} KB` : 'Tamanho desconhecido'}
           </DialogDescription>
         </DialogHeader>
 
