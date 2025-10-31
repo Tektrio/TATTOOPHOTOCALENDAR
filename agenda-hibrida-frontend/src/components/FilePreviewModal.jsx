@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ const FilePreviewModal = ({
 }) => {
   const [zoom, setZoom] = useState(100);
   const [error, setError] = useState(null);
+  const [pdfLoadError, setPdfLoadError] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -25,6 +26,7 @@ const FilePreviewModal = ({
   useEffect(() => {
     setZoom(100);
     setError(null);
+    setPdfLoadError(false);
   }, [file?.id]);
 
   if (!file) return null;
@@ -35,7 +37,7 @@ const FilePreviewModal = ({
 
   // URL do preview
   const previewUrl = `${API_URL}/api/files/${file.id}/preview`;
-  const downloadUrl = `${API_URL}/api/customers/${file.client_id}/files/${file.id}`;
+  const downloadUrl = `${API_URL}/api/files/${file.id}/download`;
 
   // Encontrar índice atual e arquivos do mesmo tipo
   const previewableFiles = allFiles.filter(f => 
@@ -45,17 +47,17 @@ const FilePreviewModal = ({
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex < previewableFiles.length - 1;
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (hasPrevious && onNavigate) {
       onNavigate(previewableFiles[currentIndex - 1]);
     }
-  };
+  }, [hasPrevious, onNavigate, previewableFiles, currentIndex]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (hasNext && onNavigate) {
       onNavigate(previewableFiles[currentIndex + 1]);
     }
-  };
+  }, [hasNext, onNavigate, previewableFiles, currentIndex]);
 
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 25, 200));
@@ -73,9 +75,32 @@ const FilePreviewModal = ({
     setError('Erro ao carregar imagem. Arquivo pode estar corrompido ou inacessível.');
   };
 
-  const handlePDFError = () => {
-    setError('Erro ao carregar PDF. Tente fazer o download do arquivo.');
-  };
+  // Listener de teclado para atalhos
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          handlePrevious();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          handleNext();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onClose();
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handlePrevious, handleNext, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -202,12 +227,35 @@ const FilePreviewModal = ({
           )}
 
           {!error && isPDF && (
-            <iframe
-              src={previewUrl}
-              title={file.original_name || file.filename}
-              className="w-full h-full border-0 rounded"
-              onError={handlePDFError}
-            />
+            <>
+              {pdfLoadError ? (
+                <div className="text-center">
+                  <p className="text-red-600 mb-4">Erro ao carregar PDF. Tente fazer o download do arquivo.</p>
+                  <Button onClick={handleDownload}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar Arquivo
+                  </Button>
+                </div>
+              ) : (
+                <iframe
+                  src={previewUrl}
+                  title={file.original_name || file.filename}
+                  className="w-full h-full border-0 rounded"
+                  onLoad={(e) => {
+                    // Tentar detectar erro de carregamento
+                    try {
+                      const iframeDoc = e.target.contentDocument || e.target.contentWindow?.document;
+                      if (!iframeDoc || iframeDoc.body?.textContent?.includes('error')) {
+                        setPdfLoadError(true);
+                      }
+                    } catch (err) {
+                      // Erro de CORS esperado, PDF provavelmente carregou corretamente
+                      console.debug('CORS esperado ao verificar iframe', err);
+                    }
+                  }}
+                />
+              )}
+            </>
           )}
         </div>
 

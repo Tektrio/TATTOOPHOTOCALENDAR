@@ -92,8 +92,8 @@ const FilesTab = ({ customerId }) => {
       setError(null);
       
       const url = selectedCategory === 'all' 
-        ? `${API_URL}/api/customers/${customerId}/files`
-        : `${API_URL}/api/customers/${customerId}/files?category=${selectedCategory}`;
+        ? `${API_URL}/api/clients/${customerId}/files`
+        : `${API_URL}/api/clients/${customerId}/files?category=${selectedCategory}`;
       
       const response = await fetch(url);
       
@@ -293,7 +293,7 @@ const FilesTab = ({ customerId }) => {
         });
 
         // Enviar requisição
-        xhr.open('POST', `${API_URL}/api/customers/${customerId}/files`);
+        xhr.open('POST', `${API_URL}/api/clients/${customerId}/files`);
         xhr.send(formData);
       });
       
@@ -330,7 +330,7 @@ const FilesTab = ({ customerId }) => {
     try {
       setError(null);
       
-      const response = await fetch(`${API_URL}/api/customers/${customerId}/files/${fileId}`, {
+      const response = await fetch(`${API_URL}/api/clients/${customerId}/files/${fileId}`, {
         method: 'DELETE'
       });
 
@@ -893,7 +893,7 @@ const FilesTab = ({ customerId }) => {
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={() => window.open(`${API_URL}/api/customers/${customerId}/files/${file.id}/download`, '_blank')}
+                          onClick={() => window.open(`${API_URL}/api/files/${file.id}/download`, '_blank')}
                         >
                           <Download className="h-4 w-4" />
                         </Button>
@@ -945,7 +945,7 @@ const FilesTab = ({ customerId }) => {
                           onClick={() => setPreviewImage(file)}
                         />
                       ) : (
-                        <FileText className="h-12 w-12 text-gray-400 flex-shrink-0" />
+                        <FileText className="h-12 w-12 text-gray-400 shrink-0" />
                       )}
                       
                       <div className="flex-1 min-w-0">
@@ -979,7 +979,7 @@ const FilesTab = ({ customerId }) => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open(`${API_URL}/api/customers/${customerId}/files/${file.id}/download`, '_blank')}
+                        onClick={() => window.open(`${API_URL}/api/files/${file.id}/download`, '_blank')}
                       >
                         <Download className="h-4 w-4" />
                       </Button>
