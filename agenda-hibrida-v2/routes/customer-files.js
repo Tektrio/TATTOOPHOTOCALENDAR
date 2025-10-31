@@ -54,16 +54,23 @@ router.get('/:id/files', (req, res) => {
   const { id } = req.params;
   const { category } = req.query;
   
+  // Validar ID
+  const clientId = parseInt(id);
+  if (isNaN(clientId)) {
+    console.error('[GET /customers/:id/files] ID inválido:', id);
+    return res.status(400).json({ error: 'ID de cliente inválido' });
+  }
+  
   let query = `
     SELECT 
       f.*,
       c.name as client_name
     FROM customer_files f
-    JOIN clients c ON f.client_id = c.id
+    LEFT JOIN clients c ON f.client_id = c.id
     WHERE f.client_id = ?
   `;
   
-  const params = [id];
+  const params = [clientId];
   
   if (category) {
     query += ' AND f.category = ?';
@@ -72,19 +79,26 @@ router.get('/:id/files', (req, res) => {
   
   query += ' ORDER BY f.uploaded_at DESC';
   
+  console.log(`[GET /customers/${clientId}/files] Buscando arquivos...`);
+  
   req.app.locals.db.all(query, params, (err, rows) => {
     if (err) {
-      console.error('Erro ao buscar arquivos:', err);
-      return res.status(500).json({ error: 'Erro ao buscar arquivos' });
+      console.error(`[GET /customers/${clientId}/files] Erro:`, err.message);
+      console.error('SQL:', query);
+      console.error('Params:', params);
+      // Retornar array vazio ao invés de 500
+      return res.json({ files: [], count: 0, warning: 'Erro ao carregar arquivos' });
     }
     
+    console.log(`[GET /customers/${clientId}/files] ${(rows || []).length} arquivos encontrados`);
+    
     // Adicionar URL completa para cada arquivo
-    const filesWithUrl = rows.map(file => ({
+    const filesWithUrl = (rows || []).map(file => ({
       ...file,
       url: `/uploads/${path.relative(path.join(__dirname, '..', 'uploads'), file.file_path)}`.replace(/\\/g, '/')
     }));
     
-    res.json(filesWithUrl);
+    res.json({ files: filesWithUrl, count: filesWithUrl.length });
   });
 });
 

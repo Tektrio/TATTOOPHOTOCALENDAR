@@ -114,7 +114,8 @@ const FilesTab = ({ customerId }) => {
       }
       
       const data = await response.json();
-      setFiles(data);
+      // Suportar tanto formato antigo (array direto) quanto novo (objeto com files)
+      setFiles(data.files || data || []);
     } catch (err) {
       console.error('Erro ao carregar arquivos:', err);
       setError('Erro ao carregar arquivos. Tente novamente.');

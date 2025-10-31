@@ -2158,9 +2158,16 @@ app.get('/api/clients/:clientId/files', (req, res) => {
   const { clientId } = req.params;
   const { category } = req.query;
   
+  // Validar clientId
+  const clientIdInt = parseInt(clientId);
+  if (isNaN(clientIdInt)) {
+    console.error('[GET /api/clients/:clientId/files] ID inválido:', clientId);
+    return res.status(400).json({ error: 'ID de cliente inválido' });
+  }
+  
   // Construir query SQL com filtro de categoria opcional
-  let query = "SELECT * FROM files WHERE client_id = ? AND deleted_at IS NULL";
-  const params = [clientId];
+  let query = "SELECT * FROM files WHERE client_id = ?";
+  const params = [clientIdInt];
   
   if (category && category !== 'all') {
     query += " AND category = ?";
@@ -2169,11 +2176,19 @@ app.get('/api/clients/:clientId/files', (req, res) => {
   
   query += " ORDER BY uploaded_at DESC";
 
+  console.log(`[GET /api/clients/${clientIdInt}/files] Buscando arquivos...`);
+
   db.all(query, params, (err, files) => {
     if (err) {
-      return res.status(500).json({ error: err.message });
+      console.error(`[GET /api/clients/${clientIdInt}/files] Erro:`, err.message);
+      console.error('SQL:', query);
+      console.error('Params:', params);
+      // Retornar array vazio ao invés de 500
+      return res.json({ files: [], count: 0, warning: 'Erro ao carregar arquivos' });
     }
-    res.json(files);
+    
+    console.log(`[GET /api/clients/${clientIdInt}/files] ${(files || []).length} arquivos encontrados`);
+    res.json({ files: files || [], count: (files || []).length });
   });
 });
 

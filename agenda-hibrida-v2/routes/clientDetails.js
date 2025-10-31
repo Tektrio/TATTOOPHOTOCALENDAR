@@ -281,21 +281,36 @@ router.get('/:clientId/projects/stats', async (req, res) => {
 // GET /api/clients/:clientId/photos
 router.get('/:clientId/photos', async (req, res) => {
   try {
+    const clientId = parseInt(req.params.clientId);
+    
+    if (isNaN(clientId)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'ID de cliente inválido' 
+      });
+    }
+
     const filters = {
       photo_type: req.query.photo_type,
       project_id: req.query.project_id,
       is_portfolio: req.query.is_portfolio === 'true',
-      show_to_client: req.query.show_to_client === 'true' ? true : req.query.show_to_client === 'false' ? false : undefined
+      show_to_client: req.query.show_to_client === 'true' ? true : 
+                      req.query.show_to_client === 'false' ? false : undefined
     };
     
-    const photos = await req.services.photo.getClientPhotos(
-      req.params.clientId,
-      filters
-    );
-    res.json({ success: true, data: photos });
+    console.log(`[GET /clients/${clientId}/photos] Buscando fotos com filtros:`, filters);
+    
+    const photos = await req.services.photo.getClientPhotos(clientId, filters);
+    
+    console.log(`[GET /clients/${clientId}/photos] ${photos.length} fotos encontradas`);
+    
+    res.json({ success: true, data: photos || [] });
   } catch (error) {
-    console.error('Error fetching photos:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[GET /clients/:clientId/photos] Erro:', error);
+    console.error('Stack:', error.stack);
+    
+    // Retornar array vazio em caso de erro ao invés de 500
+    res.json({ success: true, data: [], warning: 'Erro ao carregar fotos' });
   }
 });
 

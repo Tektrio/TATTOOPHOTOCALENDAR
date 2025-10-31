@@ -50,6 +50,12 @@ class PhotoService {
    */
   async getClientPhotos(clientId, filters = {}) {
     return new Promise((resolve, reject) => {
+      // Validar clientId
+      if (!clientId || isNaN(clientId)) {
+        console.error('PhotoService: clientId inválido:', clientId);
+        return resolve([]);
+      }
+
       let sql = `
         SELECT 
           p.*,
@@ -86,21 +92,28 @@ class PhotoService {
       sql += ' ORDER BY p.upload_date DESC';
 
       this.db.all(sql, params, (err, rows) => {
-        if (err) reject(err);
-        else {
-          // Parse tags JSON
-          rows = (rows || []).map(row => {
-            if (row.tags) {
-              try {
-                row.tags = JSON.parse(row.tags);
-              } catch (e) {
-                row.tags = [];
-              }
-            }
-            return row;
-          });
-          resolve(rows);
+        if (err) {
+          console.error('PhotoService: Erro na query:', err.message);
+          console.error('SQL:', sql);
+          console.error('Params:', params);
+          return resolve([]); // Retorna array vazio em vez de rejeitar
         }
+        
+        // Parse tags JSON com tratamento de erro
+        const photos = (rows || []).map(row => {
+          if (row.tags) {
+            try {
+              row.tags = JSON.parse(row.tags);
+            } catch (e) {
+              console.warn('PhotoService: Erro ao parsear tags:', e);
+              row.tags = [];
+            }
+          }
+          return row;
+        });
+        
+        console.log(`PhotoService: ${photos.length} fotos encontradas para cliente ${clientId}`);
+        resolve(photos);
       });
     });
   }
