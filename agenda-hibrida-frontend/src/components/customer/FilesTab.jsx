@@ -366,6 +366,13 @@ const FilesTab = ({ customerId }) => {
     };
   }, [customerId, checkSyncStatus]);
 
+  // Carregar lixeira quando tab ativa
+  useEffect(() => {
+    if (activeTab === 'trash') {
+      loadTrashedFiles();
+    }
+  }, [activeTab, loadTrashedFiles]);
+
   // Upload de arquivos
   const handleFileUpload = async (uploadFiles, category) => {
     if (!uploadFiles || uploadFiles.length === 0) return;
@@ -941,8 +948,24 @@ const FilesTab = ({ customerId }) => {
         </Alert>
       )}
 
-      {/* Header com controles */}
-      <Card>
+      {/* Tabs para Arquivos e Lixeira */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="files">Arquivos</TabsTrigger>
+          <TabsTrigger value="trash">
+            Lixeira
+            {trashedFilesCount > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {trashedFilesCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tab de Arquivos */}
+        <TabsContent value="files" className="space-y-4">
+          {/* Header com controles */}
+          <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -1384,6 +1407,91 @@ const FilesTab = ({ customerId }) => {
           </CardContent>
         </Card>
       )}
+        </TabsContent>
+
+        {/* Tab de Lixeira */}
+        <TabsContent value="trash" className="space-y-4">
+          {loadingTrash ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Loader2 className="h-12 w-12 animate-spin mx-auto text-gray-400" />
+                <p className="mt-4 text-gray-600">Carregando lixeira...</p>
+              </CardContent>
+            </Card>
+          ) : trashedFiles.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Trash2 className="h-12 w-12 mx-auto text-gray-300" />
+                <p className="mt-4 text-gray-600">Lixeira vazia</p>
+                <p className="text-sm text-gray-400">Arquivos deletados aparecerão aqui</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trash2 className="h-5 w-5" />
+                    Lixeira ({trashedFilesCount} {trashedFilesCount === 1 ? 'arquivo' : 'arquivos'})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {trashedFiles.map((file) => (
+                      <Card key={file.id} className="opacity-60 hover:opacity-100 transition-opacity">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate text-gray-700">{file.original_name}</p>
+                              <Badge variant="outline" className="mt-2 text-xs">
+                                Deletado em {new Date(file.deleted_at).toLocaleDateString('pt-BR')}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 mt-4">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRestoreFile(file.id)}
+                                  className="flex-1"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-2" />
+                                  Restaurar
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Restaurar arquivo</TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (window.confirm('Deletar permanentemente? Esta ação não pode ser desfeita!')) {
+                                      handleDeletePermanently(file.id);
+                                    }
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Deletar permanentemente</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Dialog de confirmação de exclusão */}
       <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, file: null })}>
