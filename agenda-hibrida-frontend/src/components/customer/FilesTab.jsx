@@ -27,7 +27,9 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { Input } from '../ui/input';
 import { Alert, AlertDescription } from '../ui/alert';
+import { Progress } from '../ui/progress';
 import SyncStatusIndicator from '../SyncStatusIndicator';
+import FilePreviewModal from '../FilePreviewModal';
 import { useCategories } from '../../hooks/useCategories';
 import {
   Select,
@@ -58,7 +60,6 @@ const FilesTab = ({ customerId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, file: null });
-  const [previewImage, setPreviewImage] = useState(null);
   const [customer, setCustomer] = useState(null);
   const [folderLinks, setFolderLinks] = useState({
     local: { available: false, path: '', exists: false },
@@ -75,6 +76,9 @@ const FilesTab = ({ customerId }) => {
     drive: null,
     qnap: null
   });
+  const [uploadProgress, setUploadProgress] = useState({}); // { category: { percentage: 0, fileName: '' } }
+  const [previewFile, setPreviewFile] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Carregar categorias dinâmicas do backend
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
@@ -148,6 +152,88 @@ const FilesTab = ({ customerId }) => {
     }
   }, [customerId, loadFiles, loadCustomer, loadFolderLinks]);
 
+  // Polling do status de sincronização do Google Drive
+  useEffect(() => {
+    if (!customerId) return;
+    
+    let pollInterval = null;
+    let shouldPoll = false;
+    
+    const checkSyncStatus = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/clients/${customerId}/sync-status`);
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Atualizar status baseado na resposta
+          setSyncStatus(prev => {
+            const newStatus = { ...prev };
+            
+            switch (data.status) {
+              case 'pending':
+              case 'syncing':
+                newStatus.drive = 'pending';
+                shouldPoll = true;
+                break;
+                
+              case 'completed':
+                newStatus.drive = 'synced';
+                shouldPoll = false;
+                // Mostrar notificação de sucesso
+                setSuccess('Sincronização com Google Drive concluída!');
+                setTimeout(() => setSuccess(null), 5000);
+                // Recarregar informações das pastas
+                loadFolderLinks();
+                break;
+                
+              case 'error':
+                newStatus.drive = 'error';
+                shouldPoll = false;
+                // Mostrar erro
+                setError(`Erro na sincronização: ${data.error || 'Erro desconhecido'}`);
+                setTimeout(() => setError(null), 10000);
+                break;
+                
+              case 'idle':
+              default:
+                // Se estava syncing e agora está idle, consideramos synced
+                if (prev.drive === 'pending') {
+                  newStatus.drive = 'synced';
+                  setSuccess('Sincronização com Google Drive concluída!');
+                  setTimeout(() => setSuccess(null), 5000);
+                  loadFolderLinks();
+                }
+                shouldPoll = false;
+                break;
+            }
+            
+            return newStatus;
+          });
+          
+          // Configurar próximo poll se necessário
+          if (shouldPoll && !pollInterval) {
+            pollInterval = setInterval(checkSyncStatus, 3000); // Poll a cada 3 segundos
+          } else if (!shouldPoll && pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao verificar status de sincronização:', err);
+      }
+    };
+    
+    // Verificação inicial
+    checkSyncStatus();
+    
+    // Cleanup
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [customerId, API_URL, loadFolderLinks]);
+
   // Upload de arquivos
   const handleFileUpload = async (uploadFiles, category) => {
     if (!uploadFiles || uploadFiles.length === 0) return;
@@ -158,32 +244,82 @@ const FilesTab = ({ customerId }) => {
       setSuccess(null);
 
       const formData = new FormData();
-      Array.from(uploadFiles).forEach(file => {
+      const filesArray = Array.from(uploadFiles);
+      filesArray.forEach(file => {
         formData.append('files', file);
       });
       formData.append('category', category);
 
-      const response = await fetch(`${API_URL}/api/customers/${customerId}/files`, {
-        method: 'POST',
-        body: formData
+      // Inicializar progresso
+      const firstFileName = filesArray[0]?.name || 'arquivo';
+      setUploadProgress(prev => ({
+        ...prev,
+        [category]: { percentage: 0, fileName: firstFileName }
+      }));
+
+      // Usar XMLHttpRequest para ter acesso ao onUploadProgress
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        // Configurar evento de progresso
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(prev => ({
+              ...prev,
+              [category]: { 
+                percentage: percentComplete, 
+                fileName: firstFileName 
+              }
+            }));
+          }
+        });
+
+        // Configurar evento de conclusão
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const data = JSON.parse(xhr.responseText);
+            setSuccess(`${data.files.length} arquivo(s) enviado(s) com sucesso!`);
+            resolve(data);
+          } else {
+            const errorData = JSON.parse(xhr.responseText);
+            reject(new Error(errorData.error || 'Erro ao enviar arquivos'));
+          }
+        });
+
+        // Configurar evento de erro
+        xhr.addEventListener('error', () => {
+          reject(new Error('Erro de rede ao enviar arquivos'));
+        });
+
+        // Enviar requisição
+        xhr.open('POST', `${API_URL}/api/customers/${customerId}/files`);
+        xhr.send(formData);
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao enviar arquivos');
-      }
-
-      const data = await response.json();
-      setSuccess(`${data.files.length} arquivo(s) enviado(s) com sucesso!`);
       
       // Recarregar lista de arquivos
       await loadFiles();
+      
+      // Limpar progresso após 2s
+      setTimeout(() => {
+        setUploadProgress(prev => {
+          const updated = { ...prev };
+          delete updated[category];
+          return updated;
+        });
+      }, 2000);
       
       // Limpar mensagem de sucesso após 3s
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Erro ao enviar arquivos:', err);
       setError(err.message || 'Erro ao enviar arquivos. Tente novamente.');
+      // Limpar progresso em caso de erro
+      setUploadProgress(prev => {
+        const updated = { ...prev };
+        delete updated[category];
+        return updated;
+      });
     } finally {
       setUploading(false);
     }
@@ -216,6 +352,21 @@ const FilesTab = ({ customerId }) => {
       console.error('Erro ao deletar arquivo:', err);
       setError('Erro ao deletar arquivo. Tente novamente.');
     }
+  };
+
+  // Preview de arquivo
+  const handlePreview = (file) => {
+    setPreviewFile(file);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewFile(null);
+  };
+
+  const handleNavigatePreview = (file) => {
+    setPreviewFile(file);
   };
 
   // Drag and Drop handlers
@@ -673,6 +824,17 @@ const FilesTab = ({ customerId }) => {
                 onChange={(e) => handleFileUpload(e.target.files, category.value)}
                 accept="image/*,.pdf,.psd,.ai,.svg"
               />
+              
+              {/* Barra de progresso */}
+              {uploadProgress[category.value] && (
+                <div className="mt-3 space-y-1">
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span className="truncate max-w-[80%]">{uploadProgress[category.value].fileName}</span>
+                    <span className="font-medium">{uploadProgress[category.value].percentage}%</span>
+                  </div>
+                  <Progress value={uploadProgress[category.value].percentage} className="h-2" />
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -719,11 +881,11 @@ const FilesTab = ({ customerId }) => {
                       
                       {/* Overlay com ações */}
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                        {isImage(file.file_type) && (
+                        {(isImage(file.file_type) || file.mime_type === 'application/pdf') && (
                           <Button
                             size="sm"
                             variant="secondary"
-                            onClick={() => setPreviewImage(file)}
+                            onClick={() => handlePreview(file)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -859,33 +1021,14 @@ const FilesTab = ({ customerId }) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Preview de imagem */}
-      {previewImage && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div className="relative max-w-6xl max-h-[90vh]">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="absolute top-4 right-4 z-10"
-              onClick={() => setPreviewImage(null)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <img 
-              src={`${API_URL}${previewImage.url}`}
-              alt={previewImage.original_name}
-              className="max-w-full max-h-[90vh] object-contain"
-            />
-            <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-75 text-white p-4 rounded">
-              <p className="font-medium">{previewImage.original_name}</p>
-              <p className="text-sm text-gray-300">{formatFileSize(previewImage.file_size)}</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Preview de arquivo (imagens e PDFs) */}
+      <FilePreviewModal
+        file={previewFile}
+        isOpen={isPreviewOpen}
+        onClose={handleClosePreview}
+        allFiles={filteredFiles}
+        onNavigate={handleNavigatePreview}
+      />
     </div>
   );
 };

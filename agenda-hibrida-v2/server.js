@@ -1204,6 +1204,114 @@ app.get('/api/clients/:id/folders', async (req, res) => {
   }
 });
 
+// Consultar status de sincronização do Google Drive para um cliente
+app.get('/api/clients/:id/sync-status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validação: ID deve ser um número positivo
+    const clientId = parseInt(id, 10);
+    if (isNaN(clientId) || clientId <= 0) {
+      return res.status(400).json({ error: 'ID de cliente inválido' });
+    }
+    
+    // Verificar se o serviço de fila está disponível
+    if (!folderOperationService) {
+      return res.json({ 
+        status: 'idle', 
+        message: 'Serviço de sincronização não está habilitado' 
+      });
+    }
+    
+    // Buscar operações pendentes ou em processamento para este cliente
+    const operation = await new Promise((resolve, reject) => {
+      db.get(
+        `SELECT * FROM folder_operations_queue 
+         WHERE client_id = ? 
+         AND (status = 'pending' OR status = 'processing')
+         ORDER BY created_at DESC 
+         LIMIT 1`,
+        [clientId],
+        (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        }
+      );
+    });
+    
+    if (!operation) {
+      // Verificar se já foi concluída recentemente (últimas 24h)
+      const recentOperation = await new Promise((resolve, reject) => {
+        db.get(
+          `SELECT * FROM folder_operations_queue 
+           WHERE client_id = ? 
+           AND status = 'completed'
+           AND updated_at > datetime('now', '-24 hours')
+           ORDER BY updated_at DESC 
+           LIMIT 1`,
+          [clientId],
+          (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+          }
+        );
+      });
+      
+      if (recentOperation) {
+        return res.json({
+          status: 'completed',
+          operationType: recentOperation.operation_type,
+          completedAt: recentOperation.updated_at
+        });
+      }
+      
+      // Verificar se há alguma operação falhada
+      const failedOperation = await new Promise((resolve, reject) => {
+        db.get(
+          `SELECT * FROM folder_operations_queue 
+           WHERE client_id = ? 
+           AND status = 'failed'
+           ORDER BY updated_at DESC 
+           LIMIT 1`,
+          [clientId],
+          (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+          }
+        );
+      });
+      
+      if (failedOperation) {
+        return res.json({
+          status: 'error',
+          operationType: failedOperation.operation_type,
+          error: failedOperation.error,
+          attempts: failedOperation.attempts,
+          failedAt: failedOperation.updated_at
+        });
+      }
+      
+      // Nenhuma operação encontrada
+      return res.json({ 
+        status: 'idle',
+        message: 'Nenhuma operação de sincronização em andamento'
+      });
+    }
+    
+    // Operação em andamento
+    res.json({
+      status: operation.status === 'pending' ? 'pending' : 'syncing',
+      operationType: operation.operation_type,
+      queuedAt: operation.created_at,
+      attempts: operation.attempts
+    });
+    
+  } catch (error) {
+    console.error('Erro ao buscar status de sincronização:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Criar estrutura de pastas para cliente existente sem pasta
 app.post('/api/clients/:id/create-folders', async (req, res) => {
   const { id } = req.params;
@@ -2305,6 +2413,97 @@ app.get('/api/files/:fileId/download', async (req, res) => {
       res.status(500).json({ error: 'Erro no download do arquivo' });
     }
   });
+});
+
+// Preview de arquivos (imagens e PDFs)
+app.get('/api/files/:id/preview', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validação: ID deve ser um número positivo
+    const fileId = parseInt(id, 10);
+    if (isNaN(fileId) || fileId <= 0) {
+      return res.status(400).json({ error: 'ID de arquivo inválido' });
+    }
+    
+    // Buscar arquivo no banco
+    const file = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM files WHERE id = ?', [fileId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!file) {
+      return res.status(404).json({ error: 'Arquivo não encontrado' });
+    }
+    
+    // Verificar se o tipo de arquivo é suportado para preview
+    const supportedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'application/pdf'];
+    if (!supportedTypes.includes(file.mime_type)) {
+      return res.status(400).json({ 
+        error: 'Tipo de arquivo não suportado para preview',
+        supportedTypes 
+      });
+    }
+    
+    let filePath = null;
+    let isTempFile = false;
+    
+    // Determinar o caminho do arquivo baseado no storage_type
+    if (file.storage_type === 'local') {
+      filePath = file.file_path;
+      
+      // Verificar se o arquivo existe
+      const exists = await fs.pathExists(filePath);
+      if (!exists) {
+        return res.status(404).json({ error: 'Arquivo físico não encontrado' });
+      }
+    } else {
+      // Para Google Drive ou QNAP, fazer download temporário
+      try {
+        filePath = await downloadTemporaryFile(file, file.storage_type, driveClient);
+        isTempFile = true;
+      } catch (error) {
+        console.error('Erro ao baixar arquivo para preview:', error);
+        return res.status(500).json({ error: 'Erro ao preparar arquivo para preview' });
+      }
+    }
+    
+    // Configurar headers apropriados para visualização inline
+    res.setHeader('Content-Type', file.mime_type);
+    res.setHeader('Content-Disposition', `inline; filename="${file.original_name || file.filename}"`);
+    res.setHeader('Cache-Control', 'private, max-age=3600'); // Cache de 1 hora
+    
+    // Enviar arquivo
+    const fileStream = require('fs').createReadStream(filePath);
+    
+    fileStream.on('error', (error) => {
+      console.error('Erro ao ler arquivo para preview:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Erro ao ler arquivo' });
+      }
+    });
+    
+    fileStream.on('end', async () => {
+      // Limpar arquivo temporário se necessário
+      if (isTempFile) {
+        try {
+          await fs.remove(filePath);
+        } catch (err) {
+          console.warn('Erro ao remover arquivo temporário:', err);
+        }
+      }
+    });
+    
+    fileStream.pipe(res);
+    
+  } catch (error) {
+    console.error('Erro ao servir preview de arquivo:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 });
 
 // Excluir arquivo
