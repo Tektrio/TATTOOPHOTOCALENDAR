@@ -1,4 +1,4 @@
-const { calculateMD5, compareFiles } = require('../utils/fileHasher');
+// const { calculateMD5, compareFiles } = require('../utils/fileHasher'); // Removido - não utilizado
 const fs = require('fs-extra');
 
 /**

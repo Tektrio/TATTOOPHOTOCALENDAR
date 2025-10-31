@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 // Configurações
 const BASE_URL = process.env.VITE_API_URL || 'http://localhost:5173';
-const API_URL = 'http://localhost:3001';
+// const API_URL = 'http://localhost:3001'; // Removido - não utilizado
 const TEST_CLIENT_ID = 7; // Luiz Lopes - cliente de teste
 
 test.describe('Sprints 4 & 5 - Funcionalidades Completas', () => {
@@ -233,7 +233,7 @@ test.describe('Sprints 4 & 5 - Funcionalidades Completas', () => {
     await page.waitForTimeout(2000);
     
     // Verificar se há ícones de status
-    const syncIcons = await page.locator('svg').filter({ hasText: /CheckCircle|Clock|XCircle/ });
+    // const syncIcons = await page.locator('svg').filter({ hasText: /CheckCircle|Clock|XCircle/ }); // Removido - não utilizado
     
     // Screenshot do status
     await page.screenshot({ path: 'tests/screenshots/08-sync-status.png' });

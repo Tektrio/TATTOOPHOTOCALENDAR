@@ -183,7 +183,7 @@ class QnapService {
    * @param {object} config 
    * @returns {Promise<object|null>}
    */
-  async getStorageInfo(config) {
+  async getStorageInfo(_config) {
     // Implementação futura: obter espaço disponível no QNAP
     // Pode variar dependendo do protocolo e API disponível
     return null;

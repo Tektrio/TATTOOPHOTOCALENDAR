@@ -22,15 +22,15 @@ let totalRemoved = 0;
 let filesModified = 0;
 
 // Padrões para remover
-const patternsToRemove = [
-  // console.log simples
-  /^\s*console\.log\([^)]*\);?\s*$/gm,
-  // console.debug
-  /^\s*console\.debug\([^)]*\);?\s*$/gm,
-  // Comentários de debug temporário
-  /^\s*\/\/\s*console\.log.*$/gm,
-  /^\s*\/\*\s*console\.log.*\*\/\s*$/gm,
-];
+// const patternsToRemove = [ // Removido - não utilizado
+//   // console.log simples
+//   /^\s*console\.log\([^)]*\);?\s*$/gm,
+//   // console.debug
+//   /^\s*console\.debug\([^)]*\);?\s*$/gm,
+//   // Comentários de debug temporário
+//   /^\s*\/\/\s*console\.log.*$/gm,
+//   /^\s*\/\*\s*console\.log.*\*\/\s*$/gm,
+// ];
 
 // Padrões para manter (comentar em vez de remover)
 const keepPatterns = [
@@ -52,7 +52,7 @@ function shouldKeepLog(line) {
 for (const file of filesToProcess) {
   const filePath = path.join(__dirname, '..', file);
   let content = fs.readFileSync(filePath, 'utf-8');
-  const originalContent = content;
+  // const originalContent = content; // Removido - não utilizado
 
   // Remover linha por linha para ter mais controle
   const lines = content.split('\n');

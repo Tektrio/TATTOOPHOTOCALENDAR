@@ -180,7 +180,7 @@ function sanitizeFilename(filename) {
   
   return filename
     .replace(/\.\./g, '') // Remove ..
-    .replace(/[\/\\]/g, '') // Remove / e \
+    .replace(/[/\\]/g, '') // Remove / e \
     .replace(/[<>:"|?*]/g, '') // Remove caracteres proibidos no Windows
     .trim();
 }

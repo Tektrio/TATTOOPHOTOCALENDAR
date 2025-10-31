@@ -29,7 +29,7 @@ class LocalFileWatcher {
     console.log(`👁️ Iniciando monitoramento de: ${basePath}`);
 
     this.watcher = chokidar.watch(basePath, {
-      ignored: /(^|[\/\\])\../, // Ignora arquivos/pastas ocultos
+      ignored: /(^|[/\\])\../, // Ignora arquivos/pastas ocultos
       persistent: true,
       ignoreInitial: true, // Não processa arquivos existentes no start
       awaitWriteFinish: {

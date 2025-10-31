@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+// const sqlite3 = require('sqlite3').verbose(); // Removido - não utilizado
 const { getClientsFolder } = require('../utils/pathResolver');
 
 async function migrateClientFolders() {

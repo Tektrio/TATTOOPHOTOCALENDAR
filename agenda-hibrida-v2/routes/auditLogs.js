@@ -341,7 +341,7 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     
     // Buscar através do searchLogs com offset específico
-    const result = await auditLogService.searchLogs({ limit: 1, offset: 0 });
+    // const result = await auditLogService.searchLogs({ limit: 1, offset: 0 }); // Removido - não utilizado
     
     // Alternativa: buscar diretamente no banco
     const sqlite3 = require('sqlite3').verbose();

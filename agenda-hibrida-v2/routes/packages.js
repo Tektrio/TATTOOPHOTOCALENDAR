@@ -84,8 +84,8 @@ router.post('/', (req, res) => {
     total_sessions,
     used_sessions = 0,
     purchase_price,
-    expires_at,
-    notes
+    expires_at
+    // notes não utilizado
   } = req.body;
   
   if (!client_id || !package_id || !total_sessions || !purchase_price) {
@@ -129,7 +129,7 @@ router.post('/', (req, res) => {
 // POST /api/packages/:id/use - Usar uma sessão do pacote
 router.post('/:id/use', (req, res) => {
   const { id } = req.params;
-  const { appointment_id, notes } = req.body;
+  const { appointment_id } = req.body; // notes não utilizado
   
   // Verificar se o pacote existe e tem sessões disponíveis
   const checkQuery = `

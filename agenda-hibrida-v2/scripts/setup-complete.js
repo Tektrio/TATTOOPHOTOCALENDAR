@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
-const path = require('path');
+// const path = require('path'); // Removido - não utilizado
 const sqlite3 = require('sqlite3').verbose();
-const { execSync } = require('child_process');
+// const { execSync } = require('child_process'); // Removido - não utilizado
 require('dotenv').config();
 
 class CompleteSetup {
@@ -291,7 +291,7 @@ build/
       ['whatsapp_notifications', 'false', 'Notificações por WhatsApp habilitadas']
     ];
 
-    for (const [key, value, description] of systemConfigs) {
+    for (const [key, value] of systemConfigs) {
       await new Promise((resolve, reject) => {
         db.run(
         'INSERT OR REPLACE INTO system_config (key, value) VALUES (?, ?)',

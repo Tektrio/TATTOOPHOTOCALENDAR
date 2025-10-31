@@ -103,7 +103,7 @@ class QnapValidator {
 
       // Testa escrita (tentando criar arquivo temporário)
       try {
-        const testFileName = `.qnap_test_${Date.now()}.txt`;
+        // const testFileName = `.qnap_test_${Date.now()}.txt`; // Removido - não utilizado
         // Nota: esta é uma simulação, não vamos realmente criar arquivo
         // Para teste real, precisaria criar um arquivo temporário
         details.writePermission = 'unknown'; // Não testado nesta versão

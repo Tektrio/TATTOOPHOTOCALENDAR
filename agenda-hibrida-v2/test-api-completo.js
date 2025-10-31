@@ -94,6 +94,7 @@ async function testarEndpointLogs() {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 async function testarUploadArquivo() {
   console.log('\n📤 4. TESTANDO POST /api/imports/vagaro/upload\n');
   

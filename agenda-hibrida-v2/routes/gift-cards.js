@@ -195,8 +195,8 @@ router.post('/', (req, res) => {
   const {
     client_id,
     initial_value,
-    expiry_date,
-    notes
+    expiry_date
+    // notes não utilizado
   } = req.body;
   
   if (!client_id || !initial_value) {

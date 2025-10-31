@@ -167,7 +167,7 @@ class SystemTester {
 
       // Teste de espaço em disco
       try {
-        const stats = await fs.stat('./uploads');
+        await fs.stat('./uploads');
         this.testResults.storage.details.push('✅ Acesso ao diretório de uploads: OK');
       } catch (error) {
         this.testResults.storage.details.push(`❌ Acesso ao diretório de uploads: ${error.message}`);
@@ -189,8 +189,8 @@ class SystemTester {
     try {
       // Teste de conectividade do servidor
       try {
-        const response = await axios.get(`${this.serverUrl}/health`, { timeout: 5000 });
-        if (response.status === 200) {
+        const healthResponse = await axios.get(`${this.serverUrl}/health`, { timeout: 5000 });
+        if (healthResponse.status === 200) {
           this.testResults.apis.details.push('✅ Servidor backend: Online');
         }
       } catch (error) {

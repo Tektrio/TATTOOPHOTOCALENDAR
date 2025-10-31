@@ -4,8 +4,6 @@
  */
 
 const sqlite3 = require('sqlite3').verbose();
-const fs = require('fs-extra');
-const path = require('path');
 
 // Usar banco em memória para cada suite de testes
 let db;

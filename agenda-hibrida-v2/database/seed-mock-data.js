@@ -256,7 +256,7 @@ async function seedAppointments(db, clientIds, tattooTypeIds, count = 100) {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const statuses = ['pendente', 'confirmado', 'concluido', 'cancelado'];
+    // const statuses = ['pendente', 'confirmado', 'concluido', 'cancelado']; // Removido - não utilizado
     const ids = [];
     let completed = 0;
 

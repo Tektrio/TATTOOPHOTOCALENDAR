@@ -37,11 +37,11 @@ const KEEP_PATTERNS = [
 ];
 
 // Padrões de console.log que devem ser REMOVIDOS
-const REMOVE_PATTERNS = [
-  /console\.log\([^)]*\);?\s*$/gm,     // console.log simples
-  /console\.info\([^)]*\);?\s*$/gm,    // console.info
-  /console\.debug\([^)]*\);?\s*$/gm,   // console.debug
-];
+// const REMOVE_PATTERNS = [ // Removido - não utilizado
+//   /console\.log\([^)]*\);?\s*$/gm,     // console.log simples
+//   /console\.info\([^)]*\);?\s*$/gm,    // console.info
+//   /console\.debug\([^)]*\);?\s*$/gm,   // console.debug
+// ];
 
 // ============================================
 // FUNÇÕES

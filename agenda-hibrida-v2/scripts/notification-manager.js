@@ -3,6 +3,7 @@ const axios = require('axios');
 const sqlite3 = require('sqlite3').verbose();
 const cron = require('node-cron');
 const fs = require('fs-extra');
+const path = require('path'); // Adicionado - usado em linha 630
 require('dotenv').config();
 
 class NotificationManager {

@@ -94,7 +94,7 @@ class WaitingListService {
   /**
    * Agendar sessão a partir da waiting list
    */
-  async scheduleFromWaitingList(waitingListId, appointmentData) {
+  async scheduleFromWaitingList(waitingListId, _appointmentData) {
     return new Promise((resolve, reject) => {
       this.db.serialize(() => {
         this.db.run('BEGIN TRANSACTION');

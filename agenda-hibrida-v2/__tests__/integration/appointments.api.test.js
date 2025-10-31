@@ -6,7 +6,7 @@
 const request = require('supertest');
 const express = require('express');
 const cors = require('cors');
-const { setupTestDatabase, clearDatabase, closeDatabase, getTestDatabase } = require('./setup');
+const { setupTestDatabase, clearDatabase, closeDatabase } = require('./setup');
 
 // Criar app de teste simplificado
 const createTestApp = (db) => {

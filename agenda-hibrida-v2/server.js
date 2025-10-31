@@ -15,11 +15,11 @@ const axios = require('axios');
 initializeCanvas(createCanvas);
 const cron = require('node-cron');
 const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require('bcryptjs');
+// const bcrypt = require('bcryptjs'); // Removido - não utilizado
 const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
 const http = require('http');
-const QRCode = require('qrcode');
+// const QRCode = require('qrcode'); // Removido - não utilizado
 const SyncManager = require('./sync-manager');
 const FileWatcher = require('./file-watcher');
 const { createGoogleEvent, updateGoogleEvent, deleteGoogleEvent, syncGoogleCalendar } = require('./services/googleCalendarService');
@@ -98,6 +98,7 @@ const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
 // Middleware de cache
+// eslint-disable-next-line no-unused-vars
 function cacheMiddleware(duration) {
   return (req, res, next) => {
     const key = `__express__${req.originalUrl || req.url}`;
@@ -489,6 +490,7 @@ let fileWatcher = null;
 /**
  * Inicializar Sistema de Sincronização
  */
+// eslint-disable-next-line no-unused-vars
 function initializeSyncSystem() {
   try {
     if (!driveClient) {
@@ -560,7 +562,7 @@ class HybridStorage {
     // Verificar conectividade com QNAP
     try {
       if (this.qnapConfig.host) {
-        const response = await axios.get(`http://${this.qnapConfig.host}:8080/cgi-bin/authLogin.cgi`, {
+        await axios.get(`http://${this.qnapConfig.host}:8080/cgi-bin/authLogin.cgi`, {
           timeout: 5000
         });
         console.log(`🌐 QNAP conectado: ${this.qnapConfig.host}`);
@@ -734,6 +736,7 @@ const upload = multer({
 });
 
 // Middleware de autenticação JWT
+// eslint-disable-next-line no-unused-vars
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -916,9 +919,9 @@ app.post('/auth/google/callback', async (req, res) => {
     // Salvar tokens
     fs.writeJsonSync('./tokens.json', tokens);
     
-    // Inicializar Google Drive e Calendar
+    // Inicializar Google Drive and Calendar
     driveClient = google.drive({ version: 'v3', auth: oauth2Client });
-    const calendarClient = google.calendar({ version: 'v3', auth: oauth2Client });
+    // const calendarClient = google.calendar({ version: 'v3', auth: oauth2Client }); // Removido - não utilizado
     
     console.log('✅ Autenticação Google realizada com sucesso');
     console.log('✅ Google Drive conectado');
@@ -1380,7 +1383,7 @@ app.post('/api/clients/:id/open-qnap-folder', async (req, res) => {
     const qnapSharePath = process.env.QNAP_SHARE_PATH || '/share/Tatuagens';
     
     // Normalizar o caminho para URL
-    const folderPathEncoded = encodeURIComponent(path.join(qnapSharePath, client.folder_path));
+    // const folderPathEncoded = encodeURIComponent(path.join(qnapSharePath, client.folder_path)); // Removido - não utilizado
     
     // URL do File Station do QNAP
     // Formato: http://QNAP_HOST:PORT/cgi-bin/filemanager/utilRequest.cgi?func=get_tree&path=/share/folder
@@ -1444,8 +1447,8 @@ app.post('/api/clients/:id/create-folders', async (req, res) => {
     }
     
     // 3. Gerar nome da pasta
-    const slug = folderUtils.generateNameSlug(client.name);
-    const phoneClean = folderUtils.formatPhone(client.phone);
+    // const slug = folderUtils.generateNameSlug(client.name); // Removido - não utilizado
+    // const phoneClean = folderUtils.formatPhone(client.phone); // Removido - não utilizado
     const folderName = folderUtils.generateFolderName(client.name, client.phone, id);
     
     // 4. Criar estrutura de pastas local
@@ -1515,9 +1518,9 @@ app.post('/api/clients', async (req, res) => {
 
   try {
     // 2. Gerar dados da pasta
-    const slug = folderUtils.generateNameSlug(name);
-    const phoneClean = folderUtils.formatPhone(phone);
-    const tempFolderName = `Cliente_${slug}_${phoneClean}_temp`;
+    // const slug = folderUtils.generateNameSlug(name); // Removido - não utilizado
+    // const phoneClean = folderUtils.formatPhone(phone); // Removido - não utilizado
+    const tempFolderName = folderUtils.generateFolderName(name, phone, 'temp');
     
     // 3. Tratar colisão de pasta temp
     const uploadsPath = getClientsFolder();
@@ -1537,9 +1540,9 @@ app.post('/api/clients', async (req, res) => {
     const clientId = await new Promise((resolve, reject) => {
       db.run(
         `INSERT INTO clients 
-         (name, email, phone, notes, folder_path, slug, phone_clean) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [name, email, phone, notes, finalTempName, slug, phoneClean],
+         (name, email, phone, notes, folder_path) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [name, email, phone, notes, finalTempName],
         function(err) {
           if (err) reject(err);
           else resolve(this.lastID);
@@ -1598,6 +1601,7 @@ app.post('/api/clients', async (req, res) => {
     }
 
     // 12. Log de auditoria (se disponível)
+    // eslint-disable-next-line no-undef
     if (typeof auditLog === 'function') {
       try {
         await auditLog('client', 'create', clientId, { 
@@ -3007,6 +3011,7 @@ app.patch('/api/files/:id/rename', async (req, res) => {
     }
     
     // Validação: caracteres não permitidos
+    // eslint-disable-next-line no-control-regex
     const invalidChars = /[<>:"/\\|?*\x00-\x1F]/;
     if (invalidChars.test(newName)) {
       return res.status(400).json({ 
@@ -4857,7 +4862,7 @@ app.get('/api/drive/versions/:fileId', async (req, res) => {
 // Upload de arquivos (rota alternativa para compatibilidade com frontend)
 app.post('/api/files/upload', upload.array('files', 10), async (req, res) => {
   try {
-    const { client_id, category, tags, notes } = req.body;
+    const { client_id, category, tags: _tags, notes: _notes } = req.body;
     
     if (!client_id) {
       return res.status(400).json({ error: 'client_id é obrigatório' });

@@ -220,7 +220,7 @@ router.post('/', (req, res) => {
 // POST /api/memberships/:id/payment - Registrar pagamento de membership
 router.post('/:id/payment', (req, res) => {
   const { id } = req.params;
-  const { amount, payment_method, notes } = req.body;
+  const { amount, payment_method } = req.body; // notes não utilizado
   
   if (!amount || amount <= 0) {
     return res.status(400).json({ error: 'Valor do pagamento deve ser maior que zero' });

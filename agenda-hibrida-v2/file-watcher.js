@@ -31,7 +31,7 @@ class FileWatcher {
     console.log('👀 Iniciando File Watcher...');
     
     this.watcher = chokidar.watch(this.uploadsPath, {
-      ignored: /(^|[\/\\])\../, // Ignorar arquivos ocultos
+      ignored: /(^|[/\\])\../, // Ignorar arquivos ocultos
       persistent: true,
       ignoreInitial: true, // Não processar arquivos existentes no início
       awaitWriteFinish: {

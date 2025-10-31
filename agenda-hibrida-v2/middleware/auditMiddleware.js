@@ -242,7 +242,7 @@ async function manualAuditLog(req, action, entityType, entityData = {}) {
 function auditUploadMiddleware() {
   return async (req, res, next) => {
     // Registrar após upload bem-sucedido
-    const originalSend = res.send;
+    // const originalSend = res.send; // Removido - não utilizado
     const originalJson = res.json;
 
     res.json = async function(data) {

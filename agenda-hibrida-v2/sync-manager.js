@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
-const { google } = require('googleapis');
+// const { google } = require('googleapis'); // Removido - não utilizado
 
 /**
  * 📦 SYNC MANAGER - Gerenciador de Sincronização Híbrida
