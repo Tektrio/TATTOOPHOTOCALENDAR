@@ -356,7 +356,7 @@ const FilesTab = ({ customerId }) => {
     try {
       setError(null);
       
-      const response = await fetch(`${API_URL}/api/clients/${customerId}/files/${fileId}`, {
+      const response = await fetch(`${API_URL}/api/files/${fileId}`, {
         method: 'DELETE'
       });
 
