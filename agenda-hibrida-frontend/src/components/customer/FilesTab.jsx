@@ -1059,7 +1059,7 @@ const FilesTab = ({ customerId }) => {
                       
                       {/* Overlay com ações */}
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                        {(isImage(file.file_type) || file.mime_type === 'application/pdf') && (
+                        {(isImage(file.file_type) || file.file_type === 'application/pdf') && (
                           <Button
                             size="sm"
                             variant="secondary"

@@ -314,11 +314,19 @@ db.serialize(() => {
     cloud_path TEXT,
     category TEXT,
     file_type TEXT,
+    mime_type TEXT,
     file_size INTEGER,
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (client_id) REFERENCES clients (id),
     FOREIGN KEY (appointment_id) REFERENCES appointments (id)
   )`);
+  
+  // Adicionar coluna mime_type se não existir (para bancos existentes)
+  db.run(`ALTER TABLE files ADD COLUMN mime_type TEXT`, (err) => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Erro ao adicionar coluna mime_type:', err.message);
+    }
+  });
 
   // Tabela de orçamentos
   db.run(`CREATE TABLE IF NOT EXISTS budgets (
@@ -1871,8 +1879,8 @@ app.post('/api/clients/:clientId/upload/:category', upload.array('files', 10), a
           const primaryResult = results[0]; // Resultado local sempre primeiro
           db.run(
             `INSERT INTO files 
-             (client_id, filename, original_name, file_path, storage_type, category, file_type, file_size) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+             (client_id, filename, original_name, file_path, storage_type, category, file_type, mime_type, file_size) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               clientId,
               primaryResult.filename,
@@ -1881,6 +1889,7 @@ app.post('/api/clients/:clientId/upload/:category', upload.array('files', 10), a
               primaryResult.storage,
               categoryPath, // Usar caminho mapeado
               getFileType(file.originalname),
+              file.mimetype,
               file.size
             ]
           );
@@ -2154,13 +2163,17 @@ app.get('/api/clients/:clientId/files', (req, res) => {
     
     // Adicionar thumbnail_url para cada arquivo
     const filesWithThumbnails = files.map(file => {
-      const mimeType = file.mime_type || '';
+      // Garantir que mime_type está presente (compatibilidade com dados antigos)
+      const mimeType = file.mime_type || file.file_type || '';
       const fileExt = path.extname(file.original_name || '').toLowerCase();
       const isPsd = fileExt === '.psd' || mimeType === 'image/vnd.adobe.photoshop';
       const isImage = mimeType.startsWith('image/') || isPsd;
       
       return {
         ...file,
+        // Garantir que ambos os campos existem para compatibilidade
+        file_type: file.file_type || file.mime_type,
+        mime_type: file.mime_type || file.file_type,
         thumbnail_url: isImage ? `/api/files/${file.id}/thumbnail?size=300` : null
       };
     });
@@ -4840,8 +4853,8 @@ app.post('/api/files/upload', upload.array('files', 10), async (req, res) => {
           await new Promise((resolve, reject) => {
             db.run(
               `INSERT INTO files 
-               (client_id, filename, original_name, file_path, storage_type, category, file_type, file_size) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+               (client_id, filename, original_name, file_path, storage_type, category, file_type, mime_type, file_size) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 client_id,
                 primaryResult.filename,
@@ -4850,6 +4863,7 @@ app.post('/api/files/upload', upload.array('files', 10), async (req, res) => {
                 primaryResult.storage,
                 category || 'outros',
                 getFileType(file.originalname),
+                file.mimetype,
                 file.size
               ],
               function(err) {
