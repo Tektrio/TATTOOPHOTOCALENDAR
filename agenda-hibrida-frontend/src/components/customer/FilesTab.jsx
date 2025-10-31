@@ -161,6 +161,7 @@ const FilesTab = ({ customerId }) => {
   // Polling do status de sincronização do Google Drive
   const pollIntervalRef = useRef(null);
   const shouldPollRef = useRef(false);
+  const previousDriveStatusRef = useRef(null);
   
   useEffect(() => {
     if (!customerId) return;
@@ -171,8 +172,35 @@ const FilesTab = ({ customerId }) => {
         if (response.ok) {
           const data = await response.json();
           
-          // Determinar se deve continuar polling baseado no status
+          // Capturar estado anterior antes da atualização
+          const wasPreviouslyPending = previousDriveStatusRef.current === 'pending';
+          
+          // Determinar o novo status baseado na resposta (sem side effects)
+          let newDriveStatus = null;
+          switch (data.status) {
+            case 'pending':
+            case 'syncing':
+              newDriveStatus = 'pending';
+              break;
+            case 'completed':
+              newDriveStatus = 'synced';
+              break;
+            case 'error':
+              newDriveStatus = 'error';
+              break;
+            case 'idle':
+            default:
+              // Se estava pending e agora está idle, consideramos synced
+              newDriveStatus = wasPreviouslyPending ? 'synced' : previousDriveStatusRef.current;
+              break;
+          }
+          
+          // Determinar ações necessárias baseado no status
           let needsPolling = false;
+          let shouldShowSuccess = false;
+          let shouldShowError = false;
+          let errorMessage = '';
+          let shouldReloadFolders = false;
           
           switch (data.status) {
             case 'pending':
@@ -181,14 +209,29 @@ const FilesTab = ({ customerId }) => {
               break;
                 
             case 'completed':
+              needsPolling = false;
+              shouldShowSuccess = true;
+              shouldReloadFolders = true;
+              break;
+                
             case 'error':
+              needsPolling = false;
+              shouldShowError = true;
+              errorMessage = data.error || 'Erro desconhecido';
+              break;
+                
             case 'idle':
             default:
               needsPolling = false;
+              // Se estava pending e agora está idle, mostrar sucesso
+              if (wasPreviouslyPending) {
+                shouldShowSuccess = true;
+                shouldReloadFolders = true;
+              }
               break;
           }
           
-          // Atualizar status de sincronização
+          // Atualizar status de sincronização (função pura - apenas retorna novo estado)
           setSyncStatus(prev => {
             const newStatus = { ...prev };
             
@@ -200,34 +243,41 @@ const FilesTab = ({ customerId }) => {
                 
               case 'completed':
                 newStatus.drive = 'synced';
-                // Mostrar notificação de sucesso
-                setSuccess('Sincronização com Google Drive concluída!');
-                setTimeout(() => setSuccess(null), 5000);
-                // Recarregar informações das pastas
-                loadFolderLinks();
                 break;
                 
               case 'error':
                 newStatus.drive = 'error';
-                // Mostrar erro
-                setError(`Erro na sincronização: ${data.error || 'Erro desconhecido'}`);
-                setTimeout(() => setError(null), 10000);
                 break;
                 
               case 'idle':
               default:
-                // Se estava syncing e agora está idle, consideramos synced
+                // Se estava pending e agora está idle, consideramos synced
                 if (prev.drive === 'pending') {
                   newStatus.drive = 'synced';
-                  setSuccess('Sincronização com Google Drive concluída!');
-                  setTimeout(() => setSuccess(null), 5000);
-                  loadFolderLinks();
                 }
                 break;
             }
             
             return newStatus;
           });
+          
+          // Atualizar ref com o novo status para a próxima iteração (fora do updater)
+          previousDriveStatusRef.current = newDriveStatus;
+          
+          // Side effects executados APÓS a atualização de estado
+          if (shouldShowSuccess) {
+            setSuccess('Sincronização com Google Drive concluída!');
+            setTimeout(() => setSuccess(null), 5000);
+          }
+          
+          if (shouldShowError) {
+            setError(`Erro na sincronização: ${errorMessage}`);
+            setTimeout(() => setError(null), 10000);
+          }
+          
+          if (shouldReloadFolders) {
+            loadFolderLinks();
+          }
           
           // Atualizar ref de polling
           shouldPollRef.current = needsPolling;
