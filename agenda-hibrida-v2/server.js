@@ -3124,7 +3124,9 @@ app.post('/api/files/:fileId/restore', async (req, res) => {
       try {
         // Determinar caminho original
         const fileName = path.basename(file.file_path).replace(/^\d+_/, ''); // Remove timestamp
-        const originalDir = path.dirname(file.file_path).replace('/.trash', '');
+        // Usar regex para suportar tanto / quanto \ como separadores de caminho
+        const trashPattern = new RegExp(`[\\\\/]\\.trash`, 'g');
+        const originalDir = path.dirname(file.file_path).replace(trashPattern, '');
         const originalPath = path.join(originalDir, fileName);
         
         await fs.move(file.file_path, originalPath);
