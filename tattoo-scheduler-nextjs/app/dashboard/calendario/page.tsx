@@ -46,7 +46,7 @@ export default function CalendarioPage() {
       const response = await fetch('/api/appointments');
       if (response.ok) {
         const data = await response.json();
-        setAppointments(data);
+        setAppointments(data.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
@@ -81,6 +81,7 @@ export default function CalendarioPage() {
   };
 
   const getAppointmentsForDay = (day: number) => {
+    if (!Array.isArray(appointments)) return [];
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return appointments.filter(apt => {
       const aptDate = new Date(apt.startDatetime).toISOString().split('T')[0];

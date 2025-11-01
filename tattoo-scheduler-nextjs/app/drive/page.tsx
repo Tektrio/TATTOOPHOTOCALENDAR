@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Card } from '@/app/components/ui/card';
-import { Button } from '@/app/components/ui/button';
-import { Input } from '@/app/components/ui/input';
-import { Badge } from '@/app/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Folder,
   FileText,
@@ -22,7 +22,8 @@ import {
   List,
   Eye,
   Share2,
-  MoreVertical
+  MoreVertical,
+  CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 

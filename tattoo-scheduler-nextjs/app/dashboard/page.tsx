@@ -64,14 +64,17 @@ export default function DashboardPage() {
       const clientsRes = await fetch('/api/clients');
       if (clientsRes.ok) {
         const clientsData = await clientsRes.json();
-        setClients(clientsData);
+        setClients(clientsData.data || []);
+        setStats(prev => ({ ...prev, totalClients: clientsData.count || 0 }));
       }
 
       // Carregar agendamentos
       const appointmentsRes = await fetch('/api/appointments');
       if (appointmentsRes.ok) {
         const appointmentsData = await appointmentsRes.json();
-        setAppointments(appointmentsData.slice(0, 5)); // Apenas 5 próximos
+        const appointments = appointmentsData.data || [];
+        setAppointments(appointments.slice(0, 5)); // Apenas 5 próximos
+        setStats(prev => ({ ...prev, upcomingAppointments: appointments.length }));
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -301,7 +304,7 @@ export default function DashboardPage() {
                         <SelectValue placeholder="Selecione um cliente" />
                       </SelectTrigger>
                       <SelectContent>
-                        {clients.map((client) => (
+                        {Array.isArray(clients) && clients.map((client) => (
                           <SelectItem key={client.id} value={client.id.toString()}>
                             {client.name}
                           </SelectItem>
@@ -367,7 +370,7 @@ export default function DashboardPage() {
                 <p className="text-purple-200">Crie seu primeiro agendamento</p>
               </div>
             ) : (
-              appointments.map((appointment: any) => (
+              Array.isArray(appointments) && appointments.map((appointment: any) => (
                 <div key={appointment.id} className={`flex items-center justify-between p-4 rounded-lg border ${
                   isDark 
                     ? 'bg-gray-900/50 hover:bg-gray-900/70 border-gray-700/50' 

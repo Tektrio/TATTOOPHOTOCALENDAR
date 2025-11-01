@@ -51,13 +51,13 @@ export default function DashboardLayout({
       calendar: '/dashboard/calendario',
       appointments: '/agendamentos',
       clients: '/clientes',
-      import: '/dashboard/importar',
+      import: '/importar',
       gallery: '/galeria',
-      drive: '/dashboard/drive',
-      localstorage: '/dashboard/dados-local',
-      financial: '/dashboard/financeiro',
-      employees: '/dashboard/funcionarios',
-      settings: '/dashboard/configuracoes',
+      drive: '/drive',
+      localstorage: '/dados-local',
+      financial: '/financeiro',
+      employees: '/funcionarios',
+      settings: '/configuracoes',
     };
     
     router.push(routes[value] || '/dashboard');
@@ -100,7 +100,8 @@ export default function DashboardLayout({
             ) : (
               <Button 
                 variant="outline" 
-                size="sm" 
+                size="sm"
+                onClick={() => router.push('/google-accounts')}
                 className={`border-white/10 h-6 px-2 text-xs ${
                   isDark ? 'bg-gray-800/80 hover:bg-gray-700/80' : 'bg-white/5 hover:bg-white/10'
                 } text-white`}

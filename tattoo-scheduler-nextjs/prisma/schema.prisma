@@ -14,7 +14,7 @@ datasource db {
 // CLIENTES
 // ============================================
 
-model Customer {
+model Client {
   id                      Int       @id @default(autoincrement())
   name                    String
   email                   String?
@@ -44,13 +44,13 @@ model Customer {
   healthInfo              HealthInfo?
   privateNotes            PrivateNote[]
   
-  @@map("customers")
+  @@map("clients")
 }
 
 model HealthInfo {
   id                  Int      @id @default(autoincrement())
   customerId          Int      @unique
-  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer            Client @relation(fields: [customerId], references: [id], onDelete: Cascade)
   allergies           String?
   medications         String?
   medical_conditions  String?
@@ -66,7 +66,7 @@ model HealthInfo {
 model PrivateNote {
   id          Int      @id @default(autoincrement())
   customerId  Int
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer    Client @relation(fields: [customerId], references: [id], onDelete: Cascade)
   content     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -81,7 +81,7 @@ model PrivateNote {
 model Project {
   id                  Int      @id @default(autoincrement())
   customerId          Int
-  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer            Client @relation(fields: [customerId], references: [id], onDelete: Cascade)
   title               String
   description         String?
   status              String   @default("planejamento")
@@ -101,7 +101,7 @@ model Project {
 model Appointment {
   id              Int      @id @default(autoincrement())
   customerId      Int
-  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer        Client @relation(fields: [customerId], references: [id], onDelete: Cascade)
   employeeId      Int?
   employee        Employee? @relation(fields: [employeeId], references: [id])
   start_time      DateTime
@@ -148,7 +148,7 @@ model Employee {
 model Photo {
   id          Int      @id @default(autoincrement())
   customerId  Int?
-  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customer    Client? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   url         String
   title       String?
   tattoo_type String?
@@ -166,7 +166,7 @@ model Photo {
 model Message {
   id          Int      @id @default(autoincrement())
   customerId  Int
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer    Client @relation(fields: [customerId], references: [id], onDelete: Cascade)
   type        String   // email, sms, whatsapp
   subject     String?
   message     String
@@ -183,7 +183,7 @@ model Message {
 model Payment {
   id           Int      @id @default(autoincrement())
   customerId   Int
-  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer     Client @relation(fields: [customerId], references: [id], onDelete: Cascade)
   amount       Float
   status       String   @default("pendente")
   payment_date DateTime
@@ -254,7 +254,7 @@ model Package {
 model Document {
   id          Int      @id @default(autoincrement())
   customerId  Int
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer    Client @relation(fields: [customerId], references: [id], onDelete: Cascade)
   title       String
   file_url    String
   file_type   String

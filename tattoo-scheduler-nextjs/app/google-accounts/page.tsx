@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Card } from '@/app/components/ui/card';
-import { Button } from '@/app/components/ui/button';
-import { Badge } from '@/app/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Mail,
   Calendar,
@@ -23,7 +23,7 @@ interface GoogleAccount {
   name: string;
   isActive: boolean;
   scopes: string[];
-  connected At: Date;
+  connectedAt: Date;
   lastSync: Date;
 }
 
