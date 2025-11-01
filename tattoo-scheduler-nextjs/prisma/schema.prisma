@@ -1,0 +1,312 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CLIENTES
+// ============================================
+
+model Customer {
+  id                      Int       @id @default(autoincrement())
+  name                    String
+  email                   String?
+  phone                   String
+  address                 String?
+  city                    String?
+  state                   String?
+  zip_code                String?
+  avatar_url              String?
+  notes                   String?
+  total_sales             Float?    @default(0)
+  total_appointments      Int?      @default(0)
+  loyalty_points_balance  Int?      @default(0)
+  no_shows                Int?      @default(0)
+  preferred_language      String?
+  preferred_contact_method String?
+  notification_preferences String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  appointments            Appointment[]
+  projects                Project[]
+  photos                  Photo[]
+  messages                Message[]
+  payments                Payment[]
+  documents               Document[]
+  healthInfo              HealthInfo?
+  privateNotes            PrivateNote[]
+  
+  @@map("customers")
+}
+
+model HealthInfo {
+  id                  Int      @id @default(autoincrement())
+  customerId          Int      @unique
+  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  allergies           String?
+  medications         String?
+  medical_conditions  String?
+  blood_type          String?
+  emergency_contact   String?
+  emergency_phone     String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@map("health_info")
+}
+
+model PrivateNote {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("private_notes")
+}
+
+// ============================================
+// PROJETOS
+// ============================================
+
+model Project {
+  id                  Int      @id @default(autoincrement())
+  customerId          Int
+  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title               String
+  description         String?
+  status              String   @default("planejamento")
+  start_date          DateTime?
+  estimated_sessions  Int?
+  completed_sessions  Int?     @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@map("projects")
+}
+
+// ============================================
+// AGENDAMENTOS
+// ============================================
+
+model Appointment {
+  id              Int      @id @default(autoincrement())
+  customerId      Int
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  employeeId      Int?
+  employee        Employee? @relation(fields: [employeeId], references: [id])
+  start_time      DateTime
+  end_time        DateTime
+  tattoo_type     String
+  tattoo_location String?
+  price           Float?
+  status          String   @default("confirmado")
+  notes           String?
+  google_event_id String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("appointments")
+}
+
+// ============================================
+// FUNCIONÁRIOS
+// ============================================
+
+model Employee {
+  id              Int      @id @default(autoincrement())
+  name            String
+  role            String?
+  email           String?
+  phone           String
+  avatar_url      String?
+  hourly_rate     Float?
+  commission_rate Float?
+  status          String   @default("ativo")
+  hire_date       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  appointments    Appointment[]
+  
+  @@map("employees")
+}
+
+// ============================================
+// GALERIA
+// ============================================
+
+model Photo {
+  id          Int      @id @default(autoincrement())
+  customerId  Int?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  url         String
+  title       String?
+  tattoo_type String?
+  artist      String?
+  uploaded_at DateTime @default(now())
+  createdAt   DateTime @default(now())
+  
+  @@map("photos")
+}
+
+// ============================================
+// COMUNICAÇÃO
+// ============================================
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type        String   // email, sms, whatsapp
+  subject     String?
+  message     String
+  sent_at     DateTime @default(now())
+  createdAt   DateTime @default(now())
+  
+  @@map("messages")
+}
+
+// ============================================
+// FINANCEIRO
+// ============================================
+
+model Payment {
+  id           Int      @id @default(autoincrement())
+  customerId   Int
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  amount       Float
+  status       String   @default("pendente")
+  payment_date DateTime
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("payments")
+}
+
+model Invoice {
+  id          Int      @id @default(autoincrement())
+  clientId    Int
+  clientName  String
+  amount      Float
+  status      String   @default("pendente")
+  issue_date  DateTime
+  due_date    DateTime
+  items       String   // JSON
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("invoices")
+}
+
+model GiftCard {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  balance     Float
+  status      String   @default("ativo")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("gift_cards")
+}
+
+model Membership {
+  id          Int      @id @default(autoincrement())
+  clientId    Int
+  clientName  String
+  plan        String
+  status      String   @default("ativo")
+  start_date  DateTime
+  end_date    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("memberships")
+}
+
+model Package {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  sessions    Int
+  status      String   @default("ativo")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("packages")
+}
+
+// ============================================
+// DOCUMENTOS
+// ============================================
+
+model Document {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title       String
+  file_url    String
+  file_type   String
+  uploaded_at DateTime @default(now())
+  createdAt   DateTime @default(now())
+  
+  @@map("documents")
+}
+
+// ============================================
+// CONFIGURAÇÕES
+// ============================================
+
+model Setting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  updatedAt   DateTime @updatedAt
+  
+  @@map("settings")
+}
+
+// ============================================
+// GOOGLE INTEGRATION
+// ============================================
+
+model GoogleAccount {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  access_token  String
+  refresh_token String
+  expires_at    DateTime
+  sync_enabled  Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("google_accounts")
+}
+
+// ============================================
+// SINCRONIZAÇÃO
+// ============================================
+
+model SyncLog {
+  id          Int      @id @default(autoincrement())
+  entity_type String
+  entity_id   Int
+  action      String   // create, update, delete
+  status      String   @default("pending")
+  error       String?
+  synced_at   DateTime?
+  createdAt   DateTime @default(now())
+  
+  @@map("sync_logs")
+}

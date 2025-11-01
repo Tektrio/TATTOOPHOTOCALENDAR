@@ -1,0 +1,48 @@
+# 🔐 Copie este conteúdo CORRIGIDO para o arquivo .env.local
+# A senha contém caracteres especiais que precisam ser URL-encoded
+
+# ===================================
+# SUPABASE (✅ CORRIGIDO - URL encoded)
+# ===================================
+NEXT_PUBLIC_SUPABASE_URL="https://elicojhbvjprkpstdima.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsaWNvamhidmpwcmtwc3RkaW1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5NDYwODksImV4cCI6MjA3NzUyMjA4OX0.BJAwGZr2hCaqDIrhxJNNPuVSA12Se8yMEGHBJcHznZE"
+SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsaWNvamhidmpwcmtwc3RkaW1hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTk0NjA4OSwiZXhwIjoyMDc3NTIyMDg5fQ.3xbntWnTdVzQatNvFEjlX5Yaja2F36iRcGKN4Lonmls"
+
+# ⚠️ CORRIGIDO: Caracteres especiais da senha foram URL-encoded
+# Senha original: TattooScheduler2025!@#$SecureDB
+# ! = %21, @ = %40, # = %23, $ = %24
+DATABASE_URL="postgresql://postgres:TattooScheduler2025%21%40%23%24SecureDB@db.elicojhbvjprkpstdima.supabase.co:5432/postgres"
+
+# ===================================
+# GOOGLE OAUTH (✅ Já configurado)
+# ===================================
+GOOGLE_CLIENT_ID="1073557089506-5hk15al23til3ab4d5rs6c27eq6opdvp.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+
+# ===================================
+# NEXTAUTH (copie os valores que você gerou)
+# ===================================
+NEXTAUTH_SECRET="COLE_AQUI_O_VALOR_QUE_VOCE_GEROU"
+NEXTAUTH_URL="http://localhost:3000"
+
+# ===================================
+# CRON JOB SECRET (copie o valor que você gerou)
+# ===================================
+CRON_SECRET="COLE_AQUI_O_VALOR_QUE_VOCE_GEROU"
+
+# ===================================
+# UPLOADS LOCAIS (✅ Já configurado)
+# ===================================
+LOCAL_UPLOADS_PATH="./public/uploads"
+
+# ===================================
+# VERCEL TOKEN (✅ Já configurado)
+# ===================================
+VERCEL_TOKEN="1X7ZMUn51wb0SCWzJKxncb77"
+
+# ===================================
+# MODO DE EXECUÇÃO (✅ Já configurado)
+# ===================================
+USE_LOCAL_DB="false"
+NODE_ENV="development"
+

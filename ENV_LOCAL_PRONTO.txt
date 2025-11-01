@@ -1,0 +1,61 @@
+# 🔐 Copie este conteúdo para o arquivo .env.local
+# Arquivo: /Users/luizlopes/Desktop/TATTOO_PHOTO_CALENDAR/tattoo-scheduler-nextjs/.env.local
+
+# ===================================
+# SUPABASE (✅ Já configurado)
+# ===================================
+NEXT_PUBLIC_SUPABASE_URL="https://elicojhbvjprkpstdima.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsaWNvamhidmpwcmtwc3RkaW1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5NDYwODksImV4cCI6MjA3NzUyMjA4OX0.BJAwGZr2hCaqDIrhxJNNPuVSA12Se8yMEGHBJcHznZE"
+SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsaWNvamhidmpwcmtwc3RkaW1hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTk0NjA4OSwiZXhwIjoyMDc3NTIyMDg5fQ.3xbntWnTdVzQatNvFEjlX5Yaja2F36iRcGKN4Lonmls"
+DATABASE_URL="postgresql://postgres:TattooScheduler2025!@#$SecureDB@db.elicojhbvjprkpstdima.supabase.co:5432/postgres"
+
+# ===================================
+# GOOGLE OAUTH (✅ Já configurado - do seu mcp.json)
+# ===================================
+GOOGLE_CLIENT_ID="1073557089506-5hk15al23til3ab4d5rs6c27eq6opdvp.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+
+# ===================================
+# NEXTAUTH (⚠️ AÇÃO NECESSÁRIA)
+# Execute no terminal: openssl rand -base64 32
+# Copie o resultado e cole abaixo
+# ===================================
+NEXTAUTH_SECRET="EXECUTE_NO_TERMINAL_openssl_rand_-base64_32_E_COLE_AQUI"
+NEXTAUTH_URL="http://localhost:3000"
+
+# ===================================
+# CRON JOB SECRET (⚠️ AÇÃO NECESSÁRIA)
+# Execute no terminal: openssl rand -base64 32
+# Copie o resultado e cole abaixo
+# ===================================
+CRON_SECRET="EXECUTE_NO_TERMINAL_openssl_rand_-base64_32_E_COLE_AQUI"
+
+# ===================================
+# UPLOADS LOCAIS (✅ Já configurado)
+# ===================================
+LOCAL_UPLOADS_PATH="./public/uploads"
+
+# ===================================
+# VERCEL TOKEN (✅ Já configurado - opcional)
+# ===================================
+VERCEL_TOKEN="1X7ZMUn51wb0SCWzJKxncb77"
+
+# ===================================
+# MODO DE EXECUÇÃO (✅ Já configurado)
+# ===================================
+USE_LOCAL_DB="false"
+NODE_ENV="development"
+
+
+# ===================================
+# 📝 INSTRUÇÕES:
+# ===================================
+# 1. Abra o terminal
+# 2. Execute: openssl rand -base64 32
+# 3. Copie o resultado
+# 4. Cole no lugar de "EXECUTE_NO_TERMINAL..." no NEXTAUTH_SECRET
+# 5. Execute novamente: openssl rand -base64 32
+# 6. Copie o resultado
+# 7. Cole no lugar de "EXECUTE_NO_TERMINAL..." no CRON_SECRET
+# 8. Salve este arquivo como .env.local na pasta tattoo-scheduler-nextjs
+

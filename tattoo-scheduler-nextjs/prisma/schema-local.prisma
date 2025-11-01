@@ -1,0 +1,119 @@
+// Schema Local (SQLite) - Para desenvolvimento offline
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client-local"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ============================================
+// MODEL: Client (Clientes)
+// ============================================
+model Client {
+  id                  Int           @id @default(autoincrement())
+  name                String
+  email               String?
+  phone               String?
+  birthDate           DateTime?     @map("birth_date")
+  notes               String?
+  folderPath          String?       @map("folder_path")
+  googleDriveFolderId String?       @map("google_drive_folder_id")
+  
+  // Campos de sincronização
+  syncedAt            DateTime?     @map("synced_at")
+  syncHash            String?       @map("sync_hash")
+  
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  
+  // Relacionamentos
+  appointments        Appointment[]
+  files               File[]
+
+  @@index([email])
+  @@index([phone])
+  @@map("clients")
+}
+
+// ============================================
+// MODEL: Appointment (Agendamentos)
+// ============================================
+model Appointment {
+  id            Int       @id @default(autoincrement())
+  clientId      Int       @map("client_id")
+  startDatetime DateTime  @map("start_datetime")
+  endDatetime   DateTime  @map("end_datetime")
+  title         String?
+  description   String?
+  status        String    @default("pending")
+  googleEventId String?   @unique @map("google_event_id")
+  price         Float?
+  notes         String?
+  
+  // Campos de sincronização
+  syncedAt      DateTime? @map("synced_at")
+  syncHash      String?   @map("sync_hash")
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  
+  // Relacionamentos
+  client        Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  files         File[]
+
+  @@index([clientId])
+  @@index([startDatetime])
+  @@index([googleEventId])
+  @@map("appointments")
+}
+
+// ============================================
+// MODEL: File (Arquivos)
+// ============================================
+model File {
+  id            Int          @id @default(autoincrement())
+  clientId      Int          @map("client_id")
+  appointmentId Int?         @map("appointment_id")
+  filename      String
+  originalName  String?      @map("original_name")
+  filePath      String       @map("file_path")
+  storageType   String       @default("local") @map("storage_type")
+  category      String?
+  fileType      String?      @map("file_type")
+  mimeType      String?      @map("mime_type")
+  fileSize      Int?         @map("file_size")
+  
+  // Campos de sincronização
+  syncedAt      DateTime?    @map("synced_at")
+  syncHash      String?      @map("sync_hash")
+  
+  createdAt     DateTime     @default(now()) @map("created_at")
+  
+  // Relacionamentos
+  client        Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([appointmentId])
+  @@map("files")
+}
+
+// ============================================
+// MODEL: OAuthToken (Tokens Google)
+// ============================================
+model OAuthToken {
+  id           Int       @id @default(autoincrement())
+  userId       String    @unique @map("user_id")
+  provider     String
+  accessToken  String    @map("access_token")
+  refreshToken String?   @map("refresh_token")
+  expiresAt    Int?      @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("oauth_tokens")
+}
+

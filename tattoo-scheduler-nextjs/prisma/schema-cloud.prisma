@@ -1,0 +1,119 @@
+// Schema Cloud (PostgreSQL/Supabase) - Para produção online
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client-cloud"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MODEL: Client (Clientes)
+// ============================================
+model Client {
+  id                  Int           @id @default(autoincrement())
+  name                String
+  email               String?
+  phone               String?
+  birthDate           DateTime?     @map("birth_date") @db.Date
+  notes               String?
+  folderPath          String?       @map("folder_path")
+  googleDriveFolderId String?       @map("google_drive_folder_id")
+  
+  // Campos de sincronização
+  syncedAt            DateTime?     @map("synced_at") @db.Timestamptz
+  syncHash            String?       @map("sync_hash")
+  
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  
+  // Relacionamentos
+  appointments        Appointment[]
+  files               File[]
+
+  @@index([email])
+  @@index([phone])
+  @@map("clients")
+}
+
+// ============================================
+// MODEL: Appointment (Agendamentos)
+// ============================================
+model Appointment {
+  id            Int       @id @default(autoincrement())
+  clientId      Int       @map("client_id")
+  startDatetime DateTime  @map("start_datetime") @db.Timestamptz
+  endDatetime   DateTime  @map("end_datetime") @db.Timestamptz
+  title         String?
+  description   String?
+  status        String    @default("pending")
+  googleEventId String?   @unique @map("google_event_id")
+  price         Decimal?  @db.Decimal(10, 2)
+  notes         String?
+  
+  // Campos de sincronização
+  syncedAt      DateTime? @map("synced_at") @db.Timestamptz
+  syncHash      String?   @map("sync_hash")
+  
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  
+  // Relacionamentos
+  client        Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  files         File[]
+
+  @@index([clientId])
+  @@index([startDatetime])
+  @@index([googleEventId])
+  @@map("appointments")
+}
+
+// ============================================
+// MODEL: File (Arquivos)
+// ============================================
+model File {
+  id            Int          @id @default(autoincrement())
+  clientId      Int          @map("client_id")
+  appointmentId Int?         @map("appointment_id")
+  filename      String
+  originalName  String?      @map("original_name")
+  filePath      String       @map("file_path")
+  storageType   String       @default("supabase") @map("storage_type")
+  category      String?
+  fileType      String?      @map("file_type")
+  mimeType      String?      @map("mime_type")
+  fileSize      BigInt?      @map("file_size")
+  
+  // Campos de sincronização
+  syncedAt      DateTime?    @map("synced_at") @db.Timestamptz
+  syncHash      String?      @map("sync_hash")
+  
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  
+  // Relacionamentos
+  client        Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([appointmentId])
+  @@map("files")
+}
+
+// ============================================
+// MODEL: OAuthToken (Tokens Google)
+// ============================================
+model OAuthToken {
+  id           Int       @id @default(autoincrement())
+  userId       String    @unique @map("user_id")
+  provider     String
+  accessToken  String    @map("access_token")
+  refreshToken String?   @map("refresh_token")
+  expiresAt    BigInt?   @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("oauth_tokens")
+}
+
