@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,9 +13,11 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
-  Settings
+  Settings,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { signIn, useSession } from 'next-auth/react';
 
 interface GoogleAccount {
   id: string;
@@ -28,30 +30,89 @@ interface GoogleAccount {
 }
 
 export default function GoogleAccountsPage() {
-  const [accounts, setAccounts] = useState<GoogleAccount[]>([
-    {
-      id: '1',
-      email: 'studio@example.com',
-      name: 'Studio Principal',
-      isActive: true,
-      scopes: ['calendar', 'drive'],
-      connectedAt: new Date('2025-01-15'),
-      lastSync: new Date()
+  const { data: session } = useSession();
+  const [accounts, setAccounts] = useState<GoogleAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    try {
+      const res = await fetch('/api/google/accounts');
+      const data = await res.json();
+      
+      if (data.success) {
+        setAccounts(data.accounts || []);
+      } else {
+        console.error('Erro ao carregar contas:', data.error);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar contas:', error);
+      toast.error('Erro ao carregar contas Google');
+    } finally {
+      setLoading(false);
     }
-  ]);
-
-  const handleConnectAccount = () => {
-    // TODO: Abrir popup do Google OAuth
-    toast.info('Google OAuth será implementado em breve');
   };
 
-  const handleDisconnect = (accountId: string) => {
-    setAccounts(accounts.filter(a => a.id !== accountId));
-    toast.success('Conta desconectada');
+  const handleConnectAccount = async () => {
+    try {
+      // Inicia fluxo OAuth do Google via NextAuth
+      await signIn('google', {
+        callbackUrl: '/google-accounts',
+        redirect: true
+      });
+    } catch (error) {
+      console.error('Erro ao conectar:', error);
+      toast.error('Erro ao iniciar autenticação');
+    }
   };
 
-  const handleSync = (accountId: string) => {
-    toast.success('Sincronização iniciada');
+  const handleDisconnect = async (accountId: string) => {
+    try {
+      const res = await fetch(`/api/google/accounts/${accountId}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        setAccounts(accounts.filter(a => a.id !== accountId));
+        toast.success('Conta desconectada');
+      } else {
+        throw new Error('Falha ao desconectar');
+      }
+    } catch (error) {
+      console.error('Erro ao desconectar:', error);
+      toast.error('Erro ao desconectar conta');
+    }
+  };
+
+  const handleSync = async (accountId: string) => {
+    try {
+      setSyncing(accountId);
+      toast.info('Iniciando sincronização...');
+      
+      const res = await fetch('/api/google/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(`Sincronizados ${data.eventsCount || 0} eventos`);
+        await loadAccounts(); // Recarregar lista
+      } else {
+        throw new Error(data.error || 'Falha na sincronização');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar:', error);
+      toast.error('Erro ao sincronizar conta');
+    } finally {
+      setSyncing(null);
+    }
   };
 
   return (
@@ -92,7 +153,32 @@ export default function GoogleAccountsPage() {
 
         {/* Lista de Contas */}
         <div className="space-y-4">
-          {accounts.map((account) => (
+          {loading ? (
+            <Card className="p-12 text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">Carregando contas...</p>
+            </Card>
+          ) : accounts.length === 0 ? (
+            <Card className="p-12 text-center">
+              <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                <Mail className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                Nenhuma conta conectada
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Conecte uma conta do Google para começar a sincronizar
+              </p>
+              <Button
+                onClick={handleConnectAccount}
+                className="bg-gradient-to-r from-blue-600 to-purple-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Conectar Primeira Conta
+              </Button>
+            </Card>
+          ) : (
+            accounts.map((account) => (
             <Card key={account.id} className="p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
@@ -162,10 +248,20 @@ export default function GoogleAccountsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleSync(account.id)}
+                    disabled={syncing === account.id}
                     className="gap-2"
                   >
-                    <RefreshCw className="w-4 h-4" />
-                    Sincronizar
+                    {syncing === account.id ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Sincronizando...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4" />
+                        Sincronizar
+                      </>
+                    )}
                   </Button>
                   <Button
                     variant="outline"
@@ -187,27 +283,7 @@ export default function GoogleAccountsPage() {
                 </div>
               </div>
             </Card>
-          ))}
-
-          {accounts.length === 0 && (
-            <Card className="p-12 text-center">
-              <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                <Mail className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Nenhuma conta conectada
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Conecte uma conta do Google para começar a sincronizar
-              </p>
-              <Button
-                onClick={handleConnectAccount}
-                className="bg-gradient-to-r from-blue-600 to-purple-600"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Conectar Primeira Conta
-              </Button>
-            </Card>
+          ))
           )}
         </div>
 

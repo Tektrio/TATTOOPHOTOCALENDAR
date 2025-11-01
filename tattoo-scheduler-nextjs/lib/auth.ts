@@ -22,24 +22,28 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === 'google') {
         try {
-          // Salvar/atualizar tokens OAuth no banco
-          await prisma.oAuthToken.upsert({
-            where: { userId: user.id || user.email || '' },
+          const email = user.email || '';
+          const expiresAt = account.expires_at 
+            ? new Date(account.expires_at * 1000)
+            : new Date(Date.now() + 3600 * 1000); // 1 hora padrão
+
+          // Salvar/atualizar conta Google no banco
+          await prisma.googleAccount.upsert({
+            where: { email },
             create: {
-              userId: user.id || user.email || '',
-              provider: 'google',
-              accessToken: account.access_token || '',
-              refreshToken: account.refresh_token || null,
-              expiresAt: account.expires_at || null
+              email,
+              access_token: account.access_token || '',
+              refresh_token: account.refresh_token || '',
+              expires_at: expiresAt
             },
             update: {
-              accessToken: account.access_token || '',
-              refreshToken: account.refresh_token || null,
-              expiresAt: account.expires_at || null
+              access_token: account.access_token || '',
+              refresh_token: account.refresh_token || '',
+              expires_at: expiresAt
             }
           });
           
-          console.log('✓ Tokens OAuth salvos para:', user.email);
+          console.log('✓ Tokens OAuth salvos para:', email);
         } catch (error) {
           console.error('Erro ao salvar tokens OAuth:', error);
           return false;
@@ -91,20 +95,25 @@ export const authOptions: NextAuthOptions = {
 /**
  * Helper para pegar access token do Google
  */
-export async function getGoogleAccessToken(userId: string): Promise<string | null> {
+export async function getGoogleAccessToken(email: string): Promise<string | null> {
   try {
-    const token = await prisma.oAuthToken.findUnique({
-      where: { userId }
+    const account = await prisma.googleAccount.findUnique({
+      where: { email }
     });
     
-    if (!token) {
-      console.error('Token não encontrado para usuário:', userId);
+    if (!account) {
+      console.error('Conta Google não encontrada para:', email);
       return null;
     }
     
-    // TODO: Verificar se token expirou e renovar se necessário
+    // Verificar se token está expirado
+    if (account.expires_at < new Date()) {
+      console.error('Token expirado para:', email);
+      // TODO: Implementar renovação automática de token
+      return null;
+    }
     
-    return token.accessToken;
+    return account.access_token;
   } catch (error) {
     console.error('Erro ao buscar access token:', error);
     return null;

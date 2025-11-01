@@ -1,25 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    // TODO: Buscar contas Google do banco
-    const accounts = [
-      {
-        id: '1',
-        email: 'studio@example.com',
-        name: 'Studio Principal',
-        isActive: true,
-        scopes: ['calendar', 'drive'],
-        connectedAt: new Date(),
-        lastSync: new Date()
-      }
-    ];
+    // Buscar contas Google do banco
+    const googleAccounts = await prisma.googleAccount.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
 
-    return NextResponse.json(accounts);
+    // Transformar em formato de contas
+    const accounts = googleAccounts.map(account => {
+      const isActive = account.expires_at > new Date();
+
+      return {
+        id: account.id.toString(),
+        email: account.email,
+        name: account.email.split('@')[0].replace(/[._]/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+        isActive,
+        scopes: ['calendar', 'drive'],
+        connectedAt: account.createdAt,
+        lastSync: account.updatedAt
+      };
+    });
+
+    return NextResponse.json({ success: true, accounts });
   } catch (error) {
     console.error('Erro ao buscar contas:', error);
     return NextResponse.json(
-      { error: 'Erro ao buscar contas' },
+      { error: 'Erro ao buscar contas', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
