@@ -1,7 +1,9 @@
-const { createClient } = require('webdav');
 const ftp = require('basic-ftp');
 const fs = require('fs-extra');
 const path = require('path');
+
+// Import dinâmico do webdav (módulo ESM)
+let createClient = null;
 
 /**
  * Cliente QNAP NAS com suporte para WebDAV e FTP
@@ -26,6 +28,18 @@ class QnapClient {
   }
 
   /**
+   * Carrega o módulo webdav dinamicamente
+   * @private
+   */
+  async _loadWebDAV() {
+    if (!createClient) {
+      const webdavModule = await import('webdav');
+      createClient = webdavModule.createClient;
+    }
+    return createClient;
+  }
+
+  /**
    * Conecta ao QNAP
    * @returns {Promise<object>}
    */
@@ -46,13 +60,14 @@ class QnapClient {
    */
   async _connectWebDAV() {
     try {
+      const createClientFn = await this._loadWebDAV();
       const protocol = this.config.secure ? 'https' : 'http';
       const port = this.config.port || (this.config.secure ? 443 : 80);
       const url = `${protocol}://${this.config.host}:${port}`;
       
       console.log(`🔌 Conectando ao QNAP via WebDAV: ${url}`);
 
-      this.client = createClient(url, {
+      this.client = createClientFn(url, {
         username: this.config.username,
         password: this.config.password
       });

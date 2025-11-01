@@ -197,10 +197,41 @@ function App() {
         fetch(`${API_URL}/api/stats`)
       ])
       
-      setAppointments(await appointmentsRes.json())
-      setClients(await clientsRes.json())
-      setTattooTypes(await typesRes.json())
-      setStats(await statsRes.json())
+      // Validar e setar appointments
+      if (appointmentsRes.ok) {
+        const appointmentsData = await appointmentsRes.json()
+        setAppointments(Array.isArray(appointmentsData) ? appointmentsData : [])
+      } else {
+        console.error('Erro ao buscar agendamentos:', appointmentsRes.status)
+        setAppointments([])
+      }
+      
+      // Validar e setar clients
+      if (clientsRes.ok) {
+        const clientsData = await clientsRes.json()
+        setClients(Array.isArray(clientsData) ? clientsData : [])
+      } else {
+        console.error('Erro ao buscar clientes:', clientsRes.status)
+        setClients([])
+      }
+      
+      // Validar e setar tattooTypes
+      if (typesRes.ok) {
+        const typesData = await typesRes.json()
+        setTattooTypes(Array.isArray(typesData) ? typesData : [])
+      } else {
+        console.error('Erro ao buscar tipos de tatuagem:', typesRes.status)
+        setTattooTypes([])
+      }
+      
+      // Validar e setar stats
+      if (statsRes.ok) {
+        const statsData = await statsRes.json()
+        setStats(statsData && typeof statsData === 'object' ? statsData : {})
+      } else {
+        console.error('Erro ao buscar estatísticas:', statsRes.status)
+        setStats({})
+      }
       
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
@@ -1012,7 +1043,7 @@ function App() {
                               <SelectValue placeholder="Selecione um cliente" />
                             </SelectTrigger>
                             <SelectContent>
-                              {clients.map((client) => (
+                              {(clients || []).map((client) => (
                                 <SelectItem key={client.id} value={client.id.toString()}>
                                   {client.name} - {client.phone}
                                 </SelectItem>
@@ -1089,14 +1120,14 @@ function App() {
                   </Dialog>
                 </CardTitle>
                 <CardDescription className={`mt-2 ${isDark ? 'text-gray-400' : 'text-purple-200'}`}>
-                  {appointments.length > 0 
-                    ? `${appointments.length} agendamento(s) no total` 
+                  {(appointments || []).length > 0 
+                    ? `${(appointments || []).length} agendamento(s) no total` 
                     : 'Adicione seu primeiro agendamento'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {appointments.slice(0, 5).map((appointment) => (
+                  {(appointments || []).slice(0, 5).map((appointment) => (
                     <div key={appointment.id} className={`flex items-center justify-between p-4 rounded-lg transition-colors border ${
                       isDark 
                         ? 'bg-gray-900/50 hover:bg-gray-900/70 border-gray-700/50' 
@@ -1123,7 +1154,7 @@ function App() {
                     </div>
                   ))}
                   
-                  {appointments.length === 0 && (
+                  {(appointments || []).length === 0 && (
                     <div className="text-center py-12 px-4">
                       <div className="inline-block p-4 bg-purple-500/20 rounded-full mb-4">
                         <Calendar className="w-12 h-12 text-purple-400" />
@@ -1265,7 +1296,7 @@ function App() {
             </div>
 
             <div className="grid gap-4">
-              {appointments.length === 0 ? (
+              {(appointments || []).length === 0 ? (
                 <div className="text-center py-12 px-4">
                   <div className="inline-block p-4 bg-purple-500/20 rounded-full mb-4">
                     <Calendar className="w-12 h-12 text-purple-400" />
@@ -1274,7 +1305,7 @@ function App() {
                   <p className="text-purple-200 mb-4">Comece criando seu primeiro agendamento para organizar sua agenda</p>
                 </div>
               ) : (
-                appointments.map((appointment) => (
+                (appointments || []).map((appointment) => (
                 <Card key={appointment.id} className={`backdrop-blur-md ${
                   isDark 
                     ? 'bg-gray-800/80 border-gray-700/50' 

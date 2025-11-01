@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolver Erro 403 - Google OAuth</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .alert h2 {
+            color: #856404;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .alert p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+        
+        .step:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-content h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            color: #1976D2;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .info-box p {
+            color: #1976D2;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        .project-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        .project-info strong {
+            color: #667eea;
+        }
+        
+        .countdown {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        .countdown strong {
+            color: #667eea;
+            font-size: 24px;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 600px) {
+            .button-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Resolver Erro 403</h1>
+        <p class="subtitle">Configuração OAuth do Google Drive</p>
+        
+        <div class="alert">
+            <h2>⚠️ Por que estou vendo este erro?</h2>
+            <p><strong>Seu app OAuth está em MODO DE TESTE</strong></p>
+            <p>✅ Isso é normal! Para segurança, o Google coloca novos apps em modo de teste.</p>
+            <p>❌ Você só precisa adicionar seu email como testador autorizado.</p>
+        </div>
+        
+        <div class="project-info">
+            <strong>📋 Informações do Seu Projeto:</strong><br>
+            Project ID: <code>polar-program-476423-i0</code><br>
+            Client ID: <code>1073557089506-5hk15al23til3ab4d5rs6c27eq6opdvp...</code>
+        </div>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Clique no botão abaixo</h3>
+                    <p>Isso abrirá o Google Cloud Console na página correta</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Faça login no Google</h3>
+                    <p>Use a conta que criou o projeto OAuth</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Adicione seu email</h3>
+                    <p>Na seção "Usuários de teste", clique em "+ ADD USERS" e digite seu email</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Salve e teste</h3>
+                    <p>Clique em "SAVE", aguarde 2 minutos e tente conectar novamente na aplicação</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <a href="https://console.cloud.google.com/apis/credentials/consent?project=polar-program-476423-i0" 
+               class="btn btn-primary" 
+               target="_blank"
+               id="openConsole">
+                🚀 Abrir Google Cloud Console
+            </a>
+            <a href="http://localhost:5173" 
+               class="btn btn-secondary" 
+               target="_blank">
+                🏠 Voltar para a Aplicação
+            </a>
+        </div>
+        
+        <div class="info-box">
+            <h3>💡 Dica Importante</h3>
+            <p>Você pode adicionar até 100 emails de testadores gratuitamente! Perfeito para uso pessoal ou em equipe.</p>
+        </div>
+        
+        <div class="countdown">
+            <span id="message">Redirecionando automaticamente em...</span>
+            <strong id="timer">10</strong>
+        </div>
+    </div>
+    
+    <script>
+        // Countdown e redirecionamento automático
+        let seconds = 10;
+        const timerElement = document.getElementById('timer');
+        const messageElement = document.getElementById('message');
+        
+        const countdown = setInterval(() => {
+            seconds--;
+            timerElement.textContent = seconds;
+            
+            if (seconds <= 0) {
+                clearInterval(countdown);
+                messageElement.textContent = 'Abrindo Google Cloud Console...';
+                window.open('https://console.cloud.google.com/apis/credentials/consent?project=polar-program-476423-i0', '_blank');
+            }
+        }, 1000);
+        
+        // Parar countdown se clicar no botão
+        document.getElementById('openConsole').addEventListener('click', () => {
+            clearInterval(countdown);
+            messageElement.textContent = '✅ Console aberto! Siga as instruções acima.';
+            timerElement.textContent = '—';
+        });
+    </script>
+</body>
+</html>
+
+
